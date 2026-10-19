@@ -21,13 +21,24 @@ railway up
 railway domain
 ```
 
+## Encontro ao vivo entre as princesas
+
+Quando duas princesas jogam ao mesmo tempo, uma vê a outra andando pelo mundo, pode conversar
+com frases prontas e dar presentes na hora. Isso funciona só nesta versão (Railway ou computador
+local), porque precisa do servidor: o jogo abre uma conexão em `/live`.
+
+A sala é criada a partir do código de acesso da família, então só entra junto quem sabe o código.
+Até 8 princesas por sala. Não existe digitação livre: as mensagens são sempre as frases prontas.
+
+Para conferir quem está online: `https://SEU-ENDERECO/saude`
+
 ## Rodar no seu computador
 
 ```bash
 npm start      # abre em http://localhost:3000
 ```
 
-Não há dependências: o servidor usa só o Node puro.
+A única dependência é a biblioteca `ws`, do encontro ao vivo. Rode `npm install` na primeira vez.
 
 ## O que tem aqui
 
@@ -37,7 +48,7 @@ public/manifest.webmanifest  faz o jogo virar aplicativo instalável
 public/sw.js                 guarda o jogo no aparelho; funciona sem internet depois da 1ª visita
 public/icon-192.png          ícone do aplicativo
 public/icon-512.png
-server.js                    servidor estático
+server.js                    servidor do jogo + encontro ao vivo (/live)
 railway.json                 configuração do deploy
 ```
 

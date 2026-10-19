@@ -1,9 +1,16 @@
 {
   "name": "mundo-da-luize",
-  "version": "2.4.0",
+  "version": "3.1.0",
   "private": true,
   "description": "Mundo da Luize e da Carmel - jogo infantil 3D no navegador",
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=18" }
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.22.0"
+  }
 }
