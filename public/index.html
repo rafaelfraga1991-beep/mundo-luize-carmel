@@ -571,6 +571,9 @@ body.land .sheet.wide .isl .in{font-size:9px;max-width:11vw}
 .cmsg.bad{color:#e03131}
 .cmsg.ok{color:#2b8a3e}
 #btnCfg{background:var(--chip)}
+.lk-look{display:grid;place-items:center;margin-bottom:8px}
+.lk-look .th{width:min(220px,55vw);aspect-ratio:1;border-radius:22px;background:var(--th-bg);box-shadow:0 0 0 4px #fff,0 4px 0 rgba(90,42,122,.15);display:block;overflow:hidden;position:relative}
+.lk-look img{width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .3s}
 .li .av2{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:20px;border:3px solid #fff;box-shadow:0 2px 0 rgba(90,42,122,.2)}
 .pill.danger{background:#e03131;color:#fff;box-shadow:0 3px 0 #a51111}
 /* sem barras de rolagem visíveis */
@@ -2060,7 +2063,7 @@ const reserved = [];
 const reserve = (x, z, r) => reserved.push({x, z, r});
 const isFree = (x, z, m = 0) => reserved.every(c => Math.hypot(x - c.x, z - c.z) > c.r + m);
 const interacts = [];
-const interact = o => { interacts.push(Object.assign({r: 3, show: () => true, area: areaOf(o.x, o.z)}, o)); return o; };
+const interact = o => { const e = Object.assign({r: 3, show: () => true, area: areaOf(o.x, o.z)}, o); interacts.push(e); return e; };
 let mapDirty = true;
 const animated = []; // funções chamadas a cada quadro
 const onFrame = fn => animated.push(fn);
@@ -5609,6 +5612,7 @@ function openQuickMenu() {
     const items = [['👗', 'Guarda-roupa', () => openWardrobe()], ['🐾', 'Meus pets', () => openPets()], ['📜', 'Missões', openMissionsSheet], ['🏅', 'Conquistas', () => openDiary('ach')], ['🎓', 'Aprendizado', () => openDiary('edu')], ['🍓', 'Coleções', () => openDiary('col')], ['🗺️', 'Mapa', () => openMap()], ['🌳', 'Árvore do Saber', () => openSaber()]];
     if (inHomeZone()) items.push(['🛠️', 'Decorar', () => { closeModal(); enterBuild(); }]);
     if (MOB && !standalone()) items.push(['📱', 'Tela cheia', () => { closeModal(); openFsHelp(); }]);
+    items.push(['💌', 'Recadinhos', () => openInbox()]);
     items.push([musicOn ? '🔊' : '🔇', musicOn ? 'Som ligado' : 'Som desligado', () => { $('bSound').click(); openQuickMenu(); }], ['👤', 'Trocar princesa', () => $('bProfile').click()]);
     items.forEach(([e, n, fn]) => { const b = h(`<button class="qi"><span>${e}</span><b>${n}</b></button>`); b.onclick = () => { sfx('click'); fn(); }; g.appendChild(b); });
     body.appendChild(g);
@@ -5978,7 +5982,7 @@ function scanInteract() {
   let best = null, bd = Infinity;
   if (!inputLocked() && !buildMode.active) {
     interacts.forEach(o => {
-      if (o.area !== curArea && areaOf(o.x, o.z) !== curArea) return;
+      if (o.area !== '*' && o.area !== curArea && areaOf(o.x, o.z) !== curArea) return;
       const d = Math.hypot(o.x - player.pos.x, o.z - player.pos.z);
       if (d < o.r && d < bd && o.show()) { bd = d; best = o; }
     });
@@ -6232,6 +6236,333 @@ function renderCfgCode(body) {
 (function () {
   if (unlockedRecently()) return;
   showLock();
+})();
+
+// ---------- AS PRINCESAS SE ENCONTRAM ----------
+// Cada princesa guarda onde parou. As outras aparecem ali, com o visual delas,
+// e dá para conversar com frases prontas, dar presentes e passar moedas.
+const MEET = {x: 6, z: 16, area: 'main'}; // pracinha do Jardim Rosa, perto da fonte
+function profPos(p) {
+  const l = p.lastPos;
+  if (l && typeof l.x === 'number' && AREAS[l.area]) return l;
+  return {area: MEET.area, x: MEET.x + (SAVE.profiles.indexOf(p) % 3) * 2.4 - 2.4, z: MEET.z};
+}
+const friends = [];
+function clearFriends() { friends.forEach(f => { scene.remove(f.obj.group); scene.remove(f.name); scene.remove(f.mark); }); friends.length = 0; }
+function buildFriends() {
+  clearFriends();
+  SAVE.profiles.forEach(p => {
+    if (p === P) return;
+    const pos = profPos(p);
+    const obj = buildAvatar(p.look);
+    obj.group.position.set(pos.x, 0, pos.z); obj.group.rotation.y = (pos.yaw || 0) + Math.PI;
+    scene.add(obj.group);
+    const name = label('👑 ' + p.name, {scale: 0.75}); name.position.set(pos.x, 4.7, pos.z); scene.add(name);
+    const mark = label('💬', {bg: '#ffffff', size: 50, scale: 0.7}); mark.position.set(pos.x, 5.6, pos.z); scene.add(mark);
+    const f = {p, obj, name, mark, pos};
+    friends.push(f);
+    interact({x: pos.x, z: pos.z, r: 3.4, area: pos.area, show: () => SAVE.profiles.includes(p), text: () => 'Falar com a princesa ' + p.name, act: () => talkFriend(f)});
+  });
+  refreshFriends();
+}
+function refreshFriends() {
+  friends.forEach(f => { const on = f.pos.area === curArea && SAVE.profiles.includes(f.p); f.obj.group.visible = on; f.name.visible = on; f.mark.visible = on; });
+}
+onFrame((dt, t) => {
+  friends.forEach(f => {
+    if (!f.obj.group.visible) return;
+    const g = f.obj.group, pr = f.obj.parts, d = Math.hypot(player.pos.x - f.pos.x, player.pos.z - f.pos.z);
+    if (d < 7) { const a = Math.atan2(player.pos.x - f.pos.x, player.pos.z - f.pos.z); g.rotation.y += Math.atan2(Math.sin(a - g.rotation.y), Math.cos(a - g.rotation.y)) * Math.min(1, dt * 5); if (pr.armR) pr.armR.rotation.z = 0.3 + Math.sin(t * 6) * 0.3; }
+    else if (pr.armR) pr.armR.rotation.z = 0;
+    g.position.y = Math.sin(t * 1.4 + f.pos.x) * 0.04;
+    f.mark.position.y = 5.6 + Math.sin(t * 3) * 0.12;
+    blink(pr, t + f.pos.x);
+  });
+});
+// ---------- recadinhos prontos ----------
+const NOTES = [
+  'Oi! Que bom te encontrar aqui! 💖', 'Adorei o seu look de hoje!', 'Vamos explorar juntas?',
+  'Achei um baú escondido. Procura também!', 'Você viu os bichinhos do Bosque?',
+  'Seu pet é muito fofo! 🐾', 'Vamos dançar no Salão de Baile?', 'Boa sorte nos desafios! 🍀',
+  'Te espero na Cidade Alegre!', 'Você é a melhor princesa do reino! 👑'];
+const giftableItems = (from, to) => WARD_ITEMS().filter(it => from.owned.includes(it.id) && !to.owned.includes(it.id)).slice(0, 60);
+const giftablePets = (from, to) => from.pets.filter(id => !to.pets.includes(id));
+function inboxAdd(to, entry) { to.inbox = to.inbox || []; to.inbox.push(entry); if (to.inbox.length > 20) to.inbox.shift(); }
+function talkFriend(f) {
+  const p = f.p;
+  dialog('👑 ' + p.name, pickR(['Oi! Que bom te ver aqui no reino!', 'Olha o meu look de hoje! O que achou?', 'Quer brincar junto comigo?']), [
+    {t: '💌 Deixar um recadinho', fn: () => noteMenu(p)},
+    {t: '🎁 Dar um presente', fn: () => giftMenu(p)},
+    {t: '👗 Ver o look dela', fn: () => lookMenu(p)},
+    {t: 'Tchau!'}]);
+}
+function noteMenu(p) {
+  openModal('💌 Recadinho para ' + p.name, body => {
+    body.innerHTML = '<p class="hello">Escolha uma mensagem. Ela vai aparecer quando a ' + esc(p.name) + ' entrar no jogo.</p>';
+    const list = h('<div class="list"></div>');
+    NOTES.forEach(t => { const li = h(`<button class="li" style="text-align:left"><div class="e">💬</div><div class="tx"><b>${esc(t)}</b></div></button>`); li.onclick = () => { inboxAdd(p, {k: 'nota', de: P.name, t, at: Date.now()}); saveNow(); sfx('buy'); closeModal(); toast('Recadinho enviado para ' + p.name + ' 💌'); }; list.appendChild(li); });
+    body.appendChild(list);
+  });
+}
+function lookMenu(p) {
+  openModal('👗 Look da ' + p.name, body => {
+    body.innerHTML = '';
+    const th = h('<div class="lk-look"><span class="th"><img alt=""></span></div>');
+    body.appendChild(th);
+    const img = th.querySelector('img'), key = 'look|' + JSON.stringify(p.look);
+    if (THUMBS[key]) { img.src = THUMBS[key]; img.classList.add('on'); }
+    else setTimeout(() => { try { THUMBS[key] = renderThumb(p.look, FRAME.vestidos, 260); img.src = THUMBS[key]; img.classList.add('on'); } catch (e) {} }, 30);
+    const list = h('<div class="list"></div>');
+    const slots = [['dress', '👗'], ['top', '👚'], ['bottom', '🩳'], ['shoes', '👟'], ['head', '👑'], ['clip', '🎀'], ['face', '🕶️'], ['bag', '👜'], ['back', '🦋'], ['hand', '🪄']];
+    slots.forEach(([sl, e]) => { const id = p.look[sl]; if (!id || !ITEMS[id]) return; if ((sl === 'top' || sl === 'bottom') && p.look.dress) return;
+      const mine = owns(id);
+      list.appendChild(h(`<div class="li"><div class="e">${e}</div><div class="tx"><b>${esc(ITEMS[id].n)}</b><small>${mine ? 'Você também tem ✓' : 'Você ainda não tem'}</small></div></div>`)); });
+    const hc = HAIR_COLORS[p.look.hairColor] || HAIR_COLORS[0], hs = HAIR_STYLES[p.look.hairStyle] || HAIR_STYLES[0];
+    list.appendChild(h(`<div class="li"><div class="e">💇‍♀️</div><div class="tx"><b>${esc(hs.n)} · ${esc(hc.n)}</b><small>Penteado e cor do cabelo</small></div></div>`));
+    if (p.pet && ITEMS[p.pet]) list.appendChild(h(`<div class="li"><div class="e">🐾</div><div class="tx"><b>${esc(p.petNames[p.pet] || ITEMS[p.pet].n)}</b><small>O bichinho que passeia com ela</small></div></div>`));
+    body.appendChild(list);
+  }, {closeup: false});
+}
+let giftTab = 'moedas';
+function giftMenu(p) {
+  giftTab = 'moedas';
+  openModal('🎁 Presente para ' + p.name, body => {
+    body.innerHTML = `<p class="money"><span>🪙 ${P.coins} moedas</span><span>👗 ${P.owned.length} peças</span><span>🐾 ${P.pets.length} pets</span></p>`;
+    const tabs = h('<div class="tabs cfgtabs" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>');
+    [['moedas', '🪙 Moedas'], ['roupas', '👗 Roupas'], ['pets', '🐾 Bichinhos']].forEach(([k, n]) => { const b = h(`<button class="tab ${giftTab === k ? 'on' : ''}">${n}</button>`); b.onclick = () => { giftTab = k; sfx('click'); rerender(); }; tabs.appendChild(b); });
+    body.appendChild(tabs);
+    if (giftTab === 'moedas') {
+      body.appendChild(h('<p class="hello">As moedas saem do seu cofrinho e vão para o dela.</p>'));
+      const g = h('<div class="qgrid"></div>');
+      [5, 10, 25, 50, 100].forEach(n => { const b = h(`<button class="qi" ${P.coins >= n ? '' : 'disabled'}><span>🪙</span><b>${n}</b></button>`); b.onclick = () => { if (P.coins < n) return; P.coins -= n; p.coins += n; p.totalCoins = (p.totalCoins || 0) + n; inboxAdd(p, {k: 'moedas', de: P.name, n, at: Date.now()}); updateHUD(); saveNow(); sfx('buy'); celebrate({rar: 'raro'}); toast('Você deu ' + n + ' moedas para ' + p.name + ' 🪙'); rerender(); }; g.appendChild(b); });
+      body.appendChild(g);
+      return;
+    }
+    if (giftTab === 'roupas') {
+      const list = giftableItems(P, p);
+      body.appendChild(h('<p class="hello">Presente mágico: a peça aparece no guarda-roupa dela e continua no seu também. 💖</p>'));
+      if (!list.length) return body.appendChild(h('<p class="hello">A ' + esc(p.name) + ' já tem tudo o que você tem!</p>'));
+      const grid = h('<div class="wgrid"></div>');
+      list.forEach(it => {
+        const c = h(`<div class="wc st-own rar-${it.rar}" role="button" tabindex="0"><span class="th"><img alt=""></span>${it.rar !== 'comum' && RARITY[it.rar] ? `<span class="rr">${RARITY[it.rar].e} ${RARITY[it.rar].n}</span>` : ''}<span class="nm">${esc(it.n)}</span><span class="tg">🎁 Dar</span></div>`);
+        thumbFor(it, c.querySelector('img'));
+        c.onclick = () => { if (!p.owned.includes(it.id)) p.owned.push(it.id); p.newItems = p.newItems || []; p.newItems.push(it.id); inboxAdd(p, {k: 'item', de: P.name, id: it.id, at: Date.now()}); saveNow(); sfx('win'); celebrate(it); toast('Você deu ' + it.n + ' para ' + p.name + ' 🎁'); rerender(); };
+        grid.appendChild(c);
+      });
+      body.appendChild(grid);
+      return;
+    }
+    const pets = giftablePets(P, p);
+    body.appendChild(h('<p class="hello">O bichinho ganha um irmãozinho igual no mundo dela, e o seu continua com você. 🐾</p>'));
+    if (!pets.length) return body.appendChild(h('<p class="hello">A ' + esc(p.name) + ' já tem todos os seus bichinhos!</p>'));
+    const grid = h('<div class="wgrid"></div>');
+    pets.forEach(id => {
+      const it = ITEMS[id], R = RARITY[it.rar] || RARITY.comum;
+      const c = h(`<div class="wc st-own rar-${it.rar}" role="button" tabindex="0"><span class="th"><img alt=""></span>${it.rar !== 'comum' ? `<span class="rr">${R.e} ${R.n}</span>` : ''}<span class="nm">${esc(it.n)}</span><span class="tg">🎁 Dar</span></div>`);
+      petThumb(id, c.querySelector('img'));
+      c.onclick = () => { if (!p.pets.includes(id)) p.pets.push(id); if (!p.pet) p.pet = id; inboxAdd(p, {k: 'pet', de: P.name, id, at: Date.now()}); saveNow(); sfx('win'); celebrate(it); toast('Você deu ' + it.n + ' para ' + p.name + ' 🐾'); rerender(); };
+      grid.appendChild(c);
+    });
+    body.appendChild(grid);
+  }, {ward: true});
+}
+// ---------- caixinha de presentes ao entrar ----------
+function openInbox() {
+  const box = (P.inbox || []).slice().reverse();
+  openModal('💌 Presentes e recadinhos', body => {
+    body.innerHTML = box.length ? '<p class="hello">Olha o que as outras princesas deixaram para você!</p>' : '<p class="hello">Nenhum recadinho novo por enquanto. Encontre as outras princesas pelo reino!</p>';
+    const list = h('<div class="list"></div>');
+    box.forEach(m => {
+      const txt = m.k === 'nota' ? m.t : m.k === 'moedas' ? m.n + ' moedas para você!' : m.k === 'pet' ? 'Um bichinho: ' + (ITEMS[m.id] ? ITEMS[m.id].n : '') : 'Uma peça: ' + (ITEMS[m.id] ? ITEMS[m.id].n : '');
+      const e = m.k === 'nota' ? '💬' : m.k === 'moedas' ? '🪙' : m.k === 'pet' ? '🐾' : '🎁';
+      list.appendChild(h(`<div class="li"><div class="e">${e}</div><div class="tx"><b>${esc(txt)}</b><small>de ${esc(m.de)}</small></div></div>`));
+    });
+    body.appendChild(list);
+    if (box.length) { const b = h('<button class="pill main" style="margin-top:12px">Obrigada! 💖</button>'); b.onclick = () => { P.inbox = []; saveNow(); closeModal(); }; body.appendChild(b); }
+  });
+}
+// ---------- ligações com o resto do jogo ----------
+(function () {
+  const oldStart = startGame;
+  startGame = function (p, create) {
+    oldStart(p, create);
+    buildFriends();
+    const n = (P.inbox || []).length;
+    if (n) setTimeout(() => { banner('💌 Você tem ' + n + ' ' + (n === 1 ? 'novidade' : 'novidades') + '!', 'Presentes e recadinhos das outras princesas'); setTimeout(openInbox, 1800); }, 2600);
+  };
+  const oldRelock = relock;
+  relock = function () { clearFriends(); oldRelock(); };
+})();
+// guarda onde a princesa parou, para as outras a encontrarem
+onFrame(dt => {
+  if (!P || !curArea) return;
+  friendsT = (friendsT || 0) + dt;
+  if (friendsT < 2) return;
+  friendsT = 0;
+  P.lastPos = {area: curArea, x: +player.pos.x.toFixed(1), z: +player.pos.z.toFixed(1), yaw: +player.yaw.toFixed(2)};
+  if (friends.length && friends[0].lastArea !== curArea) { friends.forEach(f => f.lastArea = curArea); refreshFriends(); }
+});
+let friendsT = 0;
+// atalhos: menu do celular e botão no computador
+(function () {
+  const b = h('<button class="hb" id="bMail" aria-label="Recadinhos">💌</button>');
+  b.onclick = () => { audioInit(); sfx('click'); openInbox(); };
+  $('bDiary').after(b);
+})();
+
+// ---------- ENCONTRO AO VIVO (precisa do servidor: Railway ou computador local) ----------
+// Quando as duas estão jogando ao mesmo tempo, uma vê a outra andando pelo mundo.
+const LIVE = {ws: null, id: null, peers: {}, on: false, tries: 0, lookTxt: '', t: 0};
+// só tenta quando existe servidor próprio (Railway ou computador local); no claude.ai fica offline
+const liveCan = () => (location.protocol === 'http:' || location.protocol === 'https:') && !/claude\.ai$|claudeusercontent\.com$|claude\.site$/.test(location.hostname);
+function liveRoom() { try { return 'sala-' + btoa(unescape(encodeURIComponent(gameCode()))).replace(/=/g, ''); } catch (e) { return 'reino'; } }
+function liveConnect() {
+  if (!liveCan() || !P || LIVE.ws) return;
+  let ws;
+  try { ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/live'); } catch (e) { return; }
+  LIVE.ws = ws;
+  ws.onopen = () => { LIVE.tries = 0; liveSend({t: 'entrar', sala: liveRoom(), nome: P.name, look: P.look, area: curArea, x: player.pos.x, z: player.pos.z, yaw: player.yaw}); };
+  ws.onmessage = e => { let m; try { m = JSON.parse(e.data); } catch (err) { return; } liveMsg(m); };
+  ws.onclose = () => { LIVE.ws = null; LIVE.on = false; liveClearAll(); if (P && LIVE.tries < 60) { LIVE.tries++; setTimeout(liveConnect, Math.min(20000, 1500 * LIVE.tries)); } };
+  ws.onerror = () => {};
+}
+function liveSend(o) { const ws = LIVE.ws; if (ws && ws.readyState === 1) { try { ws.send(JSON.stringify(o)); } catch (e) {} } }
+function liveMsg(m) {
+  if (m.t === 'oi') { LIVE.id = m.id; LIVE.on = true; (m.pares || []).forEach(livePeerAdd); if (m.pares && m.pares.length) toast('💞 ' + m.pares.map(p => p.nome).join(' e ') + ' ' + (m.pares.length > 1 ? 'estão' : 'está') + ' jogando agora!', 3200); return; }
+  if (m.t === 'entrou') { livePeerAdd(m); banner('💞 ' + m.nome + ' entrou no reino!', 'Procure por ela para brincarem juntas'); return; }
+  if (m.t === 'saiu') { livePeerDel(m.id); return; }
+  if (m.t === 'pos') { const pr = LIVE.peers[m.id]; if (!pr) return; pr.area = m.area; pr.tx = m.x; pr.tz = m.z; pr.tyaw = m.yaw; pr.mov = m.mov; pr.last = gameTime; return; }
+  if (m.t === 'look') { const pr = LIVE.peers[m.id]; if (pr) livePeerLook(pr, m.look); return; }
+  if (m.t === 'gesto') { const pr = LIVE.peers[m.id]; if (pr) { pr.gesto = gameTime; popText(m.g === 'tchau' ? '👋' : '💖', pr.obj.group.position.clone().add(new THREE.Vector3(0, 4.6, 0)), '#e64980'); } return; }
+  if (m.t === 'entregue') { sfx('buy'); return; }
+  if (m.t === 'falhou') { toast('Ops! ' + m.motivo); return; }
+  if (m.t === 'presente') return liveGiftIn(m);
+  if (m.t === 'cheio') { toast('A sala está cheia agora.'); LIVE.on = false; }
+}
+function livePeerAdd(d) {
+  if (LIVE.peers[d.id]) livePeerDel(d.id);
+  const look = d.look && typeof d.look === 'object' ? d.look : defaultLook();
+  let obj; try { obj = buildAvatar(look); } catch (e) { obj = buildAvatar(defaultLook()); }
+  obj.group.position.set(d.x || 0, 0, d.z || 0); scene.add(obj.group);
+  const name = label('👑 ' + d.nome, {scale: 0.75}); scene.add(name);
+  const mark = label('💞', {bg: '#ffffff', size: 50, scale: 0.7}); scene.add(mark);
+  const pr = {id: d.id, nome: d.nome, obj, name, mark, x: d.x || 0, z: d.z || 0, tx: d.x || 0, tz: d.z || 0, yaw: d.yaw || 0, tyaw: d.yaw || 0, area: d.area, last: gameTime};
+  LIVE.peers[d.id] = pr;
+  const it = interact({x: pr.x, z: pr.z, r: 3.6, area: '*', show: () => !!LIVE.peers[d.id] && pr.area === curArea, text: () => '💞 Falar com ' + pr.nome + ' (ao vivo!)', act: () => talkLive(pr)});
+  Object.defineProperty(it, 'x', {get: () => pr.x}); Object.defineProperty(it, 'z', {get: () => pr.z});
+  pr.it = it;
+  hideStaticFriend(d.nome, true);
+}
+function livePeerLook(pr, look) {
+  try { const o = buildAvatar(look && typeof look === 'object' ? look : defaultLook()); o.group.position.copy(pr.obj.group.position); o.group.rotation.y = pr.obj.group.rotation.y; scene.remove(pr.obj.group); scene.add(o.group); pr.obj = o; } catch (e) {}
+}
+function livePeerDel(id) {
+  const pr = LIVE.peers[id]; if (!pr) return;
+  scene.remove(pr.obj.group); scene.remove(pr.name); scene.remove(pr.mark);
+  const k = interacts.indexOf(pr.it); if (k >= 0) interacts.splice(k, 1);
+  delete LIVE.peers[id];
+  hideStaticFriend(pr.nome, false);
+  toast('👋 ' + pr.nome + ' saiu do jogo');
+}
+function livePeersOnline() { return Object.keys(LIVE.peers).length; }
+function livePeerByName(n) { return Object.values(LIVE.peers).find(p => p.nome === n); }
+function liveClearAll() { Object.keys(LIVE.peers).forEach(livePeerDel); }
+// esconde a versão "parada" da amiga enquanto ela estiver ao vivo
+function hideStaticFriend(nome, esconder) {
+  const f = friends.find(x => x.p.name === nome); if (!f) return;
+  f.live = esconder; f.obj.group.visible = !esconder && f.pos.area === curArea;
+  f.name.visible = f.obj.group.visible; f.mark.visible = f.obj.group.visible;
+}
+// ---------- movimento ----------
+setInterval(() => {
+  if (!P || !LIVE.on) return;
+  liveSend({t: 'pos', area: curArea, x: +player.pos.x.toFixed(2), z: +player.pos.z.toFixed(2), yaw: +player.yaw.toFixed(2), mov: (player.speed || 0) > 0.5, pet: P.pet || ''});
+  const lk = JSON.stringify(P.look);
+  if (lk !== LIVE.lookTxt) { LIVE.lookTxt = lk; liveSend({t: 'look', look: P.look}); }
+}, 100);
+onFrame((dt, t) => {
+  if (!P) return;
+  Object.values(LIVE.peers).forEach(pr => {
+    const vis = pr.area === curArea;
+    pr.obj.group.visible = vis; pr.name.visible = vis; pr.mark.visible = vis;
+    if (!vis) return;
+    const k = 1 - Math.exp(-dt * 9);
+    pr.x += (pr.tx - pr.x) * k; pr.z += (pr.tz - pr.z) * k;
+    const d = Math.atan2(Math.sin(pr.tyaw - pr.yaw), Math.cos(pr.tyaw - pr.yaw));
+    pr.yaw += d * Math.min(1, dt * 7);
+    const g = pr.obj.group, pa = pr.obj.parts;
+    const vel = Math.hypot(pr.tx - pr.x, pr.tz - pr.z);
+    g.position.set(pr.x, vel > 0.05 ? Math.abs(Math.sin(t * 9)) * 0.08 : Math.sin(t * 1.4) * 0.04, pr.z);
+    g.rotation.y = pr.yaw + Math.PI;
+    const s = pr.mov || vel > 0.08 ? Math.sin(t * 9) * 0.55 : 0;
+    if (pa.legL) { pa.legL.rotation.x = s; pa.legR.rotation.x = -s; pa.armL.rotation.x = -s; pa.armR.rotation.x = s; }
+    if (pa.armR && !pr.mov && vel < 0.05) pa.armR.rotation.z = Math.hypot(player.pos.x - pr.x, player.pos.z - pr.z) < 7 ? 0.3 + Math.sin(t * 6) * 0.3 : 0;
+    pr.name.position.set(pr.x, 4.7, pr.z);
+    pr.mark.position.set(pr.x, 5.6 + Math.sin(t * 3) * 0.12, pr.z);
+    blink(pa, t + pr.x);
+  });
+});
+// ---------- conversa e presentes ao vivo ----------
+function talkLive(pr) {
+  dialog('👑 ' + pr.nome + ' 💞', pickR(['Oi! Estamos jogando juntas!', 'Te achei! Vamos brincar?', 'Olha o meu look de hoje!']), [
+    {t: '💌 Mandar um recadinho', fn: () => liveNote(pr)},
+    {t: '🎁 Dar um presente', fn: () => liveGift(pr)},
+    {t: '👋 Acenar', fn: () => { liveSend({t: 'gesto', g: 'oi'}); popText('👋', player.pos.clone().add(new THREE.Vector3(0, 4.6, 0)), '#e64980'); sfx('sweet'); }},
+    {t: 'Tchau!'}]);
+}
+function liveNote(pr) {
+  openModal('💌 Recadinho para ' + pr.nome, body => {
+    body.innerHTML = '<p class="hello">A ' + esc(pr.nome) + ' vai receber na hora!</p>';
+    const list = h('<div class="list"></div>');
+    NOTES.forEach(t => { const li = h(`<button class="li" style="text-align:left"><div class="e">💬</div><div class="tx"><b>${esc(t)}</b></div></button>`); li.onclick = () => { liveSend({t: 'presente', para: pr.id, tipo: 'nota', texto: t}); closeModal(); sfx('buy'); toast('Recadinho enviado 💌'); }; list.appendChild(li); });
+    body.appendChild(list);
+  });
+}
+let liveTab = 'moedas';
+function liveGift(pr) {
+  liveTab = 'moedas';
+  openModal('🎁 Presente para ' + pr.nome, body => {
+    body.innerHTML = `<p class="money"><span>🪙 ${P.coins}</span><span>👗 ${P.owned.length} peças</span><span>🐾 ${P.pets.length} pets</span></p>`;
+    const tabs = h('<div class="tabs cfgtabs" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>');
+    [['moedas', '🪙 Moedas'], ['roupas', '👗 Roupas'], ['pets', '🐾 Bichinhos']].forEach(([k, n]) => { const b = h(`<button class="tab ${liveTab === k ? 'on' : ''}">${n}</button>`); b.onclick = () => { liveTab = k; sfx('click'); rerender(); }; tabs.appendChild(b); });
+    body.appendChild(tabs);
+    if (liveTab === 'moedas') {
+      body.appendChild(h('<p class="hello">As moedas saem do seu cofrinho e chegam na hora para ela.</p>'));
+      const g = h('<div class="qgrid"></div>');
+      [5, 10, 25, 50, 100].forEach(n => { const b = h(`<button class="qi" ${P.coins >= n ? '' : 'disabled'}><span>🪙</span><b>${n}</b></button>`); b.onclick = () => { if (P.coins < n) return; P.coins -= n; updateHUD(); saveSoon(); liveSend({t: 'presente', para: pr.id, tipo: 'moedas', n}); sfx('buy'); celebrate({rar: 'raro'}); toast('Você deu ' + n + ' moedas 🪙'); rerender(); }; g.appendChild(b); });
+      body.appendChild(g); return;
+    }
+    const isPet = liveTab === 'pets';
+    const list = isPet ? P.pets.slice() : WARD_ITEMS().filter(it => P.owned.includes(it.id)).slice(0, 80).map(it => it.id);
+    body.appendChild(h('<p class="hello">' + (isPet ? 'O bichinho ganha um irmãozinho igual no mundo dela, e o seu continua com você. 🐾' : 'Presente mágico: a peça aparece no guarda-roupa dela e continua no seu. 💖') + '</p>'));
+    const grid = h('<div class="wgrid"></div>');
+    list.forEach(id => {
+      const it = ITEMS[id]; if (!it) return;
+      const R = RARITY[it.rar] || RARITY.comum;
+      const c = h(`<div class="wc st-own rar-${it.rar}" role="button" tabindex="0"><span class="th"><img alt=""></span>${it.rar !== 'comum' ? `<span class="rr">${R.e} ${R.n}</span>` : ''}<span class="nm">${esc(it.n)}</span><span class="tg">🎁 Dar</span></div>`);
+      if (isPet) petThumb(id, c.querySelector('img')); else thumbFor(it, c.querySelector('img'));
+      c.onclick = () => { liveSend({t: 'presente', para: pr.id, tipo: isPet ? 'pet' : 'item', id}); sfx('win'); celebrate(it); toast('Você deu ' + it.n + ' 🎁'); };
+      grid.appendChild(c);
+    });
+    body.appendChild(grid);
+  }, {ward: true});
+}
+function liveGiftIn(m) {
+  if (m.tipo === 'nota') { banner('💌 ' + m.de + ' disse:', m.texto); sfx('sweet'); say([[m.texto, 'pt']]); return; }
+  if (m.tipo === 'moedas') { const n = Math.max(0, Math.round(+m.n || 0)); if (!n) return; P.coins += n; P.totalCoins = (P.totalCoins || 0) + n; updateHUD(); popText('+' + n + ' 🪙', player.pos.clone().add(new THREE.Vector3(0, 4.2, 0)), '#ffc83d'); sfx('buy'); banner('🪙 ' + m.de + ' te deu ' + n + ' moedas!', 'Que amiga generosa 💖'); saveSoon(); return; }
+  const it = ITEMS[m.id]; if (!it) return;
+  if (m.tipo === 'pet') { if (!P.pets.includes(m.id)) { P.pets.push(m.id); if (!P.pet) setPet(m.id); } }
+  else if (!P.owned.includes(m.id)) P.owned.push(m.id);
+  saveSoon(); sfx('win');
+  reveal(it, 'Presente da ' + m.de + '!');
+}
+// ---------- ligações ----------
+(function () {
+  const old = startGame;
+  startGame = function (p, create) { old(p, create); LIVE.lookTxt = ''; if (LIVE.on) liveSend({t: 'entrar', sala: liveRoom(), nome: P.name, look: P.look, area: curArea, x: player.pos.x, z: player.pos.z, yaw: player.yaw}); else liveConnect(); };
+  const oldRelock = relock;
+  relock = function () { liveClearAll(); if (LIVE.ws) { try { LIVE.ws.close(); } catch (e) {} } oldRelock(); };
+  addEventListener('pagehide', () => { if (LIVE.ws) try { LIVE.ws.close(); } catch (e) {} });
 })();
 
 })();
