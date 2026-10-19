@@ -429,6 +429,9 @@ img.on{opacity:1!important}
 @media (prefers-reduced-motion:reduce){.wc.st-ready,#bWard.glow,.rar-lendario .th::after,.rar-raro .th::after{animation:none}}
 /* painel lateral */
 #modal{position:fixed;inset:0;z-index:20;pointer-events:none}
+body.cfg-open #modal{z-index:41}
+body.cfg-open #start{filter:blur(2px)}
+body.cfg-open #start .box{pointer-events:none}
 #modal .sheet{pointer-events:auto;position:absolute;right:12px;top:calc(env(safe-area-inset-top,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:min(440px,calc(100vw - 24px));background:var(--card-solid);border-radius:22px;box-shadow:0 8px 0 rgba(90,42,122,.25),0 20px 50px rgba(90,42,122,.25);display:flex;flex-direction:column;overflow:hidden;animation:slide .3s ease}
 @keyframes slide{from{transform:translateX(30px);opacity:0}}
 @media (max-width:700px){#modal .sheet{left:8px;right:8px;width:auto;top:auto;height:60vh;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);animation:up .3s ease}@keyframes up{from{transform:translateY(30px);opacity:0}}}
@@ -535,6 +538,41 @@ body.land .sheet.wide .uni{grid-column:1;grid-row:3;width:100%;height:100%;aspec
 body.land .sheet.wide .wcard{grid-column:2;grid-row:3;max-height:100%;margin:0}
 body.land .sheet.wide .isl{height:15%}
 body.land .sheet.wide .isl .in{font-size:9px;max-width:11vw}
+/* trava por código */
+@media (max-height:460px) and (orientation:landscape){
+#lock .lk-box{width:min(560px,100%);display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center;padding:10px 14px}
+#lock .lk-crown,#lock h1,#lock .lk-sub,#lock .lk-dots{grid-column:1}
+#lock .lk-pad{grid-column:2;grid-row:1/5;max-width:260px}
+#lock .lk-forgot{grid-column:1/-1;margin:0}
+#lock h1{font-size:19px}}
+#lock{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px calc(env(safe-area-inset-bottom,0px) + 10px);background:linear-gradient(180deg,#ffd6ea,#c8b6ff)}
+#lock .lk-box{width:min(340px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;text-align:center;background:var(--card-solid);border:5px solid #fff;border-radius:30px;padding:clamp(10px,2.4vh,20px) 18px clamp(12px,2.4vh,18px);box-shadow:0 10px 0 rgba(90,42,122,.22)}
+#lock .lk-crown{font-size:clamp(30px,6vh,46px);line-height:1}
+#lock h1{margin:2px 0 0;font-family:'Fredoka','Baloo 2',system-ui;font-size:clamp(18px,3.4vh,26px);color:var(--pink);line-height:1.1}
+#lock .lk-sub{margin:4px 0 8px;font-weight:700;color:var(--soft);font-size:clamp(12px,1.9vh,15px);min-height:2.6em;line-height:1.25}
+#lock .lk-dots{display:flex;gap:9px;justify-content:center;margin-bottom:clamp(6px,1.6vh,12px)}
+#lock .lk-dots span{width:clamp(13px,2.2vh,17px);height:clamp(13px,2.2vh,17px);border-radius:50%;background:var(--chip);box-shadow:inset 0 0 0 2px var(--line)}
+#lock .lk-dots span.on{background:var(--pink);box-shadow:0 2px 0 var(--pink-d)}
+#lock .lk-dots.bad{animation:shake .4s}
+#lock .lk-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(5px,1.2vh,10px);max-width:300px;margin:0 auto;width:100%}
+#lock .lk-key{border:0;border-radius:18px;padding:0;aspect-ratio:1.45/1;height:auto;min-height:0;display:grid;place-items:center;font-family:'Fredoka','Baloo 2',system-ui;font-size:clamp(20px,3.4vh,27px);font-weight:700;color:var(--ink);background:var(--card-solid);box-shadow:0 0 0 2px var(--line),0 4px 0 rgba(90,42,122,.16)}
+#lock .lk-key:active{transform:translateY(3px);box-shadow:0 0 0 2px var(--line)}
+#lock .lk-key.del{background:var(--chip);font-size:clamp(17px,2.6vh,21px)}
+#lock .lk-forgot{margin-top:8px;border:0;background:none;color:var(--soft);font-weight:700;font-size:13px;text-decoration:underline}
+.cfgp{border:3px solid var(--line);border-radius:18px;padding:8px 10px;margin-bottom:10px}
+.cfgp .hd{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.cfgp .av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:22px;border:3px solid #fff;box-shadow:0 2px 0 rgba(90,42,122,.2)}
+.cfgp b{display:block;font-size:17px}
+.cfgp small{color:var(--soft);font-weight:700;font-size:12.5px}
+.cfgp .ages{display:flex;gap:6px;flex-wrap:wrap}
+.cfgp .ages .tab{min-width:44px;font-size:16px}
+.cfgc input{margin-bottom:4px}
+.cmsg{min-height:22px;font-weight:800;margin:6px 0;font-size:14px}
+.cmsg.bad{color:#e03131}
+.cmsg.ok{color:#2b8a3e}
+#btnCfg{background:var(--chip)}
+.li .av2{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:20px;border:3px solid #fff;box-shadow:0 2px 0 rgba(90,42,122,.2)}
+.pill.danger{background:#e03131;color:#fff;box-shadow:0 3px 0 #a51111}
 </style>
 </head>
 <body>
@@ -578,7 +616,8 @@ body.land .sheet.wide .isl .in{font-size:9px;max-width:11vw}
 <div id="fsHelp" class="hidden"></div>
 <div id="reveal" class="hidden"></div>
 <div id="cart" class="card hidden"></div>
-<div id="start"><div class="box card"><h1>👑 Mundo da Luize e da Carmel</h1><p class="sub">Escolha sua princesa · versão 2.0</p><div class="profiles" id="profiles"></div><button class="pill gold" id="newProfile">✨ Criar nova princesa</button><p class="note">O progresso fica salvo e cada princesa tem suas moedas, roupas e castelo.</p></div></div>
+<div id="lock" class="hidden"></div>
+<div id="start"><div class="box card"><h1>👑 Mundo da Luize e da Carmel</h1><p class="sub">Escolha sua princesa · versão 2.5</p><div class="profiles" id="profiles"></div><button class="pill gold" id="newProfile">✨ Criar nova princesa</button><p class="note">O progresso fica salvo e cada princesa tem suas moedas, roupas e castelo.</p></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 window.addEventListener('error', e => { const t = document.getElementById('toast'); if (t) { t.textContent = 'Erro: ' + e.message; t.style.fontSize = '15px'; t.classList.add('show'); } });
@@ -1255,7 +1294,7 @@ let SAVE = loadLocal();
 if (!SAVE) {
   const louise = newProfile('Luize', Object.assign(defaultLook(), {skin:1, hairColor:0, hairStyle:0, dress:'d_rosa'}));
   const carmel = newProfile('Carmel', Object.assign(defaultLook(), {skin:2, hairColor:1, hairStyle:1, dress:'d_lilas', head:'a_laco'}));
-  SAVE = {v:1, savedAt:0, profiles:[louise, carmel]};
+  SAVE = {v:1, savedAt:0, code:'021100', profiles:[louise, carmel]};
 }
 let P = null; // perfil atual
 
@@ -6032,6 +6071,161 @@ addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; cam
 document.addEventListener('visibilitychange', () => { if (document.hidden && P) saveNow(); });
 addEventListener('pagehide', () => { if (P) saveNow(); });
 frame();
+
+// ---------- TRAVA POR CÓDIGO E CONFIGURAÇÕES DOS PAIS ----------
+const CODE_DEFAULT = '021100', CODE_KEY = 'mundo-destrava', UNLOCK_H = 4;
+function gameCode() { return (SAVE.code && /^\d{4,8}$/.test(SAVE.code)) ? SAVE.code : CODE_DEFAULT; }
+function unlockedRecently() {
+  try { const t = +localStorage.getItem(CODE_KEY); return t && Date.now() - t < UNLOCK_H * 3600 * 1000; } catch (e) { return false; }
+}
+function markUnlocked() { try { localStorage.setItem(CODE_KEY, String(Date.now())); } catch (e) {} }
+function relock() { try { localStorage.removeItem(CODE_KEY); } catch (e) {} showLock(); }
+let lockTyped = '', lockTries = 0, lockOnOk = null;
+function showLock(onOk) {
+  lockOnOk = onOk || null; lockTyped = ''; lockTries = 0;
+  $('start').classList.add('hidden');
+  const el = $('lock'); el.classList.remove('hidden');
+  renderLock();
+}
+function renderLock(msg, bad) {
+  const el = $('lock'), n = gameCode().length;
+  el.innerHTML = `<div class="lk-box">
+    <div class="lk-crown">👑</div>
+    <h1>Mundo da Luize<br>e da Carmel</h1>
+    <p class="lk-sub">${esc(msg || 'Digite o código para entrar')}</p>
+    <div class="lk-dots ${bad ? 'bad' : ''}">${Array.from({length: n}, (_, i) => `<span class="${i < lockTyped.length ? 'on' : ''}"></span>`).join('')}</div>
+    <div class="lk-pad"></div>
+    <button class="lk-forgot">Esqueci o código</button></div>`;
+  const pad = el.querySelector('.lk-pad');
+  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].forEach(k => {
+    if (!k) { pad.appendChild(h('<span></span>')); return; }
+    const b = h(`<button class="lk-key${k === '⌫' ? ' del' : ''}">${k}</button>`);
+    b.onclick = () => { audioInit(); lockKey(k); };
+    pad.appendChild(b);
+  });
+  el.querySelector('.lk-forgot').onclick = () => renderLock('Peça o código para o papai ou a mamãe 💖');
+}
+function lockKey(k) {
+  if (k === '⌫') { lockTyped = lockTyped.slice(0, -1); sfx('click'); return renderLock(); }
+  if (lockTyped.length >= gameCode().length) return;
+  lockTyped += k; sfx('click');
+  if (lockTyped.length < gameCode().length) return renderLock();
+  if (lockTyped === gameCode()) {
+    sfx('win'); renderLock('Bem-vinda! 🎉');
+    markUnlocked();
+    setTimeout(() => { $('lock').classList.add('hidden'); if (lockOnOk) { const f = lockOnOk; lockOnOk = null; f(); } else { $('start').classList.remove('hidden'); renderProfiles(); } }, 600);
+  } else {
+    lockTries++; lockTyped = ''; sfx('bad');
+    renderLock(lockTries >= 3 ? 'Código errado. Chame o papai ou a mamãe 🙂' : 'Ops! Código errado. Tente de novo.', true);
+  }
+}
+addEventListener('keydown', e => {
+  if ($('lock').classList.contains('hidden')) return;
+  if (/^[0-9]$/.test(e.key)) lockKey(e.key);
+  else if (e.key === 'Backspace') lockKey('⌫');
+});
+// ---------- configurações (dentro da escolha da princesa) ----------
+const AGE_HELP = {4: 'Letras, números até 5 e cores', 5: 'Contar, somas bem simples, primeiras palavras em inglês', 6: 'Somas e subtrações, completar palavras', 7: 'Contas maiores, ler frases curtas, mais inglês', 8: 'Problemas de dois passos, leitura e lógica', 9: 'Desafios mais elaborados em todas as matérias'};
+function profileAge(p) { return p.age || (/^(luize|louise)/i.test(p.name) ? 5 : /^carmel/i.test(p.name) ? 7 : 6); }
+function setProfileAge(p, a) {
+  p.age = a;
+  const base = a <= 5 ? 1 : a <= 6 ? 2 : a <= 7 ? 3 : 4;
+  p.edu = p.edu || {lv: {}, ok: {}, tot: {}, streak: {}, miss: {}, stars: 0, got: []};
+  SUBJ_KEYS.forEach(k => { p.edu.lv = p.edu.lv || {}; p.edu.lv[k] = base; p.edu.streak[k] = 0; p.edu.miss[k] = 0; });
+  saveNow();
+}
+let cfgTab = 'idade';
+function openSettings() {
+  sfx('click');
+  const onStart = !$('start').classList.contains('hidden');
+  if (onStart) document.body.classList.add('cfg-open');
+  openModal('⚙️ Configurações dos pais', body => {
+    body.innerHTML = '<p class="hello">Área dos pais: ajuste a idade de cada princesa e o código de entrada.</p>';
+    const tabs = h('<div class="tabs"></div>');
+    [['idade', '🎂 Idade e nível'], ['princesas', '👑 Princesas'], ['codigo', '🔒 Código de entrada'], ['sobre', 'ℹ️ Sobre']].forEach(([k, n]) => { const b = h(`<button class="tab ${cfgTab === k ? 'on' : ''}">${n}</button>`); b.onclick = () => { cfgTab = k; sfx('click'); rerender(); }; tabs.appendChild(b); });
+    body.appendChild(tabs);
+    if (cfgTab === 'idade') return renderCfgAge(body);
+    if (cfgTab === 'princesas') return renderCfgProfiles(body);
+    if (cfgTab === 'codigo') return renderCfgCode(body);
+    body.appendChild(h(`<div class="list"><div class="li"><div class="e">👑</div><div class="tx"><b>Mundo da Luize e da Carmel</b><small>Versão 2.5</small></div></div><div class="li"><div class="e">💾</div><div class="tx"><b>Progresso salvo neste aparelho</b><small>Moedas, roupas, pets e conquistas de cada princesa.</small></div></div><div class="li"><div class="e">🔐</div><div class="tx"><b>Sem compras, anúncios ou conversas abertas</b><small>Tudo acontece dentro do jogo, sem internet com estranhos.</small></div></div></div>`));
+    const rl = h('<button class="pill" style="margin-top:12px">🔒 Bloquear agora</button>');
+    rl.onclick = () => { closeModal(); relock(); };
+    body.appendChild(rl);
+  }, {onClose: () => { document.body.classList.remove('cfg-open'); if (onStart) renderProfiles(); }});
+}
+function renderCfgAge(body) {
+  body.appendChild(h('<p class="hello">O jogo ajusta sozinho a dificuldade dos desafios de matemática, leitura, inglês e lógica.</p>'));
+  SAVE.profiles.forEach(p => {
+    const a = profileAge(p);
+    const card = h(`<div class="cfgp"><div class="hd"><span class="av" style="${profileStyle(p)}">👑</span><div><b>${esc(p.name)}</b><small>${a} anos · ${esc(AGE_HELP[a] || '')}</small></div></div><div class="ages"></div></div>`);
+    const row = card.querySelector('.ages');
+    [4, 5, 6, 7, 8, 9].forEach(n => { const b = h(`<button class="tab ${a === n ? 'on' : ''}">${n}</button>`); b.onclick = () => { setProfileAge(p, n); sfx('click'); toast(p.name + ': desafios de ' + n + ' anos 🎓'); rerender(); }; row.appendChild(b); });
+    body.appendChild(card);
+  });
+  body.appendChild(h('<p class="hello">Mudar a idade reinicia o nível dos desafios. As moedas, roupas e pets continuam guardados.</p>'));
+}
+// Luize e Carmel são fixas: só princesas criadas depois podem ser apagadas
+const isDefaultProfile = p => SAVE.profiles.indexOf(p) < 2;
+function renderCfgProfiles(body) {
+  body.appendChild(h('<p class="hello">A Luize e a Carmel ficam sempre aqui. As princesas criadas depois podem ser apagadas.</p>'));
+  const list = h('<div class="list"></div>');
+  SAVE.profiles.forEach((p, i) => {
+    const fixed = isDefaultProfile(p), st = p.stats || {};
+    const li = h(`<div class="li"><span class="av2" style="${profileStyle(p)}">👑</span><div class="tx"><b>${esc(p.name)}</b><small>${profileAge(p)} anos · 🪙 ${p.coins} · 💖 ${p.hearts.length} · 🐾 ${p.pets.length}${fixed ? ' · princesa fixa' : ''}</small></div></div>`);
+    if (!fixed) {
+      const del = h('<button class="pill" aria-label="Apagar princesa">🗑️ Apagar</button>');
+      del.onclick = () => {
+        if (!del.dataset.sure) { del.dataset.sure = 1; del.textContent = 'Apagar mesmo?'; del.classList.add('danger'); setTimeout(() => { if (del.isConnected) { delete del.dataset.sure; del.textContent = '🗑️ Apagar'; del.classList.remove('danger'); } }, 4000); return; }
+        const nome = p.name;
+        SAVE.profiles.splice(SAVE.profiles.indexOf(p), 1);
+        if (P === p) P = null;
+        saveNow(); sfx('bad'); toast('Princesa ' + nome + ' apagada'); rerender();
+      };
+      li.appendChild(del);
+    }
+    list.appendChild(li);
+  });
+  body.appendChild(list);
+  const add = h('<button class="pill gold" style="margin-top:12px">✨ Criar nova princesa</button>');
+  add.onclick = () => { closeModal(); $('newProfile').click(); };
+  body.appendChild(add);
+  body.appendChild(h('<p class="hello">Apagar uma princesa remove as moedas, roupas e pets dela. Isso não pode ser desfeito.</p>'));
+}
+function renderCfgCode(body) {
+  const wrap = h(`<div class="cfgc">
+    <p class="hello">O código é pedido quando o jogo é aberto. Ele vale por ${UNLOCK_H} horas em cada aparelho.</p>
+    <div class="lbl2">Código atual</div><input type="password" inputmode="numeric" id="c0" maxlength="8" placeholder="código de agora">
+    <div class="lbl2">Novo código (4 a 8 números)</div><input type="password" inputmode="numeric" id="c1" maxlength="8" placeholder="novo código">
+    <div class="lbl2">Repita o novo código</div><input type="password" inputmode="numeric" id="c2" maxlength="8" placeholder="repita">
+    <p class="cmsg"></p><div class="row"><button class="pill main">Salvar novo código</button><button class="pill" id="cShow">👁️ Mostrar</button></div></div>`);
+  body.appendChild(wrap);
+  const msg = wrap.querySelector('.cmsg'), ins = [...wrap.querySelectorAll('input')];
+  ins.forEach(i => i.oninput = () => { i.value = i.value.replace(/\D/g, ''); });
+  wrap.querySelector('#cShow').onclick = () => { const show = ins[0].type === 'password'; ins.forEach(i => i.type = show ? 'text' : 'password'); wrap.querySelector('#cShow').textContent = show ? '🙈 Esconder' : '👁️ Mostrar'; };
+  wrap.querySelector('.pill.main').onclick = () => {
+    const [a, b, c] = ins.map(i => i.value.trim());
+    const fail = t => { msg.textContent = t; msg.className = 'cmsg bad'; sfx('bad'); };
+    if (a !== gameCode()) return fail('O código atual não confere.');
+    if (!/^\d{4,8}$/.test(b)) return fail('O novo código precisa ter de 4 a 8 números.');
+    if (b !== c) return fail('Os dois códigos novos não são iguais.');
+    SAVE.code = b; saveNow(); markUnlocked(); sfx('win');
+    msg.textContent = '✅ Código alterado! Guarde bem: ' + b; msg.className = 'cmsg ok';
+    ins.forEach(i => i.value = '');
+  };
+  body.appendChild(h(`<p class="hello">Se esquecer o código, o padrão de fábrica é <b>${CODE_DEFAULT}</b>, válido enquanto ninguém o trocar.</p>`));
+}
+// botão de configurações na tela de escolha
+(function () {
+  const box = $('newProfile').parentNode;
+  const b = h('<button class="pill" id="btnCfg" style="margin-left:8px">⚙️ Configurações</button>');
+  b.onclick = openSettings;
+  $('newProfile').after(b);
+})();
+// ---------- início: pede o código antes de tudo ----------
+(function () {
+  if (unlockedRecently()) return;
+  showLock();
+})();
 
 })();
 </script>
