@@ -503,6 +503,38 @@ body.mob #modal .sheet.wide .mh{display:none}
 #fsHelp p{margin:4px 0 10px;font-weight:700;color:var(--soft);font-size:14.5px}
 #fsHelp ol{text-align:left;margin:0 0 12px;padding-left:20px;font-weight:700;font-size:15px;line-height:1.5}
 #fsHelp .row{justify-content:center;gap:8px}
+/* mapa do universo no celular: mundo inteiro visível, sem rolagem */
+body.mob #modal .sheet.wide #mBody{display:flex;flex-direction:column;overflow:hidden;padding:6px 10px 8px;gap:4px;height:100%}
+body.mob #modal .sheet.wide header{padding:6px 8px 4px 14px}
+body.mob #modal .sheet.wide h2{font-size:18px}
+body.mob #modal .sheet.wide #mClose{width:36px;height:36px}
+body.mob .sheet.wide .xp{margin:0}
+body.mob .sheet.wide .xp .xpbar{height:10px}
+body.mob .sheet.wide .xp b{font-size:15px;margin-top:2px}
+body.mob .sheet.wide .xp small{font-size:11px;line-height:1.2;display:block}
+body.mob .sheet.wide .tabs{padding:0;margin:0}
+body.mob .sheet.wide .tabs .tab{padding:4px 10px;font-size:13px}
+body.mob .sheet.wide .uni{flex:1 1 auto;min-height:0;aspect-ratio:auto;margin:2px 0;border-radius:18px}
+body.mob .sheet.wide .ufav{display:none}
+body.mob .sheet.wide .isl{width:auto;min-width:0;aspect-ratio:1;height:13%;border-width:3px}
+body.mob .sheet.wide .isl .ie{font-size:min(4.4vh,22px)}
+body.mob .sheet.wide .isl .in{font-size:9.5px;margin-top:0;max-width:19vw;white-space:normal;line-height:1.05}
+body.mob .sheet.wide .isl .il,body.mob .sheet.wide .isl .ip{font-size:9px;padding:0 4px;right:-5px;top:-5px}
+body.mob .sheet.wide .wcard{flex:0 0 auto;grid-template-columns:1fr;padding:6px 8px;border-width:3px;max-height:34%;overflow:auto}
+body.mob .sheet.wide .wcard .wmini{display:none}
+body.mob .sheet.wide .wcard .wch .ie{width:40px;height:40px;font-size:22px}
+body.mob .sheet.wide .wcard .wch b{font-size:16px}
+body.mob .sheet.wide .wcard .wch small{font-size:12px}
+body.mob .sheet.wide .wcard .how{margin:2px 0 6px;font-size:13px}
+body.mob .sheet.wide .wcard .wcb small{margin:2px 0}
+body.mob .sheet.wide #fullmap{flex:1 1 auto;min-height:0;width:auto;max-width:100%;height:auto;max-height:100%;object-fit:contain;align-self:center;margin:0}
+body.mob .sheet.wide #mBody > .hello{flex:0 0 auto;font-size:12px;margin:2px 0 0;line-height:1.25}
+body.land #modal .sheet.wide #mBody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,38%);grid-template-rows:auto auto minmax(0,1fr);column-gap:8px;row-gap:2px;align-content:start}
+body.land .sheet.wide .xp,body.land .sheet.wide .tabs{grid-column:1/-1}
+body.land .sheet.wide .uni{grid-column:1;grid-row:3;width:100%;height:100%;aspect-ratio:auto;margin:0}
+body.land .sheet.wide .wcard{grid-column:2;grid-row:3;max-height:100%;margin:0}
+body.land .sheet.wide .isl{height:15%}
+body.land .sheet.wide .isl .in{font-size:9px;max-width:11vw}
 </style>
 </head>
 <body>
