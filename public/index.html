@@ -6744,7 +6744,7 @@ frame();
 // ---------- TRAVA POR CÓDIGO E CONFIGURAÇÕES DOS PAIS ----------
 const CODE_DEFAULT = '021100', CODE_KEY = 'mundo-destrava', UNLOCK_H = 4;
 // carimbo do build: o valor é trocado pelo build.py na hora de gerar o index.html
-const BUILD_VER = '3.4', BUILD_AT = '2026-10-20T08:53:34';
+const BUILD_VER = '3.4', BUILD_AT = '2026-10-20T09:22:38';
 function buildLabel() {
   const iso = /^\d{4}-\d{2}-\d{2}T/.test(BUILD_AT) ? BUILD_AT : null;
   if (!iso) return 'versão ' + BUILD_VER;
@@ -7491,7 +7491,7 @@ onFrame((dt, t) => {
   rideObj.visible = !player.riding;
   if (!rideObj.visible) return;
   rideObj.position.set(player.pos.x, player.pos.y, player.pos.z);
-  rideObj.rotation.y = player.yaw + Math.PI;
+  rideObj.rotation.y = player.yaw;
   // na carruagem a princesa vai sentada lá dentro
   if (avatarObj && avatarObj.group) avatarObj.group.position.y = player.pos.y + (rideId === 'carruagem' ? 1.15 : rideId === 'patinete' ? 0.42 : rideId === 'patins' ? 0.2 : 0.6);
   const v = (player.speed || 0);
