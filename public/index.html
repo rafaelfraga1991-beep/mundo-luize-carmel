@@ -479,6 +479,8 @@ input[type=text]{font:inherit;font-size:18px;font-weight:700;padding:8px 12px;bo
 #start .box{width:min(640px,100%);max-height:100%;overflow:auto;text-align:center;padding:clamp(12px,2.6vh,22px) 20px;touch-action:pan-y}
 #start h1{margin:0;font-size:clamp(22px,min(6vw,5.2vh),42px);line-height:1.05;color:var(--pink);text-shadow:0 3px 0 #fff}
 #start .sub{margin:4px 0 clamp(8px,1.8vh,18px);font-weight:700;color:var(--soft);font-size:clamp(14px,2.2vh,18px)}
+.build{margin:0 0 clamp(8px,1.6vh,14px);font-weight:700;color:var(--soft);opacity:.75;font-size:clamp(11px,1.6vh,13px)}
+#lock .build{margin:2px 0 6px}
 .profiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(140px,40vw),1fr));gap:clamp(8px,1.6vh,12px);margin-bottom:clamp(8px,1.6vh,14px)}
 .pf{border:3px solid var(--line);border-radius:22px;padding:clamp(8px,1.6vh,14px) 10px 10px;background:var(--card-solid);display:flex;flex-direction:column;align-items:center;gap:6px}
 .pf .av{width:clamp(54px,9vh,84px);height:clamp(54px,9vh,84px);border-radius:50%;display:grid;place-items:center;font-size:clamp(28px,5vh,44px);border:4px solid #fff;box-shadow:var(--shadow)}
@@ -627,7 +629,7 @@ body.land .sheet.wide .isl .in{font-size:9px;max-width:11vw}
 <div id="reveal" class="hidden"></div>
 <div id="cart" class="card hidden"></div>
 <div id="lock" class="hidden"></div>
-<div id="start"><div class="box card"><h1>👑 Mundo da Luize e da Carmel</h1><p class="sub">Escolha sua princesa · versão 2.5</p><div class="profiles" id="profiles"></div><button class="pill gold" id="newProfile">✨ Criar nova princesa</button><p class="note">O progresso fica salvo e cada princesa tem suas moedas, roupas e castelo.</p></div></div>
+<div id="start"><div class="box card"><h1>👑 Mundo da Luize e da Carmel</h1><p class="sub">Escolha sua princesa</p><p class="build" id="buildStart"></p><div class="profiles" id="profiles"></div><button class="pill gold" id="newProfile">✨ Criar nova princesa</button><p class="note">O progresso fica salvo e cada princesa tem suas moedas, roupas e castelo.</p></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 window.addEventListener('error', e => { const t = document.getElementById('toast'); if (t) { t.textContent = 'Erro: ' + e.message; t.style.fontSize = '15px'; t.classList.add('show'); } });
@@ -6565,6 +6567,16 @@ frame();
 
 // ---------- TRAVA POR CÓDIGO E CONFIGURAÇÕES DOS PAIS ----------
 const CODE_DEFAULT = '021100', CODE_KEY = 'mundo-destrava', UNLOCK_H = 4;
+// carimbo do build: o valor é trocado pelo build.py na hora de gerar o index.html
+const BUILD_VER = '3.4', BUILD_AT = '2026-10-19T21:24:38';
+function buildLabel() {
+  const iso = /^\d{4}-\d{2}-\d{2}T/.test(BUILD_AT) ? BUILD_AT : null;
+  if (!iso) return 'versão ' + BUILD_VER;
+  const d = new Date(iso);
+  const p = n => String(n).padStart(2, '0');
+  return 'versão ' + BUILD_VER + ' · publicada em ' + p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() + ' às ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+addEventListener('DOMContentLoaded', () => { const el = $('buildStart'); if (el) el.textContent = buildLabel(); });
 function gameCode() { return (SAVE.code && /^\d{4,8}$/.test(SAVE.code)) ? SAVE.code : CODE_DEFAULT; }
 function unlockedRecently() {
   try { const t = +localStorage.getItem(CODE_KEY); return t && Date.now() - t < UNLOCK_H * 3600 * 1000; } catch (e) { return false; }
@@ -6584,6 +6596,7 @@ function renderLock(msg, bad) {
     <div class="lk-crown">👑</div>
     <h1>Mundo da Luize<br>e da Carmel</h1>
     <p class="lk-sub">${esc(msg || 'Digite o código para entrar')}</p>
+    <p class="build">${esc(buildLabel())}</p>
     <div class="lk-dots ${bad ? 'bad' : ''}">${Array.from({length: n}, (_, i) => `<span class="${i < lockTyped.length ? 'on' : ''}"></span>`).join('')}</div>
     <div class="lk-pad"></div>
     <button class="lk-forgot">Esqueci o código</button></div>`;
@@ -6638,7 +6651,7 @@ function openSettings() {
     if (cfgTab === 'idade') return renderCfgAge(body);
     if (cfgTab === 'princesas') return renderCfgProfiles(body);
     if (cfgTab === 'codigo') return renderCfgCode(body);
-    body.appendChild(h(`<div class="list"><div class="li"><div class="e">👑</div><div class="tx"><b>Mundo da Luize e da Carmel</b><small>Versão 2.5</small></div></div><div class="li"><div class="e">💾</div><div class="tx"><b>Progresso salvo neste aparelho</b><small>Moedas, roupas, pets e conquistas de cada princesa.</small></div></div><div class="li"><div class="e">🔐</div><div class="tx"><b>Sem compras, anúncios ou conversas abertas</b><small>Tudo acontece dentro do jogo, sem internet com estranhos.</small></div></div></div>`));
+    body.appendChild(h(`<div class="list"><div class="li"><div class="e">👑</div><div class="tx"><b>Mundo da Luize e da Carmel</b><small>${esc(buildLabel())}</small></div></div><div class="li"><div class="e">💾</div><div class="tx"><b>Progresso salvo neste aparelho</b><small>Moedas, roupas, pets e conquistas de cada princesa.</small></div></div><div class="li"><div class="e">🔐</div><div class="tx"><b>Sem compras, anúncios ou conversas abertas</b><small>Tudo acontece dentro do jogo, sem internet com estranhos.</small></div></div></div>`));
     const rl = h('<button class="pill" style="margin-top:12px">🔒 Bloquear agora</button>');
     rl.onclick = () => { closeModal(); relock(); };
     body.appendChild(rl);
