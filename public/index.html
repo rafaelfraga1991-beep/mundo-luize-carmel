@@ -578,6 +578,8 @@ body.land .sheet.wide .isl .in{font-size:9px;max-width:11vw}
 .lk-look img{width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .3s}
 .li .av2{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:20px;border:3px solid #fff;box-shadow:0 2px 0 rgba(90,42,122,.2)}
 .pill.danger{background:#e03131;color:#fff;box-shadow:0 3px 0 #a51111}
+.li .ok2{font-weight:800;color:#2b8a3e;font-size:20px;flex:none}
+#clockChip{font-size:17px;margin-left:2px}
 /* sem barras de rolagem visíveis */
 *{scrollbar-width:none;-ms-overflow-style:none}
 *::-webkit-scrollbar{width:0;height:0;display:none}
@@ -1334,6 +1336,51 @@ W('e_arcoiris', 'Brincos Arco-Íris', 'ears', {st: 'coracao', c: '#ff6b6b', un: 
 // asas e magia
 W('k_asas_fenix', 'Asas de Fênix', 'back', {st: 'asas', c: '#ff922b', cat: 'magicos', un: uStars(24), rar: 'lendario', col: 'festa'});
 W('w_varinha_estelar', 'Varinha Estelar', 'hand', {st: 'varinha_estrela', c: '#5f3dc4', cat: 'magicos', un: uEdu2({mat: 4, log: 4}), rar: 'epico', col: 'estrelas'});
+
+W('a_tiara_escola', 'Tiara da Melhor Aluna', 'head', {st: 'diadema', c: '#ffd43b', c2: '#4dabf7', un: {type: 'city', id: 'escola_predio'}, rar: 'raro', col: 'escola'});
+
+// ---------- PRÉDIOS VISITÁVEIS NOS OUTROS MUNDOS ----------
+// Cada um ganha fachada no mundo (04d) e um interior navegável (04d/07f).
+// face: 1 porta para +x, -1 para -x, 0 para -z, 2 para +z
+const WORLD_BUILDINGS = [
+  // Jardim das Borboletas
+  {id: 'estufa', world: 'borboletas', n: 'Estufa das Flores', e: '🌺', x: 34, z: -14, face: 2, w: 12, d: 9, h: 7, col: '#69db7c', roof: '#2b8a3e', theme: 'lei', tema: 'Nomes das flores', deco: ['#ff8cc6', '#ffd43b']},
+  {id: 'casa_flora', world: 'borboletas', n: 'Casa da Jardineira Flora', e: '🏡', x: -46, z: -26, face: 2, w: 10, d: 8, h: 6, col: '#ffd6ea', roof: '#e64980', kind: 'house'},
+  // Feira Mágica
+  {id: 'tenda', world: 'feira', n: 'Tenda da Sorte', e: '🔮', x: -2, z: -34, face: 2, w: 11, d: 9, h: 7, col: '#9c36b5', roof: '#5f3dc4', theme: 'log', tema: 'Adivinhe a sequência', deco: ['#ffd43b', '#e599f7']},
+  {id: 'doceria_feira', world: 'feira', n: 'Doceria da Feira', e: '🍬', x: 34, z: -30, face: 2, w: 11, d: 9, h: 6.5, col: '#ff8cc6', roof: '#c2255c', theme: 'mat', tema: 'Conte os docinhos', deco: ['#ffe066', '#ff6b6b']},
+  // Cidade Fashion
+  {id: 'boutique', world: 'fashion', n: 'Boutique Glamour', e: '👗', x: -26, z: 22, face: 1, w: 13, d: 10, h: 8, col: '#ff6b9d', roof: '#a61e4d', theme: 'lei', tema: 'Leitura de etiquetas', deco: ['#ffd43b', '#ffffff']},
+  {id: 'salao', world: 'fashion', n: 'Salão de Beleza Brilho', e: '💇‍♀️', x: 26, z: 22, face: -1, w: 13, d: 10, h: 8, col: '#b197fc', roof: '#6741d9', theme: 'log', tema: 'Penteado combinando', deco: ['#ff8cc6', '#ffd43b']},
+  // Parque das Cores
+  {id: 'atelie_cores', world: 'cores', n: 'Ateliê das Cores', e: '🖌️', x: 0, z: -8, face: 2, w: 13, d: 10, h: 7, col: '#ff6b6b', roof: '#c92a2a', theme: 'log', tema: 'Cores e formas', deco: ['#4dabf7', '#ffd43b']},
+  {id: 'oficina_tinta', world: 'cores', n: 'Oficina de Tintas', e: '🎨', x: -34, z: 18, face: 1, w: 11, d: 9, h: 6.5, col: '#4dabf7', roof: '#1864ab', theme: 'mat', tema: 'Misture as medidas', deco: ['#ff922b', '#69db7c']},
+  // Escola Encantada
+  {id: 'escola_predio', world: 'escola', n: 'Escola Encantada', e: '🏫', x: 0, z: -24, face: 2, w: 16, d: 12, h: 9, col: '#ffd43b', roof: '#e67700', theme: 'sala', tema: 'Aula do dia'},
+  {id: 'biblioteca_esc', world: 'escola', n: 'Biblioteca da Escola', e: '📚', x: 32, z: -20, face: 2, w: 12, d: 9, h: 7, col: '#69db7c', roof: '#2b8a3e', theme: 'lei', tema: 'Hora da leitura', deco: ['#4dabf7', '#ffd43b']},
+  // Bosque dos Animais
+  {id: 'cabana', world: 'bosque', n: 'Cabana do Guarda Téo', e: '🪵', x: -32, z: -18, face: 2, w: 11, d: 9, h: 6.5, col: '#c99a5b', roof: '#5f3a1e', theme: 'ing', tema: 'Animais em inglês', deco: ['#69db7c', '#ffd43b']},
+  {id: 'abrigo', world: 'bosque', n: 'Abrigo dos Bichinhos', e: '🐾', x: 34, z: 20, face: 0, w: 12, d: 9, h: 7, col: '#ffe066', roof: '#d9480f', theme: 'pets', tema: 'Cuidar dos bichinhos'},
+  // Mundo Aquático
+  {id: 'palacio_conchas', world: 'aquatico', n: 'Palácio das Conchas', e: '🐚', x: -30, z: 24, face: 2, w: 13, d: 10, h: 8, col: '#63e6be', roof: '#0ca678', theme: 'mat', tema: 'Conte os peixinhos', deco: ['#74c0fc', '#ffd6ea']},
+  {id: 'navio', world: 'aquatico', n: 'Navio Adormecido', e: '🚢', x: -16, z: -32, face: 2, w: 12, d: 9, h: 7, col: '#8a5a3a', roof: '#5f3a1e', theme: 'log', tema: 'Tesouro do navio', deco: ['#ffd43b', '#e7f5ff']},
+  // Parque das Estrelas
+  {id: 'observatorio', world: 'estrelas', n: 'Observatório', e: '🔭', x: 28, z: -18, face: 2, w: 13, d: 10, h: 8, col: '#7950f2', roof: '#3b2f7a', theme: 'log', tema: 'Constelações', deco: ['#ffe066', '#e599f7']},
+  {id: 'planetario', world: 'estrelas', n: 'Planetário', e: '🪐', x: -30, z: 20, face: 1, w: 12, d: 10, h: 8, col: '#4c3fa0', roof: '#242060', theme: 'ing', tema: 'Planetas em inglês', deco: ['#ff922b', '#74c0fc']},
+  // Reino dos Unicórnios
+  {id: 'palacio_uni', world: 'unicornios', n: 'Palácio dos Unicórnios', e: '🏰', x: 0, z: -28, face: 2, w: 16, d: 12, h: 10, col: '#ffd6ea', roof: '#9775fa', theme: 'trono', tema: 'Salão do Trono'},
+  {id: 'estabulo', world: 'unicornios', n: 'Estábulo Encantado', e: '🦄', x: -32, z: 16, face: 2, w: 13, d: 9, h: 7, col: '#ffe066', roof: '#e64980', theme: 'pets', tema: 'Cuidar dos unicórnios'},
+  // Terra do Arco-Íris
+  {id: 'casa_cores', world: 'arcoiris', n: 'Casa das Sete Cores', e: '🏘️', x: -36, z: -34, face: 2, w: 11, d: 9, h: 6.5, col: '#ff6b6b', roof: '#c92a2a', kind: 'house'},
+  {id: 'torre_prisma', world: 'arcoiris', n: 'Torre da Fada Prisma', e: '🌈', x: 34, z: -22, face: 2, w: 12, d: 10, h: 9, col: '#b197fc', roof: '#6741d9', theme: 'log', tema: 'Ordem do arco-íris', deco: ['#ff6b6b', '#4dabf7']}];
+// registra do mesmo jeito que os prédios da Cidade Alegre
+WORLD_BUILDINGS.forEach(b => {
+  const i = BUILDINGS.length;
+  b.area = 'in_' + b.id; b.ix = 3000 + i * 80; b.iz = -3000;
+  AREAS[b.area] = {cx: b.ix, cz: b.iz, half: 11, sky: 0xfff0f6, spawn: [b.ix, b.iz + 8]};
+  REGIONS.push({id: b.area, n: b.n, x: b.ix, z: b.iz, r: 14, col: b.col, e: b.e, area: b.area, building: b.id});
+  BUILDINGS.push(b);
+});
 
 // ---------- estado e salvamento ----------
 const SAVE_KEY = 'mundo-princesas-v1';
@@ -2915,8 +2962,11 @@ const cRect = (x, z, w, d, col) => mapRect('w_cidade', CX + x, CZC + z, w, d, co
 function prism(w, h, d, c) { const sh = new THREE.Shape(); sh.moveTo(-w / 2, 0); sh.lineTo(w / 2, 0); sh.lineTo(0, h); sh.closePath(); const g = new THREE.ExtrudeGeometry(sh, {depth: d, bevelEnabled: true, bevelSize: 0.2, bevelThickness: 0.2, bevelSegments: 2}); g.translate(0, 0, -d / 2); return mesh(g, c); }
 const BUILD = {};
 BUILDINGS.forEach(b => {
+  const home = b.world ? W_BY[b.world] : null;
+  const OX = home ? home.cx : CX, OZ = home ? home.cz : CZC, ARE = home ? home.area : 'w_cidade';
+  const bRect = (x, z, w2, d2, col) => mapRect(ARE, OX + x, OZ + z, w2, d2, col);
   const rot = b.face === 1 ? Math.PI / 2 : b.face === -1 ? -Math.PI / 2 : b.face === 2 ? 0 : Math.PI;
-  const g = new THREE.Group(); g.position.set(CX + b.x, 0, CZC + b.z); g.rotation.y = rot; scene.add(g);
+  const g = new THREE.Group(); g.position.set(OX + b.x, 0, OZ + b.z); g.rotation.y = rot; scene.add(g);
   const {w, d, h} = b;
   put(g, box(w, h, d, b.col), 0, h / 2, 0);
   if (b.kind === 'house') {
@@ -2939,12 +2989,12 @@ BUILDINGS.forEach(b => {
   put(g, box(2.1, 3.2, 0.2, b.kind === 'house' ? '#9a5530' : '#ff8cc6'), 0, 1.6, d / 2 + 0.16);
   put(g, sph(0.12, shiny('#ffd43b', .5)), 0.7, 1.6, d / 2 + 0.3);
   const sw = Math.abs(Math.sin(rot)) > 0.5;
-  addRect(CX + b.x, CZC + b.z, sw ? d : w, sw ? w : d);
-  cRect(b.x, b.z, sw ? d : w, sw ? w : d, b.kind === 'house' ? b.roof : b.col);
+  addRect(OX + b.x, OZ + b.z, sw ? d : w, sw ? w : d);
+  bRect(b.x, b.z, sw ? d : w, sw ? w : d, b.kind === 'house' ? b.roof : b.col);
   const fx = Math.sin(rot), fz = Math.cos(rot);
-  b.door = {x: CX + b.x + fx * (d / 2 + 2), z: CZC + b.z + fz * (d / 2 + 2), yaw: Math.atan2(fx, fz)};
-  poi(b.door.x, b.door.z, b.e, b.n, 'w_cidade');
-  reserve(CX + b.x, CZC + b.z, Math.max(w, d) * 0.75);
+  b.door = {x: OX + b.x + fx * (d / 2 + 2), z: OZ + b.z + fz * (d / 2 + 2), yaw: Math.atan2(fx, fz)};
+  poi(b.door.x, b.door.z, b.e, b.n, ARE);
+  reserve(OX + b.x, OZ + b.z, Math.max(w, d) * 0.75);
   BUILD[b.id] = b;
 });
 (function () {
@@ -3083,8 +3133,41 @@ function productModel(pid) {
   else if (pid === 'leite') { put(g, box(0.3, 0.5, 0.3, '#ffffff'), 0, 0.05, 0); put(g, box(0.31, 0.15, 0.31, '#4dabf7'), 0, 0.1, 0); }
   return g;
 }
+INTERIOR.sala = b => { const {X, Z} = room(b, '#ffe8cc', '#ffd43b', '#e67700');
+  // lousa, carteiras e mapa
+  at(box(10, 4, 0.4, '#2b8a3e'), X, 4, Z - 11.6); at(box(9.4, 3.4, 0.2, '#37b24d'), X, 4, Z - 11.4);
+  at(box(10.4, 0.4, 0.5, '#c99a5b'), X, 1.9, Z - 11.5);
+  const lousa = canvasTex(512, 256, g => { g.fillStyle = '#2f9e44'; g.fillRect(0, 0, 512, 256); g.strokeStyle = '#ffffff'; g.lineWidth = 6; g.font = '800 70px "Baloo 2", system-ui'; g.fillStyle = '#ffffff'; g.textAlign = 'center'; g.fillText('A B C  1 2 3', 256, 110); g.font = '700 42px "Baloo 2", system-ui'; g.fillText('cat · dog · sun', 256, 190); });
+  const lb = new THREE.Mesh(new THREE.PlaneGeometry(9, 4.2), new THREE.MeshBasicMaterial({map: lousa})); lb.position.set(X, 4, Z - 11.3); scene.add(lb);
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) { const x = X - 6 + c * 6, z = Z - 4 + r * 5;
+    at(box(3.4, 0.25, 2, '#c99a5b'), x, 1.4, z); [-1, 1].forEach(k => at(box(0.25, 1.4, 0.25, '#adb5bd'), x + k * 1.5, 0.7, z));
+    at(cyl(0.6, 0.6, 0.5, 12, ['#ff8cc6', '#74c0fc', '#ffd43b'][(r + c) % 3]), x, 0.25, z + 1.6);
+    at(box(0.8, 0.1, 0.6, '#ffffff'), x - 0.8, 1.56, z); addRect(x, z, 3.4, 2, 1.5); }
+  at(box(4, 3, 0.2, '#74c0fc'), X + 10.5, 4, Z + 2).rotation.y = -Math.PI / 2;
+  return {npc: [X - 3, Z - 9.4], job: [X, Z - 7, '🏫 Participar da aula']};
+};
+INTERIOR.trono = b => { const {X, Z} = room(b, '#f3e8ff', '#d0bfff', '#7950f2');
+  // tapete, trono e colunas
+  at(mesh(new THREE.BoxGeometry(6, 0.1, 20), mat('#e64980'), false), X, 0.08, Z);
+  [-1, 1].forEach(k => [0, 1, 2].forEach(i => { at(cyl(0.7, 0.8, 7, 14, '#ffffff'), X + k * 8, 3.5, Z - 6 + i * 6); addCircle(X + k * 8, Z - 6 + i * 6, 0.9, 7); }));
+  at(box(5, 1.2, 4, '#ffd43b'), X, 0.6, Z - 8); at(box(3.4, 4.6, 1.2, '#b197fc'), X, 3.2, Z - 9.4);
+  at(box(3.6, 0.4, 2.6, '#ff8cc6'), X, 1.4, Z - 8.4);
+  [-1, 1].forEach(k => at(mesh(new THREE.SphereGeometry(0.4, 12, 10), shiny('#ffd43b', .6)), X + k * 1.6, 5.6, Z - 9.4));
+  at(mesh(new THREE.TorusGeometry(1.4, 0.2, 8, 20), shiny('#ffd43b', .6)), X, 6.4, Z - 9.4);
+  [[-7, 6], [7, 6]].forEach(([dx, dz]) => { const o = buildPet('p_unicornio'); o.group.position.set(X + dx, 0, Z + dz); o.group.rotation.y = -dx * 0.1; scene.add(o.group); addCircle(X + dx, Z + dz, 1, 2); });
+  return {npc: [X + 2.5, Z - 7], job: [X, Z - 5, '👑 Falar com a Guardiã']};
+};
+INTERIOR.pets = b => { const {X, Z} = room(b, '#fff3d6', '#ffe066', '#e67700');
+  for (let i = 0; i < 6; i++) { const x = X - 8 + (i % 3) * 8, z = Z - 6 + Math.floor(i / 3) * 10;
+    at(cyl(1.5, 1.6, 0.5, 18, ['#ffc2e2', '#a5d8ff', '#d8f5a2'][i % 3]), x, 0.25, z);
+    at(mesh(new THREE.TorusGeometry(1.5, 0.3, 8, 22), mat('#ffffff')), x, 0.5, z).rotation.x = Math.PI / 2;
+    addCircle(x, z, 1.6, 0.6); }
+  at(box(4, 3.6, 1.2, '#ffffff'), X + 9.5, 1.8, Z - 9); for (let i = 0; i < 3; i++) at(box(3.6, 0.12, 1.1, '#ff922b'), X + 9.5, 1 + i * 1.1, Z - 8.6);
+  const toy = new THREE.Group(); put(toy, box(1.8, 1.1, 1.3, '#ff6b6b'), 0, 0.55, 0); ['#ffd43b', '#4dabf7', '#69db7c'].forEach((c, i) => put(toy, sph(0.28, mat(c)), -0.5 + i * 0.5, 1.3, 0)); toy.position.set(X - 9.5, 0, Z + 4); scene.add(toy); addCircle(X - 9.5, Z + 4, 1, 1.6);
+  return {npc: [X, Z - 9], job: [X, Z - 6.4, b.e + ' ' + b.tema]};
+};
 const INT = {};
-BUILDINGS.forEach(b => { INT[b.id] = (INTERIOR[b.id] || (b.kind === 'house' ? INTERIOR.house : INTERIOR.generic))(b); interact({x: b.door.x, z: b.door.z, r: 3, text: () => '🚪 Entrar: ' + b.n, act: () => enterBuilding(b.id)}); });
+BUILDINGS.forEach(b => { INT[b.id] = (INTERIOR[b.id] || (b.kind === 'house' ? INTERIOR.house : INTERIOR[b.theme] || INTERIOR.generic))(b); interact({x: b.door.x, z: b.door.z, r: 3, text: () => '🚪 Entrar: ' + b.n, act: () => enterBuilding(b.id)}); });
 
 // ---------- MUNDOS MAIS VIVOS: construções, bichinhos e detalhes ----------
 // Helpers curtinhos usados por todos os mundos
@@ -3540,7 +3623,7 @@ const HEARTS_WORLD = [
   ...NEW_WORLDS.map(w => ['h_w_' + w.id].concat(W_EXTRA[w.id].heart)),
   ['h_nuvem1', 440, 1.4, 40], ['h_nuvem2', 390, 7.4, -38], ['h_nuvem3', 388, 10.2, -60],
   ['h_sacada', 12, 5.6, -599], ['h_gelo1', -387, 8.6, -48], ['h_gelo2', -430, 1.4, 12], ['h_gelo3', -400, 1.4, -55]];
-const REWARD_HEARTS = ['hr_burger', 'hr_sorvete', 'hr_mercado', 'hr_vet', 'hr_livraria', 'hr_guarda', 'hr_prisma', 'hr_mapa', 'hr_coroacao', 'hr_rafa', 'hr_marina', 'hr_luiz', 'hr_sabio', 'hr_desfile', 'hr_danca', 'hr_tesouro'];
+const REWARD_HEARTS = ['hr_trono', 'hr_cuidar', 'hr_burger', 'hr_sorvete', 'hr_mercado', 'hr_vet', 'hr_livraria', 'hr_guarda', 'hr_prisma', 'hr_mapa', 'hr_coroacao', 'hr_rafa', 'hr_marina', 'hr_luiz', 'hr_sabio', 'hr_desfile', 'hr_danca', 'hr_tesouro'];
 const TOTAL_HEARTS = HEARTS_WORLD.length + REWARD_HEARTS.length;
 const heartMeshes = HEARTS_WORLD.map(([id, x, y, z]) => {
   const m = mesh(heartGeo, new THREE.MeshPhongMaterial({map: patternTex('rainbow', '#fff'), emissive: '#ff5fa8', emissiveIntensity: .35, shininess: 120}));
@@ -4156,7 +4239,7 @@ function openDiary() {
     [['cid', '🏙️ Cidade e pets'], ['edu', '🎓 Aprendizado'], ['ach', '🏅 Conquistas'], ['col', '🍓 Coleções'], ['mis', '📜 Missões'], ['reg', '🗺️ Regiões']].forEach(([k, n]) => { const b = h(`<button class="tab ${k === tab ? 'on' : ''}">${n}</button>`); b.onclick = () => { tab = k; rerender(); }; tabs.appendChild(b); });
     body.appendChild(tabs);
     const list = h('<div class="list"></div>');
-    if (tab === 'cid') { const cp = cityProgress(); [['🐾', 'Pets descobertos', cp.pets + ' de ' + PET_IDS.length], ['🏙️', 'Lugares da cidade visitados', cp.shops + ' de ' + BUILDINGS.length], ['🎁', 'Baús de tesouro abertos', cp.chests + ' de ' + TREASURES.length], ['💎', 'Peças raras, épicas e lendárias', cp.rare + ' no guarda-roupa'], ['🌍', 'Mundos 100% explorados', cp.full + ' de ' + UNIVERSE.length], ['💬', 'Moradores que você conheceu', cityState().talked.length + '']].forEach(([e, n, v]) => list.appendChild(h(`<div class="li"><div class="e">${e}</div><div class="tx"><b>${esc(v)}</b><small>${esc(n)}</small></div></div>`))); }
+    if (tab === 'cid') { const cp = cityProgress(); [['🐾', 'Pets descobertos', cp.pets + ' de ' + PET_IDS.length], ['🏠', 'Lugares visitados', cp.shops + ' de ' + BUILDINGS.length], ['🎁', 'Baús de tesouro abertos', cp.chests + ' de ' + TREASURES.length], ['💎', 'Peças raras, épicas e lendárias', cp.rare + ' no guarda-roupa'], ['🌍', 'Mundos 100% explorados', cp.full + ' de ' + UNIVERSE.length], ['💬', 'Moradores que você conheceu', cityState().talked.length + '']].forEach(([e, n, v]) => list.appendChild(h(`<div class="li"><div class="e">${e}</div><div class="tx"><b>${esc(v)}</b><small>${esc(n)}</small></div></div>`))); }
     if (tab === 'edu') { ensureEdu(); const E = P.edu; list.appendChild(h(`<div class="li"><div class="e">⭐</div><div class="tx"><b>${E.stars} Estrelas do Saber</b><small>${totalCorrect()} desafios certos no total</small></div></div>`)); SUBJ_KEYS.forEach(k => { const S = SUBJ[k], pct = E.tot[k] ? Math.round(100 * E.ok[k] / E.tot[k]) : 0; list.appendChild(h(`<div class="li"><div class="e">${S.e}</div><div class="tx"><b>${S.n} · Nível ${E.lv[k]} de 5</b><small>${E.ok[k]} acertos${E.tot[k] ? ' · ' + pct + '% de primeira ou depois de tentar' : ''}</small></div></div>`)); }); const ag = h('<div class="li"><div class="e">🎂</div><div class="tx"><b>Idade da princesa</b><small>Ajusta o nível inicial dos desafios</small></div></div>'); const row = h('<div class="tabs" style="flex-wrap:wrap;margin-top:4px"></div>'); [4, 5, 6, 7, 8, 9].forEach(a => { const b = h(`<button class="tab ${P.age === a ? 'on' : ''}">${a} anos</button>`); b.onclick = () => { setAge(a); rerender(); }; row.appendChild(b); }); list.appendChild(ag); list.appendChild(row); }
     if (tab === 'ach') ACHIEVEMENTS.forEach(a => list.appendChild(h(`<div class="li ${P.ach.includes(a.id) ? '' : 'off'}"><div class="e">${a.e}</div><div class="tx"><b>${esc(a.n)}</b><small>${esc(a.d)}</small></div>${P.ach.includes(a.id) ? '✓' : ''}</div>`)));
     if (tab === 'col') {
@@ -5122,7 +5205,7 @@ function unlockInfo(it) {
     case 'coroa': return {ready: !!P.stats.coroa, how: 'Seja coroada no Trono do Castelo Real', e: '👑'};
     case 'treasure': { const t = TREASURES.find(x => x.id === u.id); return {how: 'Escondido num baú secreto em ' + (t ? t.hint : 'algum mundo') + '. Explore!', e: '🎁'}; }
     case 'city': { const b = BUILD[u.id]; return {how: 'Presente da missão em ' + (b ? b.e + ' ' + b.n : 'Cidade Alegre') + ', na Cidade Alegre', e: '🏙️'}; }
-    case 'wq': { const q = WQUESTS.find(x => x.id === u.id); return {ready: !!(P.wq[u.id] && P.wq[u.id].done), how: 'Prêmio da missão de moda “' + q.n + '”', e: '🎀'}; }
+    case 'wq': { const q = WQUESTS.find(x => x.id === u.id); return {ready: !!(P.wq && P.wq[u.id] && P.wq[u.id].done), how: 'Prêmio da missão de moda “' + q.n + '”', e: '🎀'}; }
   }
   return {how: '', e: '🔒'};
 }
@@ -5193,7 +5276,7 @@ const WQUESTS = [
 function wqColor() { P.wq = P.wq || {}; const q = P.wq.cores || (P.wq.cores = {}); if (q.color == null) q.color = Math.floor(Math.random() * COLOR_TARGETS.length); return COLOR_TARGETS[q.color]; }
 function wqFlag(id, f) { P.wq = P.wq || {}; P.wq[id] = P.wq[id] || {}; P.wq[id][f] = true; saveSoon(); }
 const distinctLooks = () => new Set((P.myLooks || []).map(l => JSON.stringify(l.look))).size;
-function wqStepDone(q, s) { return s.flag ? !!(P.wq[q.id] && P.wq[q.id][s.flag]) : s.chk(); }
+function wqStepDone(q, s) { return s.flag ? !!(P.wq && P.wq[q.id] && P.wq[q.id][s.flag]) : s.chk(); }
 function wqComplete(q) {
   P.wq[q.id] = P.wq[q.id] || {}; if (P.wq[q.id].done) return;
   P.wq[q.id].done = true; claimItem(q.rw); addCoins(50);
@@ -5988,7 +6071,7 @@ function petAnimHook(dt, t) {
     g.rotation.z = 0; g.rotation.x = 0; g.scale.y = 1; if (s.bowl) scene.remove(s.bowl); if (s.ball) scene.remove(s.ball); if (s.z) scene.remove(s.z); if (pp.head) pp.head.rotation.x = 0; petState = null;
   }
 }
-const petNear = interact({x: 0, z: 0, r: 2.6, show: () => !!(P && P.pet && petObj && !player.riding), text: () => '🐾 Brincar com ' + (P.petNames[P.pet] || ITEMS[P.pet].n), act: () => dialog(P.petNames[P.pet] || ITEMS[P.pet].n, pickR(['Quer brincar comigo?', 'Estou tão feliz de passear com você!', 'Me faz um carinho? 💖']), PET_ACTIONS.slice(0, 5).map(([k, e, n]) => ({t: e + ' ' + n, fn: () => petAction(k)})).concat([{t: 'Depois'}]))});
+const petNear = interact({x: 0, z: 0, r: 2.6, show: () => !!(P && P.pet && petObj && !player.riding), text: () => '🐾 Brincar com ' + ((P.pet && (P.petNames[P.pet] || (ITEMS[P.pet] || {}).n)) || 'seu bichinho'), act: () => dialog((P.pet && (P.petNames[P.pet] || (ITEMS[P.pet] || {}).n)) || 'Bichinho', pickR(['Quer brincar comigo?', 'Estou tão feliz de passear com você!', 'Me faz um carinho? 💖']), PET_ACTIONS.slice(0, 5).map(([k, e, n]) => ({t: e + ' ' + n, fn: () => petAction(k)})).concat([{t: 'Depois'}]))});
 Object.defineProperty(petNear, 'x', {get: () => petPos.x}); Object.defineProperty(petNear, 'z', {get: () => petPos.z});
 const spotObjs = {};
 Object.entries(PET_SPOTS).forEach(([key, [pid, x, z, top]]) => {
@@ -6095,6 +6178,7 @@ function openQuickMenu() {
     if (inHomeZone()) items.push(['🛠️', 'Decorar', () => { closeModal(); enterBuild(); }]);
     if (MOB && !standalone()) items.push(['📱', 'Tela cheia', () => { closeModal(); openFsHelp(); }]);
     items.push(['💌', 'Recadinhos', () => openInbox()]);
+    items.push(['🛴', 'Veículos', () => openRides()]);
     items.push([musicOn ? '🔊' : '🔇', musicOn ? 'Som ligado' : 'Som desligado', () => { $('bSound').click(); openQuickMenu(); }], ['👤', 'Trocar princesa', () => $('bProfile').click()]);
     items.forEach(([e, n, fn]) => { const b = h(`<button class="qi"><span>${e}</span><b>${n}</b></button>`); b.onclick = () => { sfx('click'); fn(); }; g.appendChild(b); });
     body.appendChild(g);
@@ -6222,6 +6306,97 @@ function mobileCloseFrame(p, dt) {
 const _openPets = openPets;
 openPets = function () { _openPets(); if (!MOB) return; closeupMode = true; closeCamYaw = player.yaw; document.body.classList.add('pets-open', 'closeup-open'); const prev = modalOnClose; modalOnClose = () => { document.body.classList.remove('pets-open'); if (prev) prev(); }; };
 
+// ---------- QUEM ATENDE NOS PRÉDIOS DOS MUNDOS ----------
+const WORLD_STAFF = {
+  estufa: {n: 'Jardineira Dália', look: {skin: 2, hairColor: 6, hairStyle: 12, dress: 'd_flores', head: 'a_coroa_flores', expr: 1}, hi: ['Aqui dentro as flores crescem o ano inteiro! Quer aprender os nomes delas?', 'Cheire essa rosa... que perfume!']},
+  casa_flora: {n: 'Flora, a Jardineira', look: {skin: 2, hairColor: 13, hairStyle: 12, dress: 'd_flores', clip: 'cl_borboleta', expr: 1}, hi: ['Entra, minha casa é sua! Fiz chá de flores.', 'Do meu jardim dá para ver todas as borboletas.']},
+  tenda: {n: 'Madame Lua', look: {skin: 4, hairColor: 15, hairStyle: 2, dress: 'd_estrelas', head: 'a_tiara_lua', expr: 1}, hi: ['A bola de cristal mostra uma sequência... consegue adivinhar?', 'Vejo muitas moedas no seu futuro!']},
+  doceria_feira: {n: 'Confeiteira Mel', look: {skin: 1, hairColor: 11, hairStyle: 13, dress: 'd_listras', head: 'a_chef', expr: 1}, hi: ['Docinho fresquinho! Me ajuda a contar?', 'Tem brigadeiro, beijinho e bala de coco!']},
+  boutique: {n: 'Madame Chic', look: {skin: 5, hairColor: 14, hairStyle: 8, dress: 'd_jeans', face: 'g_sol', bag: 'bg_gatinho', expr: 2}, hi: ['Bem-vinda à Glamour! Sabe ler as etiquetas das roupas?', 'A moda muda, mas o estilo fica!']},
+  salao: {n: 'Cabeleireira Kiki', look: {skin: 3, hairColor: 12, hairStyle: 5, dress: null, top: 't_moletom', bottom: 'b_saia_xadrez', clip: 'cl_estrela', expr: 1}, hi: ['Senta aqui! Vamos escolher um penteado que combine?', 'Cada penteado conta uma história.']},
+  atelie_cores: {n: 'Pintor Pincel', look: {skin: 1, hairColor: 3, hairStyle: 4, dress: null, top: 't_listrada', bottom: 'b_calca', head: 'a_boina', expr: 1}, hi: ['Tinta na mão e coragem no coração! Vamos brincar de formas e cores?', 'Errar é só mais uma cor no quadro.']},
+  oficina_tinta: {n: 'Mestre Tinteiro', look: {skin: 4, hairColor: 2, hairStyle: 4, dress: null, top: 't_branca', bottom: 'b_calca', face: 'g_redondo_rosa', expr: 0}, hi: ['Para fazer uma cor nova é preciso medir direitinho. Me ajuda?', 'Azul com amarelo dá verde. Mágica? Não, matemática!']},
+  escola_predio: {n: 'Professora Sofia', look: {skin: 1, hairColor: 1, hairStyle: 2, dress: null, top: 't_marinheira', bottom: 'b_saia_xadrez', face: 'g_leitura', expr: 0}, hi: ['A aula vai começar! Senta na carteira e vamos lá.', 'Aqui ninguém erra sozinho: a gente aprende junto.']},
+  biblioteca_esc: {n: 'Bibliotecária Cida', look: {skin: 5, hairColor: 8, hairStyle: 3, dress: 'd_lilas', face: 'g_leitura', expr: 4}, hi: ['Psiu! Escolha um livro e vamos ler um pedacinho.', 'Todo livro daqui é uma porta.']},
+  cabana: {n: 'Guarda Téo', look: {skin: 5, hairColor: 2, hairStyle: 4, dress: null, top: 't_frio', bottom: 'b_calca', shoes: 's_botas_cano', head: 'a_chapeu'}, hi: ['Na minha cabana eu anoto o nome de todo bicho, em inglês!', 'Ouviu o passarinho? É um bird!']},
+  abrigo: {n: 'Cuidadora Lelê', look: {skin: 2, hairColor: 9, hairStyle: 7, dress: null, top: 't_branca', bottom: 'b_calca_rosa', expr: 1}, hi: ['Os bichinhos aqui esperam uma família. Quer ajudar a cuidar?', 'Carinho é o melhor remédio.']},
+  palacio_conchas: {n: 'Rainha Perolina', look: {skin: 3, hairColor: 13, hairStyle: 6, dress: 'f_sereia', head: 'a_conchas', expr: 1}, hi: ['Bem-vinda ao meu palácio de conchas! Vamos contar os peixinhos?', 'No fundo do mar tudo brilha.']},
+  navio: {n: 'Capitão Barbatana', look: {skin: 4, hairColor: 2, hairStyle: 4, dress: null, top: 't_marinheira', bottom: 'b_calca', head: 'a_pescador', expr: 0}, hi: ['Este navio guarda um tesouro. Só abre com a pista certa!', 'Arr! Quer dizer... olá!']},
+  observatorio: {n: 'Astrônoma Lia', look: {skin: 0, hairColor: 15, hairStyle: 7, dress: 'd_estrelas', head: 'a_estrela_cabelo', face: 'g_redondo_rosa'}, hi: ['Olha no telescópio! As estrelas formam desenhos.', 'Cada constelação é um quebra-cabeça do céu.']},
+  planetario: {n: 'Professor Cosmo', look: {skin: 2, hairColor: 8, hairStyle: 4, dress: null, top: 't_moletom', bottom: 'b_calca', face: 'g_leitura', expr: 1}, hi: ['Sabia que Terra em inglês é “Earth”? Vamos aprender os planetas!', 'O céu é o maior livro que existe.']},
+  palacio_uni: {n: 'Guardiã Celeste', look: {skin: 3, hairColor: 9, hairStyle: 14, dress: 'f_unicornio', expr: 4}, hi: ['Bem-vinda ao salão do trono! Os unicórnios confiam em quem aprende.', 'Sente-se, princesa. Temos muito o que conversar.']},
+  estabulo: {n: 'Tratadora Pipa', look: {skin: 1, hairColor: 11, hairStyle: 12, dress: null, top: 't_amarela', bottom: 'b_salopete', expr: 1}, hi: ['Os unicórnios precisam de escova, água e muito carinho!', 'Esse aqui adora cenoura com purpurina.']},
+  casa_cores: {n: 'Vovó Colorida', look: {skin: 2, hairColor: 9, hairStyle: 2, dress: 'd_arcoiris', expr: 4}, hi: ['Minha casa tem uma cor em cada cômodo! Fica à vontade.', 'Quer um biscoito de arco-íris?']},
+  torre_prisma: {n: 'Fada Prisma', look: {skin: 1, hairColor: 9, hairStyle: 13, dress: 'd_arcoiris', back: 'k_asas_arcoiris', hand: 'w_varinha_estrela', expr: 1}, hi: ['No topo da torre a luz vira arco-íris. Sabe a ordem das cores?', 'Vermelho, laranja, amarelo... continua!']}};
+// atividades especiais de alguns prédios
+const RAINBOW_ORDER = ['🔴 vermelho', '🟠 laranja', '🟡 amarelo', '🟢 verde', '🔵 azul', '🟣 roxo'];
+const ANIMALS_EN = [['🐶', 'dog', 'cachorro'], ['🐱', 'cat', 'gato'], ['🐰', 'rabbit', 'coelho'], ['🐦', 'bird', 'passarinho'], ['🐢', 'turtle', 'tartaruga'], ['🐻', 'bear', 'urso']];
+const PLANETS_EN = [['🌍', 'Earth', 'Terra'], ['🌕', 'Moon', 'Lua'], ['☀️', 'Sun', 'Sol'], ['⭐', 'Star', 'Estrela'], ['🪐', 'Saturn', 'Saturno']];
+function shopTalk(b) {
+  const d = WORLD_STAFF[b.id], C = cityState();
+  const first = !C.done[b.id];
+  const done = () => { if (!C.done[b.id]) { C.done[b.id] = 1; addCoins(15); banner('🎉 Primeira visita: ' + b.n, '+15 moedas de bônus'); } else { C.done[b.id]++; } saveSoon(); };
+  if (b.theme === 'pets') return dialog(d.n, pickR(d.hi), [{t: '🐾 Cuidar dos bichinhos', fn: () => petCareGame(b, done)}, {t: 'Depois'}]);
+  if (b.id === 'cabana') return dialog(d.n, pickR(d.hi), [{t: '🐾 Animais em inglês', fn: () => wordGame(b, ANIMALS_EN, 'Qual é este bichinho em inglês?', done)}, {t: 'Depois'}]);
+  if (b.id === 'planetario') return dialog(d.n, pickR(d.hi), [{t: '🪐 Planetas em inglês', fn: () => wordGame(b, PLANETS_EN, 'Como se diz isto em inglês?', done)}, {t: 'Depois'}]);
+  if (b.id === 'torre_prisma') return dialog(d.n, pickR(d.hi), [{t: '🌈 Ordem das cores', fn: () => rainbowGame(b, done)}, {t: 'Depois'}]);
+  if (b.id === 'salao') return dialog(d.n, pickR(d.hi), [{t: '💇‍♀️ Escolher um penteado', fn: () => openWardrobe('cabelos')}, {t: '🪄 Desafio de combinar', fn: () => challenge({subj: 'log', count: 3, title: '💇‍♀️ ' + b.n, coinsEach: 4, onDone: done})}, {t: 'Tchau!'}]);
+  if (b.id === 'boutique') return dialog(d.n, pickR(d.hi), [{t: '👗 Abrir o guarda-roupa', fn: () => openWardrobe('vestidos')}, {t: '📖 Ler as etiquetas', fn: () => challenge({subj: 'lei', count: 3, title: '👗 ' + b.n, coinsEach: 4, onDone: done})}, {t: 'Tchau!'}]);
+  if (b.kind === 'house') { if (first) { done(); addCoins(10); return dialog(d.n, d.hi[0] + ' (você ganhou 10 moedinhas 🍪)'); } return dialog(d.n, d.hi[1] || d.hi[0]); }
+  const subj = b.theme === 'sala' ? null : b.theme === 'trono' ? null : b.theme;
+  if (b.theme === 'sala') return dialog(d.n, pickR(d.hi), [{t: '📚 Aula do dia', fn: () => challenge({subjs: shuffle(SUBJ_KEYS).slice(0, 3), count: 4, title: '🏫 Aula na Escola Encantada', coinsEach: 5, onDone: () => { done(); if (!owns('a_tiara_escola') && ITEMS.a_tiara_escola) claimItem('a_tiara_escola'); }})}, {t: 'Depois'}]);
+  if (b.theme === 'trono') return dialog(d.n, pickR(d.hi), [{t: '👑 Prova da Guardiã', fn: () => challenge({subjs: shuffle(SUBJ_KEYS).slice(0, 2), count: 3, title: '🏰 Prova da Guardiã', coinsEach: 6, onDone: () => { done(); giveHeart('hr_trono'); }})}, {t: 'Depois'}]);
+  dialog(d.n, pickR(d.hi), [{t: b.e + ' ' + b.tema, fn: () => challenge({subj: subj || 'mat', count: 3, title: b.e + ' ' + b.n, coinsEach: 4, onDone: done})}, {t: 'Depois'}]);
+}
+// jogo de palavras em inglês com voz
+function wordGame(b, lista, pergunta, done) {
+  const pool = shuffle(lista).slice(0, 4), acertos = [];
+  kitchenGame({title: b.e + ' ' + b.n, empty: 'Suas respostas certas aparecem aqui!', steps: pool.map(item => ({
+    t: pergunta + ' ' + item[0] + ' (' + item[2] + ')', say: [[pergunta, 'pt']],
+    add: false,
+    opts: shuffle([item, ...shuffle(lista.filter(x => x !== item)).slice(0, 2)]).map(x => ({t: x[1], e: x[0], ok: x === item, say: x[1]})),
+    hint: 'Em inglês é “' + item[1] + '”.',
+    onPick: () => { acertos.push(item[0]); say([[item[1], 'en']]); }
+  })), onDone: () => { addCoins(16); P.edu.stars++; $('starN').textContent = P.edu.stars; sfx('win'); celebrate({rar: 'raro'}); done(); banner('🌟 Muito bem!', 'Você aprendeu ' + pool.length + ' palavras em inglês · +16 moedas'); }});
+}
+// ordem do arco-íris
+function rainbowGame(b, done) {
+  let i = 0;
+  const step = () => ({
+    t: 'Qual cor vem agora? (' + (i + 1) + 'ª do arco-íris)',
+    add: false,
+    opts: shuffle([RAINBOW_ORDER[i], ...shuffle(RAINBOW_ORDER.filter((_, k) => k !== i)).slice(0, 2)]).map(c => ({t: c.slice(2), e: c.slice(0, 2), ok: c === RAINBOW_ORDER[i]})),
+    hint: 'A ordem é: vermelho, laranja, amarelo, verde, azul e roxo.'
+  });
+  const steps = RAINBOW_ORDER.map(() => { const s = step(); i++; return s; });
+  kitchenGame({title: '🌈 ' + b.n, empty: 'Monte o arco-íris na ordem certa!', steps, onDone: () => { addCoins(20); sfx('win'); celebrate({rar: 'epico'}); done(); if (!owns('k_asas_arcoiris')) claimItem('k_asas_arcoiris', true); banner('🌈 Arco-íris completo!', '+20 moedas'); }});
+}
+// cuidar dos bichinhos (abrigo e estábulo)
+function petCareGame(b, done) {
+  const uni = b.id === 'estabulo';
+  const pid = uni ? 'p_unicornio' : pickR(['p_cachorro', 'p_gato', 'p_coelho', 'p_hamster']);
+  const it = ITEMS[pid];
+  kitchenGame({title: b.e + ' ' + b.n, empty: 'Cuidados do bichinho', steps: [
+    {t: 'Primeiro, o que ele precisa?', opts: shuffle([{e: '🥣', t: 'Comidinha', ok: 1}, {e: '📺', t: 'Televisão'}, {e: '🧊', t: 'Gelo'}]), hint: 'Todo bichinho com fome quer comida!'},
+    {t: 'Agora a escovinha: quantas escovadas?', type: 'tap', e: '🪮', label: 'Toque para escovar', need: 3},
+    {t: 'E para beber?', opts: shuffle([{e: '💧', t: 'Água fresquinha', ok: 1}, {e: '🥤', t: 'Refrigerante'}, {e: '🍫', t: 'Chocolate'}]), hint: 'Bichinho bebe água!'},
+    numStep('Quantos cuidados você deu ao todo?', 3, {visual: '🥣 🪮 💧', hint: 'Conte: comida, escova e água.'})],
+    onDone: () => {
+      addCoins(18); sfx('win'); done();
+      if (!P.pets.includes(pid)) dialog(WORLD_STAFF[b.id].n, 'Ele ficou tão feliz! Quer levar o ' + it.n.toLowerCase() + ' para casa?', [{t: '💖 Quero!', fn: () => adoptPet(pid)}, {t: 'Agora não'}]);
+      else { giveHeart('hr_cuidar'); dialog(WORLD_STAFF[b.id].n, 'Obrigada! Tome 18 moedas pela ajuda. 💖'); }
+    }});
+}
+// monta os atendentes e as interações de cada prédio dos mundos
+WORLD_BUILDINGS.forEach(b => {
+  const d = WORLD_STAFF[b.id]; if (!d) return;
+  STAFF[b.id] = d;
+  const s = INT[b.id];
+  npcAdd('st_' + b.id, d, s.npc[0], s.npc[1], 0);
+  interact({x: s.npc[0], z: s.npc[1], r: 3.2, text: () => 'Conversar com ' + d.n, act: () => { talkedTo('st_' + b.id); shopTalk(b); }});
+  if (s.job) interact({x: s.job[0], z: s.job[1], r: 2.6, text: () => s.job[2], act: () => { talkedTo('st_' + b.id); shopTalk(b); }});
+});
+
 // ---------- laço principal ----------
 let lastRegion = null, slowT = 0, mmT = 0, lastCoinT = -10, combo = 0;
 const clock = new THREE.Clock();
@@ -6245,6 +6420,7 @@ function updatePlayer(dt) {
   let speed = (run ? 11 : 7) * mag;
   if (hasPower('speed')) speed *= 1.5;
   if (player.riding) speed *= 1.6;
+  if (typeof rideSpeed === 'function') speed *= rideSpeed();
   if (curArea === 'main' && player.pos.z > 149 && player.pos.y < 0.3) speed *= 0.65;
   player.speed = cinema ? player.speed : speed;
   if (!cinema && mag > 0.05) {
@@ -6568,7 +6744,7 @@ frame();
 // ---------- TRAVA POR CÓDIGO E CONFIGURAÇÕES DOS PAIS ----------
 const CODE_DEFAULT = '021100', CODE_KEY = 'mundo-destrava', UNLOCK_H = 4;
 // carimbo do build: o valor é trocado pelo build.py na hora de gerar o index.html
-const BUILD_VER = '3.4', BUILD_AT = '2026-10-19T21:24:38';
+const BUILD_VER = '3.4', BUILD_AT = '2026-10-20T08:53:34';
 function buildLabel() {
   const iso = /^\d{4}-\d{2}-\d{2}T/.test(BUILD_AT) ? BUILD_AT : null;
   if (!iso) return 'versão ' + BUILD_VER;
@@ -6646,10 +6822,11 @@ function openSettings() {
   openModal('⚙️ Configurações dos pais', body => {
     body.innerHTML = '<p class="hello">Área dos pais: ajuste a idade de cada princesa e o código de entrada.</p>';
     const tabs = h('<div class="tabs cfgtabs"></div>');
-    [['idade', '🎂 Idade e nível'], ['princesas', '👑 Princesas'], ['codigo', '🔒 Código de entrada'], ['sobre', 'ℹ️ Sobre']].forEach(([k, n]) => { const b = h(`<button class="tab ${cfgTab === k ? 'on' : ''}">${n}</button>`); b.onclick = () => { cfgTab = k; sfx('click'); rerender(); }; tabs.appendChild(b); });
+    [['idade', '🎂 Idade e nível'], ['princesas', '👑 Princesas'], ['clima', '🌤️ Clima'], ['codigo', '🔒 Código de entrada'], ['sobre', 'ℹ️ Sobre']].forEach(([k, n]) => { const b = h(`<button class="tab ${cfgTab === k ? 'on' : ''}">${n}</button>`); b.onclick = () => { cfgTab = k; sfx('click'); rerender(); }; tabs.appendChild(b); });
     body.appendChild(tabs);
     if (cfgTab === 'idade') return renderCfgAge(body);
     if (cfgTab === 'princesas') return renderCfgProfiles(body);
+    if (cfgTab === 'clima') return renderCfgWeather(body);
     if (cfgTab === 'codigo') return renderCfgCode(body);
     body.appendChild(h(`<div class="list"><div class="li"><div class="e">👑</div><div class="tx"><b>Mundo da Luize e da Carmel</b><small>${esc(buildLabel())}</small></div></div><div class="li"><div class="e">💾</div><div class="tx"><b>Progresso salvo neste aparelho</b><small>Moedas, roupas, pets e conquistas de cada princesa.</small></div></div><div class="li"><div class="e">🔐</div><div class="tx"><b>Sem compras, anúncios ou conversas abertas</b><small>Tudo acontece dentro do jogo, sem internet com estranhos.</small></div></div></div>`));
     const rl = h('<button class="pill" style="margin-top:12px">🔒 Bloquear agora</button>');
@@ -6676,6 +6853,9 @@ function renderCfgProfiles(body) {
   SAVE.profiles.forEach((p, i) => {
     const fixed = isDefaultProfile(p), st = p.stats || {};
     const li = h(`<div class="li"><span class="av2" style="${profileStyle(p)}">👑</span><div class="tx"><b>${esc(p.name)}</b><small>${profileAge(p)} anos · 🪙 ${p.coins} · 💖 ${p.hearts.length} · 🐾 ${p.pets.length}${fixed ? ' · princesa fixa' : ''}</small></div></div>`);
+    const res = h('<button class="pill" aria-label="Reiniciar progresso">♻️ Reiniciar</button>');
+    res.onclick = () => askReset(p);
+    li.appendChild(res);
     if (!fixed) {
       const del = h('<button class="pill" aria-label="Apagar princesa">🗑️ Apagar</button>');
       del.onclick = () => {
@@ -6694,6 +6874,51 @@ function renderCfgProfiles(body) {
   add.onclick = () => { closeModal(); $('newProfile').click(); };
   body.appendChild(add);
   body.appendChild(h('<p class="hello">Apagar uma princesa remove as moedas, roupas e pets dela. Isso não pode ser desfeito.</p>'));
+}
+const MASTER_CODE = '08051991';
+function renderCfgWeather(body) {
+  body.appendChild(h('<p class="hello">O reino tem dia, tardinha e noite, e às vezes chove com arco-íris depois. Um dia inteiro dura 10 minutos.</p>'));
+  const atual = P ? (P.weather || 'auto') : 'auto';
+  const list = h('<div class="list"></div>');
+  [['auto', '🔄', 'Automático', 'Manhã, tarde, noite e chuva de vez em quando'],
+   ['dia', '☀️', 'Sempre dia', 'Claro o tempo todo'],
+   ['noite', '🌙', 'Sempre noite', 'Céu estrelado e lua'],
+   ['chuva', '🌧️', 'Sempre chuva', 'Gotinhas e poças']].forEach(([k, e, n, d]) => {
+    const li = h(`<button class="li" style="text-align:left"><div class="e">${e}</div><div class="tx"><b>${esc(n)}</b><small>${esc(d)}</small></div>${atual === k ? '<span class="ok2">✓</span>' : ''}</button>`);
+    li.onclick = () => { if (!P) return toast('Entre com uma princesa primeiro'); P.weather = k; saveNow(); sfx('click'); rerender(); };
+    list.appendChild(li);
+  });
+  body.appendChild(list);
+  if (!P) body.appendChild(h('<p class="hello">Escolha uma princesa para mudar o clima do jogo dela.</p>'));
+}
+// reiniciar o progresso de uma princesa (pede a senha dos pais)
+function resetProfile(p) {
+  const novo = newProfile(p.name, p.look);
+  novo.age = p.age; novo.weather = p.weather;
+  // campos que nascem vazios nos sistemas mais novos
+  novo.wq = {}; novo.myLooks = []; novo.favs = []; novo.favPets = []; novo.favWorlds = [];
+  novo.chests = []; novo.city = {done: {}, talked: [], visited: [], tries: []};
+  novo.worldItems = {}; novo.worldDone = {}; novo.worldsOpen = []; novo.petLove = {}; novo.inbox = [];
+  const i = SAVE.profiles.indexOf(p);
+  SAVE.profiles[i] = novo;
+  if (P === p) P = novo;
+  saveNow();
+  return novo;
+}
+function askReset(p) {
+  openModal('♻️ Reiniciar ' + p.name, body => {
+    body.innerHTML = `<p class="hello">Isso apaga <b>tudo</b> da ${esc(p.name)}: moedas, corações, roupas, pets, casa, conquistas e desafios. O nome e o visual continuam. <b>Não dá para desfazer.</b></p>
+      <div class="lbl2">Senha dos pais</div><input type="password" inputmode="numeric" id="rs" maxlength="12" placeholder="senha">
+      <p class="cmsg"></p><div class="row"><button class="pill danger">♻️ Reiniciar mesmo</button><button class="pill" id="rsCancel">Cancelar</button></div>`;
+    const inp = body.querySelector('#rs'), msg = body.querySelector('.cmsg');
+    inp.oninput = () => { inp.value = inp.value.replace(/\D/g, ''); };
+    body.querySelector('#rsCancel').onclick = () => { cfgTab = 'princesas'; openSettings(); };
+    body.querySelector('.pill.danger').onclick = () => {
+      if (inp.value.trim() !== MASTER_CODE) { msg.textContent = 'Senha incorreta.'; msg.className = 'cmsg bad'; sfx('bad'); inp.value = ''; return; }
+      const nome = p.name; resetProfile(p); sfx('win'); toast('Progresso da ' + nome + ' reiniciado ♻️');
+      cfgTab = 'princesas'; openSettings();
+    };
+  }, {onClose: () => {}});
 }
 function renderCfgCode(body) {
   const wrap = h(`<div class="cfgc">
@@ -7056,6 +7281,330 @@ function liveGiftIn(m) {
   const oldRelock = relock;
   relock = function () { liveClearAll(); if (LIVE.ws) { try { LIVE.ws.close(); } catch (e) {} } oldRelock(); };
   addEventListener('pagehide', () => { if (LIVE.ws) try { LIVE.ws.close(); } catch (e) {} });
+})();
+
+// ---------- DIA, NOITE E CHUVA ----------
+// Um "dia" dura 10 minutos: amanhecer, dia, tardinha, noite. Dá para travar nas configurações.
+const SKY_TINT = [
+  {t: 0.00, n: 'amanhecer', e: '🌅', c: '#ffc2a8', l: 0.72, s: 0.6, warm: '#ffd8a8'},
+  {t: 0.12, n: 'manhã', e: '☀️', c: '#ffffff', l: 1.00, s: 1.0, warm: '#fff3e0'},
+  {t: 0.50, n: 'tardinha', e: '🌇', c: '#ffd0a0', l: 0.86, s: 0.8, warm: '#ffc078'},
+  {t: 0.68, n: 'pôr do sol', e: '🌆', c: '#ff9a76', l: 0.62, s: 0.5, warm: '#ff922b'},
+  {t: 0.80, n: 'noite', e: '🌙', c: '#4a4a8a', l: 0.38, s: 0.18, warm: '#9ab8ff'},
+  {t: 0.97, n: 'amanhecer', e: '🌅', c: '#ffc2a8', l: 0.72, s: 0.6, warm: '#ffd8a8'}];
+const DAY_SECONDS = 600;
+const WEATHER = {t: 0.14, mode: 'auto', rain: 0, nextRain: 150 + rnd() * 240, bow: 0, phase: 'manhã'};
+const hemiBase = hemi.intensity, sunBase = sun.intensity;
+const skyBase = new THREE.Color(), tintCol = new THREE.Color();
+function weatherSetting() { P.weather = P.weather || 'auto'; return P.weather; }
+function tintNow() {
+  const t = WEATHER.t;
+  let a = SKY_TINT[0], b = SKY_TINT[1];
+  for (let i = 0; i < SKY_TINT.length - 1; i++) if (t >= SKY_TINT[i].t && t < SKY_TINT[i + 1].t) { a = SKY_TINT[i]; b = SKY_TINT[i + 1]; }
+  const k = (t - a.t) / Math.max(0.0001, b.t - a.t);
+  return {c: new THREE.Color(a.c).lerp(new THREE.Color(b.c), k), l: a.l + (b.l - a.l) * k, s: a.s + (b.s - a.s) * k,
+    warm: new THREE.Color(a.warm).lerp(new THREE.Color(b.warm), k), nome: k < 0.5 ? a.n : b.n, e: k < 0.5 ? a.e : b.e};
+}
+const isOutside = () => !(curArea === 'quarto' || curArea === 'castelo' || curArea.slice(0, 3) === 'in_');
+// estrelas da noite
+const starField = (function () {
+  const g = new THREE.BufferGeometry(), n = 420, pos = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { const a = rnd() * TAU, e = 0.18 + rnd() * 1.1, r = 300;
+    pos[i * 3] = Math.cos(a) * Math.cos(e) * r; pos[i * 3 + 1] = Math.sin(e) * r; pos[i * 3 + 2] = Math.sin(a) * Math.cos(e) * r; }
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const p = new THREE.Points(g, new THREE.PointsMaterial({color: 0xffffff, size: 2.4, sizeAttenuation: false, transparent: true, opacity: 0}));
+  p.renderOrder = -1; scene.add(p); return p;
+})();
+// lua
+const moon = (function () {
+  const g = new THREE.Group();
+  const m = new THREE.Mesh(new THREE.SphereGeometry(10, 18, 14), new THREE.MeshBasicMaterial({color: 0xfff6d0, transparent: true, opacity: 0}));
+  g.add(m); scene.add(g); g.userData.m = m; return g;
+})();
+// chuva: gotas que seguem a câmera
+const rainDrops = (function () {
+  const n = 700, g = new THREE.BufferGeometry(), pos = new Float32Array(n * 6), spd = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = (rnd() - .5) * 64, y = rnd() * 34, z = (rnd() - .5) * 64;
+    pos[i * 6] = x; pos[i * 6 + 1] = y; pos[i * 6 + 2] = z;
+    pos[i * 6 + 3] = x; pos[i * 6 + 4] = y - 2.2; pos[i * 6 + 5] = z;
+    spd[i] = 26 + rnd() * 20;
+  }
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const p = new THREE.LineSegments(g, new THREE.LineBasicMaterial({color: 0x3f7fc4, transparent: true, opacity: 0}));
+  p.visible = false; scene.add(p); p.userData.spd = spd; return p;
+})();
+// poças que aparecem com a chuva
+const puddles = (function () {
+  const g = new THREE.Group(); scene.add(g);
+  const mat2 = new THREE.MeshPhongMaterial({color: 0xbfe6ff, transparent: true, opacity: 0, shininess: 90});
+  for (let i = 0; i < 14; i++) { const m = new THREE.Mesh(new THREE.CircleGeometry(1.2 + rnd() * 1.6, 18), mat2); m.rotation.x = -Math.PI / 2; g.add(m); }
+  g.userData.mat = mat2; return g;
+})();
+// arco-íris depois da chuva
+const skyBow = (function () {
+  const g = new THREE.Group(); g.visible = false; scene.add(g);
+  ['#ff6b6b', '#ff922b', '#ffd43b', '#69db7c', '#4dabf7', '#b197fc'].forEach((c, i) => {
+    const m = new THREE.Mesh(new THREE.TorusGeometry(70 - i * 4, 2, 8, 40, Math.PI), new THREE.MeshBasicMaterial({color: c, transparent: true, opacity: 0.55, side: THREE.DoubleSide}));
+    g.add(m);
+  });
+  return g;
+})();
+function startRain(dur) { WEATHER.rain = dur || 50 + rnd() * 40; rainDrops.visible = true; if (isOutside()) toast('🌧️ Começou a chover!'); }
+function stopRain() { WEATHER.rain = 0; WEATHER.bow = 26; if (isOutside()) { toast('🌈 A chuva passou!'); skyBow.visible = true; } }
+// aplica tudo a cada quadro
+onFrame((dt, t) => {
+  const modo = P ? weatherSetting() : 'auto';
+  if (modo === 'auto') WEATHER.t = (WEATHER.t + dt / DAY_SECONDS) % 1;
+  else if (modo === 'dia') WEATHER.t = 0.3;
+  else if (modo === 'noite') WEATHER.t = 0.87;
+  const ti = tintNow();
+  WEATHER.phase = ti.nome;
+  const fora = isOutside();
+  // céu e luzes
+  if (fora) {
+    skyBase.set(AREAS[curArea].sky);
+    tintCol.copy(skyBase).multiply(ti.c).lerp(ti.c, 0.25);
+    if (WEATHER.rain > 0) tintCol.lerp(new THREE.Color('#8fa3b8'), 0.55);
+    scene.background = tintCol; scene.fog.color.copy(tintCol);
+    hemi.intensity = hemiBase * ti.l * (WEATHER.rain > 0 ? 0.82 : 1);
+    sun.intensity = sunBase * ti.s * (WEATHER.rain > 0 ? 0.55 : 1);
+    sun.color.copy(ti.warm);
+    const ang = WEATHER.t * TAU - Math.PI / 2;
+    sun.position.set(Math.cos(ang) * 60, Math.max(8, Math.sin(ang) * 70 + 22), 30);
+  } else { hemi.intensity = hemiBase; sun.intensity = sunBase; sun.color.set(0xfff3e0); }
+  // estrelas e lua
+  const noite = Math.max(0, Math.min(1, (WEATHER.t - 0.72) / 0.12)) * (WEATHER.t < 0.98 ? 1 : 0);
+  const starOp = fora ? noite * 0.95 : 0;
+  starField.material.opacity += (starOp - starField.material.opacity) * Math.min(1, dt * 2);
+  starField.visible = starField.material.opacity > 0.02;
+  starField.position.set(camera.position.x, 0, camera.position.z);
+  starField.rotation.y = t * 0.004;
+  moon.userData.m.material.opacity += ((fora ? noite : 0) - moon.userData.m.material.opacity) * Math.min(1, dt * 2);
+  moon.visible = moon.userData.m.material.opacity > 0.02;
+  moon.position.set(camera.position.x - 120, 95, camera.position.z - 160);
+  // chuva automática
+  if (modo === 'auto') {
+    if (WEATHER.rain > 0) { WEATHER.rain -= dt; if (WEATHER.rain <= 0) stopRain(); }
+    else { WEATHER.nextRain -= dt; if (WEATHER.nextRain <= 0) { WEATHER.nextRain = 260 + rnd() * 320; startRain(); } }
+  } else if (modo === 'chuva') { if (WEATHER.rain <= 0) startRain(99999); }
+  else if (WEATHER.rain > 0) { WEATHER.rain = 0; }
+  // gotas
+  const chovendo = WEATHER.rain > 0 && fora;
+  rainDrops.visible = chovendo;
+  rainDrops.material.opacity += ((chovendo ? 0.85 : 0) - rainDrops.material.opacity) * Math.min(1, dt * 3);
+  if (chovendo) {
+    const arr = rainDrops.geometry.attributes.position.array, spd = rainDrops.userData.spd;
+    for (let i = 0; i < spd.length; i++) {
+      const d2 = spd[i] * dt;
+      arr[i * 6 + 1] -= d2; arr[i * 6 + 4] -= d2;
+      if (arr[i * 6 + 4] < 0) {
+        const x = (rnd() - .5) * 64, y = 30 + rnd() * 8, z = (rnd() - .5) * 64;
+        arr[i * 6] = x; arr[i * 6 + 1] = y; arr[i * 6 + 2] = z;
+        arr[i * 6 + 3] = x; arr[i * 6 + 4] = y - 2.2; arr[i * 6 + 5] = z;
+      }
+    }
+    rainDrops.geometry.attributes.position.needsUpdate = true;
+    rainDrops.position.set(player.pos.x, 0, player.pos.z);
+  }
+  // poças
+  const pm = puddles.userData.mat;
+  pm.opacity += ((chovendo ? 0.5 : 0) - pm.opacity) * Math.min(1, dt * 0.8);
+  puddles.visible = pm.opacity > 0.02;
+  if (puddles.visible && puddles.children.length) {
+    puddles.children.forEach((m, i) => { if (!m.userData.set || chovendo && rnd() < 0.002) { m.userData.set = 1; m.position.set(player.pos.x + (rnd() - .5) * 50, 0.06, player.pos.z + (rnd() - .5) * 50); } });
+  }
+  // arco-íris
+  if (WEATHER.bow > 0) { WEATHER.bow -= dt; skyBow.visible = fora; skyBow.position.set(player.pos.x, 2, player.pos.z - 110); if (WEATHER.bow <= 0) skyBow.visible = false; }
+});
+// relógio no HUD, só o emoji da fase
+(function () {
+  const chip = h('<span id="clockChip" title="Hora no reino">☀️</span>');
+  const bar = $('cCoins') ? $('cCoins').parentNode : null;
+  if (bar) bar.appendChild(chip);
+  setInterval(() => { const ti = tintNow(); chip.textContent = (WEATHER.rain > 0 ? '🌧️ ' : '') + ti.e; chip.title = 'No reino agora: ' + ti.nome + (WEATHER.rain > 0 ? ', chovendo' : ''); }, 2000);
+})();
+
+// ---------- VEÍCULOS E CASINHA DOS PETS ----------
+// --- veículos: patinete, bicicleta e carruagem ---
+const RIDES = [
+  {id: 'patinete', n: 'Patinete Brilhante', e: '🛴', sp: 1.45, price: 120, d: 'Rápido e fácil de guardar'},
+  {id: 'bike', n: 'Bicicleta das Flores', e: '🚲', sp: 1.75, price: 320, d: 'Com cestinha e guidão florido'},
+  {id: 'patins', n: 'Patins de Estrela', e: '🛼', sp: 1.6, un: {type: 'stars', n: 10}, d: 'Deslizam deixando brilho'},
+  {id: 'carruagem', n: 'Carruagem Real', e: '🎠', sp: 2.1, un: {type: 'hearts', n: 8}, d: 'A mais veloz do reino, puxada por magia'}];
+const RIDE_BY = {}; RIDES.forEach(r => RIDE_BY[r.id] = r);
+function rideInfo(r) {
+  if ((P.rides || []).includes(r.id)) return {owned: true};
+  if (r.price) return {buy: r.price, how: 'Compre por ' + r.price + ' moedas', e: '🪙'};
+  if (r.un.type === 'stars') return {ready: (P.edu.stars || 0) >= r.un.n, prog: [P.edu.stars || 0, r.un.n], how: 'Junte ' + r.un.n + ' Estrelas do Saber', e: '⭐'};
+  return {ready: P.hearts.length >= r.un.n, prog: [P.hearts.length, r.un.n], how: 'Junte ' + r.un.n + ' corações', e: '💖'};
+}
+// modelos 3D
+function rideModel(id) {
+  const g = new THREE.Group();
+  const wheel = (x, y, z, r2, c) => { const w = put(g, cyl(r2, r2, 0.16, 16, c || '#3a2242'), x, y, z); w.rotation.z = Math.PI / 2; const h2 = put(g, cyl(r2 * 0.4, r2 * 0.4, 0.2, 10, '#ffd43b'), x, y, z); h2.rotation.z = Math.PI / 2; return w; };
+  if (id === 'patinete') {
+    put(g, box(0.36, 0.12, 1.5, '#ff5fa8'), 0, 0.3, 0);
+    put(g, cyl(0.06, 0.06, 1.3, 8, '#e9e4ff'), 0, 0.95, 0.6).rotation.x = -0.12;
+    put(g, box(0.7, 0.08, 0.08, '#ffffff'), 0, 1.55, 0.68);
+    [-1, 1].forEach(k => put(g, sph(0.08, mat('#ffd43b')), k * 0.35, 1.55, 0.68));
+    g.userData.wheels = [wheel(0, 0.24, 0.66, 0.24), wheel(0, 0.24, -0.62, 0.24)];
+  } else if (id === 'bike') {
+    put(g, cyl(0.05, 0.05, 1.5, 8, '#ff8cc6'), 0, 0.72, 0).rotation.x = Math.PI / 2;
+    put(g, cyl(0.05, 0.05, 0.9, 8, '#ff8cc6'), 0, 0.95, 0.5).rotation.x = -0.5;
+    put(g, box(0.4, 0.12, 0.3, '#b197fc'), 0, 1.1, -0.42);
+    put(g, box(0.8, 0.07, 0.07, '#ffffff'), 0, 1.5, 0.66);
+    const cesta = put(g, cyl(0.26, 0.22, 0.3, 12, '#ffe066'), 0, 1.3, 0.78);
+    ['#ff5fa8', '#ffffff', '#69db7c'].forEach((c, i) => put(g, sph(0.1, mat(c)), -0.1 + i * 0.1, 1.48, 0.78));
+    g.userData.wheels = [wheel(0, 0.42, 0.72, 0.42), wheel(0, 0.42, -0.72, 0.42)];
+  } else if (id === 'patins') {
+    [-1, 1].forEach(k => { put(g, box(0.3, 0.26, 0.8, '#b197fc'), k * 0.28, 0.3, 0); put(g, box(0.34, 0.1, 0.86, '#ffffff'), k * 0.28, 0.44, 0);
+      for (let i = 0; i < 3; i++) { const w = put(g, cyl(0.12, 0.12, 0.1, 12, '#ffd43b'), k * 0.28, 0.12, -0.26 + i * 0.26); w.rotation.z = Math.PI / 2; } });
+    g.userData.wheels = [];
+  } else {
+    // carruagem de abóbora encantada
+    put(g, mesh(new THREE.SphereGeometry(1.1, 18, 14), mat('#ff922b')), 0, 1.2, 0).scale.set(1, 0.95, 1.15);
+    for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; const c = put(g, mesh(new THREE.TorusGeometry(1.08, 0.05, 6, 22, Math.PI), mat('#e8590c')), 0, 1.2, 0); c.rotation.y = a; }
+    put(g, cyl(0.1, 0.14, 0.5, 8, '#2b8a3e'), 0, 2.3, 0);
+    put(g, box(1.5, 0.12, 1.2, '#ffd6ea'), 0, 0.75, 0);
+    put(g, mesh(new THREE.TorusGeometry(0.4, 0.06, 6, 18), shiny('#ffd43b', .6)), 0, 1.5, 1.14);
+    g.userData.wheels = [wheel(-1.05, 0.5, -0.5, 0.5, '#ffd43b'), wheel(1.05, 0.5, -0.5, 0.5, '#ffd43b'), wheel(-0.95, 0.38, 0.75, 0.38, '#ffd43b'), wheel(0.95, 0.38, 0.75, 0.38, '#ffd43b')];
+  }
+  addOutlines(g);
+  return g;
+}
+// veículo em uso, embaixo da princesa
+let rideObj = null, rideId = null;
+function setRide(id) {
+  if (rideObj) { scene.remove(rideObj); rideObj = null; if (avatarObj && avatarObj.group) avatarObj.group.position.y = player.pos.y; }
+  rideId = id || null;
+  P.ride = rideId; saveSoon();
+  if (!rideId) return;
+  rideObj = rideModel(rideId); scene.add(rideObj);
+  sfx('power'); burst(player.pos.clone().add(new THREE.Vector3(0, 1, 0)), ['#ffd43b', '#ffffff', '#ff9ccc'], 18);
+  popText(RIDE_BY[rideId].e + ' ' + RIDE_BY[rideId].n, player.pos.clone().add(new THREE.Vector3(0, 4.4, 0)), '#e64980');
+}
+const rideSpeed = () => (rideId && !player.riding ? RIDE_BY[rideId].sp : 1);
+onFrame((dt, t) => {
+  if (!rideObj) return;
+  const esconder = player.riding || !player.onGround && rideId === 'carruagem';
+  rideObj.visible = !player.riding;
+  if (!rideObj.visible) return;
+  rideObj.position.set(player.pos.x, player.pos.y, player.pos.z);
+  rideObj.rotation.y = player.yaw + Math.PI;
+  // na carruagem a princesa vai sentada lá dentro
+  if (avatarObj && avatarObj.group) avatarObj.group.position.y = player.pos.y + (rideId === 'carruagem' ? 1.15 : rideId === 'patinete' ? 0.42 : rideId === 'patins' ? 0.2 : 0.6);
+  const v = (player.speed || 0);
+  (rideObj.userData.wheels || []).forEach(w => { w.rotation.x -= v * dt * 2.4; });
+  if (rideId === 'patins' || rideId === 'patinete') rideObj.position.y += Math.sin(t * 12) * 0.02 * (v > 0.5 ? 1 : 0);
+  if (v > 4 && rnd() < dt * 8) burst(rideObj.position.clone().add(new THREE.Vector3(0, 0.2, 0)), ['#ffd43b', '#ffffff'], 3);
+});
+// painel: Meus Veículos
+function openRides() {
+  P.rides = P.rides || [];
+  openModal('🛴 Meus Veículos', body => {
+    body.innerHTML = `<p class="money"><span>🪙 ${P.coins}</span><span>⭐ ${P.edu.stars || 0}</span><span>💖 ${P.hearts.length}</span></p><p class="hello">Com um veículo a princesa anda bem mais rápido pelos mundos. Dá para trocar quando quiser.</p>`;
+    const list = h('<div class="list"></div>');
+    const pe = h(`<button class="li" style="text-align:left"><div class="e">👟</div><div class="tx"><b>A pé</b><small>Do jeitinho normal</small></div>${!rideId ? '<span class="ok2">✓</span>' : ''}</button>`);
+    pe.onclick = () => { setRide(null); sfx('click'); rerender(); };
+    list.appendChild(pe);
+    RIDES.forEach(r => {
+      const inf = rideInfo(r), on = rideId === r.id;
+      const li = h(`<button class="li" style="text-align:left"><div class="e">${r.e}</div><div class="tx"><b>${esc(r.n)}</b><small>${esc(r.d)} · ${Math.round((r.sp - 1) * 100)}% mais rápido</small><small>${inf.owned ? '' : esc(inf.how) + (inf.prog ? ' (' + inf.prog[0] + '/' + inf.prog[1] + ')' : '')}</small></div>${on ? '<span class="ok2">✓</span>' : inf.owned ? '<span class="ok2">🔓</span>' : inf.ready ? '<span class="ok2">🎁</span>' : '<span class="lk">🔒</span>'}</button>`);
+      li.onclick = () => {
+        if (inf.owned) { setRide(r.id); rerender(); return; }
+        if (inf.ready) { P.rides.push(r.id); sfx('win'); celebrate({rar: 'raro'}); toast('Você conquistou: ' + r.n + ' ' + r.e); setRide(r.id); saveNow(); rerender(); return; }
+        if (inf.buy) { if (P.coins < inf.buy) return toast('Faltam ' + (inf.buy - P.coins) + ' moedas 🪙'); P.coins -= inf.buy; updateHUD(); P.rides.push(r.id); sfx('buy'); celebrate({rar: 'especial'}); setRide(r.id); saveNow(); rerender(); return; }
+        toast(inf.how);
+      };
+      list.appendChild(li);
+    });
+    body.appendChild(list);
+  });
+}
+// ---------- CANIL E PARQUINHO DOS PETS (no Meu Castelo) ----------
+const KENNEL = {x: HX - 22, z: HZ + 10};
+(function () {
+  const KX2 = KENNEL.x, KZ2 = KENNEL.z;
+  // gramado cercado
+  at(mesh(new THREE.CylinderGeometry(16, 16, 0.1, 36), mat('#8ce99a'), false), KX2, 0.06, KZ2);
+  mapCircle('main', KX2, KZ2, 16, '#8ce99a');
+  for (let i = 0; i < 28; i++) { const a = i / 28 * TAU; if (Math.abs(a - Math.PI * 1.5) < 0.3) continue;
+    at(cyl(0.12, 0.12, 1.1, 6, '#ffffff'), KX2 + Math.cos(a) * 16, 0.55, KZ2 + Math.sin(a) * 16);
+    at(mesh(new THREE.SphereGeometry(0.16, 8, 6), mat('#ff8cc6')), KX2 + Math.cos(a) * 16, 1.14, KZ2 + Math.sin(a) * 16); }
+  // casinha de cachorro grande
+  const kg = new THREE.Group(); kg.position.set(KX2, 0, KZ2 - 10); scene.add(kg);
+  put(kg, box(7, 3.6, 6, '#ffd6ea'), 0, 1.8, 0);
+  put(kg, mesh(new THREE.ConeGeometry(5.6, 2.6, 4), mat('#e64980')), 0, 4.8, 0).rotation.y = Math.PI / 4;
+  put(kg, mesh(new THREE.CircleGeometry(1.5, 20), new THREE.MeshBasicMaterial({color: '#5f3a4a'})), 0, 1.5, 3.02);
+  put(kg, mesh(new THREE.TorusGeometry(1.5, 0.22, 8, 22), mat('#ffffff')), 0, 1.5, 3.02);
+  put(kg, label('🏠 Casinha dos Bichinhos', {scale: 0.85}), 0, 7, 0);
+  addRect(KX2, KZ2 - 10, 7, 6); reserve(KX2, KZ2 - 10, 6);
+  poi(KX2, KZ2, '🐾', 'Parquinho dos Pets', 'main');
+  // obstáculos do parquinho
+  const obst = [];
+  // argolas para pular
+  [[-7, 2], [0, 4], [7, 2]].forEach(([dx, dz], i) => { const r = at(mesh(new THREE.TorusGeometry(1.5, 0.22, 8, 22), mat(['#ff6b6b', '#4dabf7', '#ffd43b'][i])), KX2 + dx, 2, KZ2 + dz); addCircle(KX2 + dx, KZ2 + dz, 0.4, 0.6); obst.push({o: r, k: 'aro'}); });
+  // rampinha e túnel
+  const ramp = at(box(5, 0.3, 4, '#b197fc'), KX2 - 9, 1, KZ2 + 9); ramp.rotation.x = 0.3; addPlat(KX2 - 9, KZ2 + 9, 5, 4, 1.2);
+  const tun = at(mesh(new THREE.CylinderGeometry(1.5, 1.5, 5, 16, 1, true), new THREE.MeshToonMaterial({map: patternTex('stripes', '#ff922b', '#ffe066'), gradientMap: TOON, side: THREE.DoubleSide})), KX2 + 8, 1.5, KZ2 + 9);
+  tun.rotation.z = Math.PI / 2;
+  // caminha, potes e bolinhas
+  at(cyl(1.6, 1.7, 0.4, 18, '#ffc2e2'), KX2 - 4, 0.2, KZ2 - 3); at(mesh(new THREE.TorusGeometry(1.6, 0.3, 8, 22), mat('#ffffff')), KX2 - 4, 0.4, KZ2 - 3).rotation.x = Math.PI / 2;
+  at(cyl(0.5, 0.4, 0.3, 14, '#ff8cc6'), KX2 + 4, 0.15, KZ2 - 3); at(cyl(0.5, 0.4, 0.3, 14, '#74c0fc'), KX2 + 5.4, 0.15, KZ2 - 3);
+  [[-2, 7], [3, 8], [-6, 5]].forEach(([dx, dz], i) => at(sph(0.35, mat(['#ffd43b', '#69db7c', '#ff5fa8'][i])), KX2 + dx, 0.35, KZ2 + dz));
+  // os pets guardados passeiam aqui
+  const roaming = [];
+  function refreshKennel() {
+    roaming.forEach(r => scene.remove(r.obj.group)); roaming.length = 0;
+    if (!P) return;
+    P.pets.filter(id => id !== P.pet).slice(0, 8).forEach((id, i) => {
+      let o; try { o = buildPet(id); } catch (e) { return; }
+      const a = i / 8 * TAU, d = 5 + (i % 3) * 3;
+      o.group.position.set(KX2 + Math.cos(a) * d, 0, KZ2 + Math.sin(a) * d);
+      scene.add(o.group);
+      roaming.push({obj: o, id, home: {x: KX2 + Math.cos(a) * d, z: KZ2 + Math.sin(a) * d}, tx: 0, tz: 0, wait: rnd() * 3, ph: rnd() * 6});
+    });
+  }
+  onFrame((dt, t) => {
+    if (curArea !== 'main') { roaming.forEach(r => r.obj.group.visible = false); return; }
+    const perto = Math.hypot(player.pos.x - KX2, player.pos.z - KZ2) < 60;
+    roaming.forEach(r => {
+      const g = r.obj.group, p = r.obj.parts; g.visible = perto; if (!perto) return;
+      r.wait -= dt;
+      if (r.wait <= 0) { r.wait = 2 + rnd() * 4; const a = rnd() * TAU, d = rnd() * 11; r.tx = KX2 + Math.cos(a) * d; r.tz = KZ2 + Math.sin(a) * d; }
+      const dx = r.tx - g.position.x, dz = r.tz - g.position.z, dist = Math.hypot(dx, dz);
+      if (dist > 0.4) {
+        const sp = Math.min(dist, 2.6) * dt;
+        g.position.x += dx / dist * sp; g.position.z += dz / dist * sp;
+        g.rotation.y = Math.atan2(dx, dz);
+        g.position.y = p.fly ? (typeof p.fly === 'number' ? p.fly : 2) + Math.sin(t * 3 + r.ph) * 0.2 : Math.abs(Math.sin(t * 8 + r.ph)) * 0.14;
+        p.legs.forEach((l, i) => l.rotation.x = Math.sin(t * 12 + i * Math.PI) * 0.5);
+      } else { g.position.y = p.fly ? (typeof p.fly === 'number' ? p.fly : 2) + Math.sin(t * 2 + r.ph) * 0.2 : 0; p.legs.forEach(l => l.rotation.x *= 0.85); }
+      if (p.tail) p.tail.rotation.z = Math.sin(t * 6 + r.ph) * 0.45;
+      blink(p, t + r.ph);
+    });
+  });
+  // placa e interação do parquinho
+  interact({x: KX2, z: KZ2 - 6.5, r: 4.6, area: 'main', text: () => '🐾 Casinha dos Bichinhos', act: () => {
+    const guardados = P.pets.filter(id => id !== P.pet).length;
+    dialog('🐾 Casinha dos Bichinhos', guardados ? 'Aqui ficam seus ' + guardados + ' bichinhos que não estão passeando com você. Eles adoram correr no parquinho!' : 'Ainda não tem nenhum bichinho morando aqui. Adote um e ele vai ter uma casinha fofa!', [
+      {t: '🐾 Abrir Meus Pets', fn: () => openPets()},
+      {t: '🎾 Brincar com todos', fn: () => { if (!roaming.length) return toast('Nenhum bichinho em casa 🐾'); roaming.forEach(r => { burst(r.obj.group.position.clone().add(new THREE.Vector3(0, 1, 0)), ['#ff5fa8', '#ffffff'], 10); r.wait = 0; }); sfx('sweet'); P.stats.petLove = (P.stats.petLove || 0) + 1; if (P.stats.petLove >= 10) achieve('amiga_animais'); saveSoon(); banner('💞 Que festa!', 'Todos os bichinhos ficaram felizes'); }},
+      {t: 'Tchau!'}]);
+  }});
+  // refaz a lista quando troca de pet ou de princesa
+  const oldSet = setPet;
+  setPet = function (id) { oldSet(id); refreshKennel(); };
+  const oldStart2 = startGame;
+  startGame = function (p, create) { oldStart2(p, create); P.rides = P.rides || []; setRide(P.ride && RIDE_BY[P.ride] && P.rides.includes(P.ride) ? P.ride : null); refreshKennel(); };
+  KENNEL.refresh = refreshKennel;
+})();
+// botão no menu e no HUD
+(function () {
+  const b = h('<button class="hb" id="bRide" aria-label="Veículos">🛴</button>');
+  b.onclick = () => { audioInit(); sfx('click'); openRides(); };
+  const mail = $('bMail'); if (mail) mail.after(b);
 })();
 
 })();
