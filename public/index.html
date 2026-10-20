@@ -3590,6 +3590,322 @@ NEW_WORLDS.forEach(w => {
     addCircle(w.cx + x, w.cz + z, 1, 4); }
 })();
 
+// ---------- REINO PRINCIPAL MAIS POPULOSO ----------
+// Enche o mundo inicial: bairro de casinhas, fazendinha, praça do mercado,
+// lago com pedalinho, praia com guarda-sóis e trilha da montanha.
+const mAt = (o, x, y, z) => at(o, x, y, z);
+const mPerson = (x, z, look, nome, fala) => {
+  const o = buildAvatar(Object.assign(defaultLook(), {head: null, dress: null}, look));
+  o.group.position.set(x, 0, z); o.group.rotation.y = rnd() * TAU; scene.add(o.group);
+  if (nome) { const l = label(nome, {scale: 0.62}); l.position.set(x, 4.5, z); scene.add(l); }
+  const ph = rnd() * 6;
+  onFrame((dt, t) => { if (curArea !== 'main') return; const p = o.parts; o.group.position.y = Math.abs(Math.cos(t * 2 + ph)) * 0.04; if (p.armR) p.armR.rotation.z = 0.15 + Math.sin(t * 2 + ph) * 0.15; blink(p, t + ph); });
+  addCircle(x, z, 0.8, 3);
+  if (fala) interact({x, z, r: 3, area: 'main', text: () => 'Conversar com ' + nome, act: () => { sfx('click'); dialog(nome, pickR(fala), [{t: 'Que legal!'}, {t: 'Até logo!'}]); } });
+  return o;
+};
+const mCritter = (x, z, id, sc = 1) => {
+  let o; try { o = buildPet(id); } catch (e) { return; }
+  o.group.position.set(x, 0, z); o.group.scale.setScalar(sc); scene.add(o.group);
+  const ph = rnd() * 6;
+  onFrame((dt, t) => { if (curArea !== 'main') return; o.group.position.y = Math.abs(Math.sin(t * 1.6 + ph)) * 0.22; o.group.rotation.y = Math.sin(t * 0.5 + ph) * 0.9; if (o.parts.tail) o.parts.tail.rotation.z = Math.sin(t * 5 + ph) * 0.4; blink(o.parts, t + ph); });
+  addCircle(x, z, 0.7, 1.2);
+};
+const LK = [
+  {skin: 0, hairColor: 4, hairStyle: 2, dress: 'd_flores', clip: 'cl_lacinhos'},
+  {skin: 2, hairColor: 2, hairStyle: 4, dress: null, top: 't_azul', bottom: 'b_shorts_jeans', head: 'a_bone'},
+  {skin: 4, hairColor: 11, hairStyle: 12, dress: 'd_alcinha', shoes: 's_plataforma'},
+  {skin: 1, hairColor: 6, hairStyle: 3, dress: 'd_listras', bag: 'bg_cesta'},
+  {skin: 5, hairColor: 13, hairStyle: 7, dress: null, top: 't_moletom', bottom: 'b_saia_xadrez'},
+  {skin: 3, hairColor: 8, hairStyle: 4, dress: null, top: 't_frio', bottom: 'b_calca', head: 'a_chapeu'}];
+// ---- 1. Bairro das Casinhas, entre o Jardim e a Vila ----
+(function () {
+  const bx = 46, bz = -46;
+  disc(bx, bz, 30, mat('#9be38f'));
+  mapCircle('main', bx, bz, 30, '#9be38f');
+  // ruazinha de terra
+  at(mesh(new THREE.BoxGeometry(50, 0.08, 7), mat('#f2d8a8'), false), bx, 0.06, bz); mapRect('main', bx, bz, 50, 7, '#f2d8a8');
+  const casas = [[-18, -11, '#ffd6ea', '#e64980', 'Casa da Dona Rosa'], [0, -11, '#d0ebff', '#1864ab', 'Casa do Seu Jorge'],
+    [18, -11, '#fff3bf', '#e67700', 'Casa da Tia Nair'], [-18, 11, '#d3f9d8', '#2b8a3e', 'Casa da Lia'],
+    [0, 11, '#e5dbff', '#6741d9', 'Casa do Nando'], [18, 11, '#ffe8cc', '#d9480f', 'Casa da Bel']];
+  casas.forEach(([dx, dz, c, r, n], i) => {
+    house(bx + dx, bz + dz, dz < 0 ? 0 : Math.PI, c, r, 10, 5.5, 9);
+    reserve(bx + dx, bz + dz, 8);
+    // jardim da frente com cerquinha
+    const fz = bz + dz + (dz < 0 ? 6.5 : -6.5);
+    for (let k = -4; k <= 4; k += 1.3) at(box(0.18, 0.8, 0.18, '#ffffff'), bx + dx + k, 0.4, fz);
+    at(box(9, 0.14, 0.1, '#ffffff'), bx + dx, 0.68, fz);
+    for (let k = 0; k < 4; k++) at(sph(0.3, mat(['#ff8cc6', '#ffd43b', '#b197fc', '#69db7c'][k])), bx + dx - 2.4 + k * 1.6, 0.3, fz + (dz < 0 ? -1.6 : 1.6));
+    at(mesh(new THREE.BoxGeometry(2, 0.08, 4), mat('#ffe8cc'), false), bx + dx, 0.05, fz + (dz < 0 ? -2.8 : 2.8));
+    poi(bx + dx, bz + dz, '🏠', n, 'main');
+  });
+  // caixa de correio, lixeirinha e bancos
+  [[-24, 0], [24, 0]].forEach(([dx, dz]) => { at(cyl(0.12, 0.12, 1.4, 6, '#adb5bd'), bx + dx, 0.7, bz + dz); at(box(0.6, 0.5, 0.4, '#4dabf7'), bx + dx, 1.6, bz + dz); });
+  [[-9, 0, 0], [9, 0, Math.PI]].forEach(([dx, dz, r]) => bench(bx + dx, bz + dz, r));
+  [[-14, 0], [14, 0]].forEach(([dx, dz]) => lamp(bx + dx, bz + dz));
+  for (let i = 0; i < 10; i++) { const a = rnd() * TAU, d = 20 + rnd() * 9, x = bx + Math.cos(a) * d, z = bz + Math.sin(a) * d; if (isFree(x, z, 2)) tree(x, z, 0.9, ['#5fcf6a', '#8fe08a']); }
+  mPerson(bx - 6, bz + 3, LK[0], 'Dona Rosa', ['Bom dia! Que dia bonito no reino!', 'Minhas flores estão lindas, viu?']);
+  mPerson(bx + 10, bz - 3, LK[1], 'Seu Jorge', ['Aqui no bairro todo mundo se conhece!', 'Já foi na Vila Dourada hoje?']);
+  mPerson(bx + 2, bz + 14, LK[4], 'Lia', ['Estou indo para a praia, vem junto?', 'Adoro passear por aqui de tardinha.']);
+  mCritter(bx - 12, bz + 5, 'p_cachorro', 0.9); mCritter(bx + 16, bz + 6, 'p_gato', 0.9);
+  poi(bx, bz, '🏘️', 'Bairro das Casinhas', 'main');
+})();
+// ---- 2. Fazendinha Feliz, a oeste ----
+(function () {
+  const fx = -46, fz = 50;
+  disc(fx, fz, 28, mat('#a9e34b'));
+  mapCircle('main', fx, fz, 28, '#a9e34b');
+  // celeiro
+  const cel = new THREE.Group(); cel.position.set(fx - 8, 0, fz - 10); scene.add(cel);
+  put(cel, box(14, 7, 10, '#e03131'), 0, 3.5, 0);
+  put(cel, mesh(new THREE.CylinderGeometry(5.4, 5.4, 14, 14, 1, true, 0, Math.PI), new THREE.MeshToonMaterial({color: '#c92a2a', side: THREE.DoubleSide})), 0, 7, 0).rotation.z = Math.PI / 2;
+  put(cel, box(4, 5, 0.3, '#ffffff'), 0, 2.5, 5.1);
+  put(cel, box(0.4, 5, 0.4, '#ffffff'), 0, 2.5, 5.2); put(cel, box(4, 0.4, 0.4, '#ffffff'), 0, 2.5, 5.2);
+  put(cel, label('🚜 Fazendinha Feliz', {scale: 0.85}), 0, 11, 0);
+  addRect(fx - 8, fz - 10, 14, 10); reserve(fx - 8, fz - 10, 10); poi(fx, fz, '🚜', 'Fazendinha Feliz', 'main');
+  // hortinha
+  for (let r = 0; r < 3; r++) { const z = fz + 6 + r * 4;
+    at(mesh(new THREE.BoxGeometry(22, 0.5, 2.6), mat('#a0673a'), false), fx, 0.25, z);
+    for (let i = 0; i < 9; i++) { const x = fx - 9 + i * 2.3; at(cyl(0.07, 0.07, 0.7, 5, '#2b8a3e'), x, 0.85, z); at(sph(0.32, mat(['#e03131', '#ff922b', '#69db7c'][(i + r) % 3])), x, 1.3, z); } }
+  // cercado dos bichos
+  for (let i = 0; i < 22; i++) { const a = i / 22 * TAU; if (Math.abs(a - Math.PI) < 0.35) continue;
+    at(cyl(0.12, 0.12, 1.3, 6, '#c99a5b'), fx + 16 + Math.cos(a) * 11, 0.65, fz + Math.sin(a) * 11); }
+  mCritter(fx + 14, fz - 3, 'p_coelho', 1); mCritter(fx + 19, fz + 4, 'p_coelho', 0.9);
+  mCritter(fx + 16, fz + 7, 'p_passarinho', 1); mCritter(fx + 22, fz - 2, 'p_porquinho', 1.1);
+  // espantalho
+  const esp = new THREE.Group(); esp.position.set(fx + 2, 0, fz + 16); scene.add(esp);
+  put(esp, cyl(0.12, 0.12, 4, 6, '#c99a5b'), 0, 2, 0); put(esp, box(2.6, 0.18, 0.18, '#c99a5b'), 0, 3, 0);
+  put(esp, sph(0.6, mat('#ffe066')), 0, 4.2, 0); put(esp, mesh(new THREE.ConeGeometry(1, 0.7, 12), mat('#f08c00')), 0, 4.9, 0);
+  [-1, 1].forEach(k => put(esp, sph(0.08, mat('#3a2242')), k * 0.2, 4.3, 0.5));
+  put(esp, box(1.6, 1.6, 0.4, '#ff6b6b'), 0, 3, 0);
+  addCircle(fx + 2, fz + 16, 0.8, 4);
+  // carroça e fardos
+  const car = new THREE.Group(); car.position.set(fx - 20, 0, fz + 4); car.rotation.y = 0.6; scene.add(car);
+  put(car, box(3.4, 1.2, 2.2, '#c99a5b'), 0, 1.3, 0);
+  [-1, 1].forEach(k => { const w = put(car, cyl(0.8, 0.8, 0.2, 14, '#8a5a3a'), k * 1.4, 0.8, 0); w.rotation.z = Math.PI / 2; });
+  for (let i = 0; i < 4; i++) put(car, cyl(0.5, 0.5, 1, 10, '#ffe066'), -0.6 + i * 0.5, 2.3, 0).rotation.z = Math.PI / 2;
+  addCircle(fx - 20, fz + 4, 2, 2.4);
+  for (let i = 0; i < 6; i++) { const x = fx - 24 + (i % 3) * 3, z = fz + 12 + Math.floor(i / 3) * 3; const fa = at(cyl(1, 1, 1.6, 12, '#ffe066'), x, 0.8, z); fa.rotation.z = Math.PI / 2; addCircle(x, z, 1.1, 1.4); }
+  mPerson(fx + 4, fz + 2, LK[5], 'Fazendeiro Tião', ['As cenouras já estão quase prontas!', 'Os coelhinhos vivem comendo da horta, danadinhos.']);
+  mPerson(fx - 12, fz + 10, LK[3], 'Dona Chica', ['Quer levar uns legumes para casa?', 'A galinha botou ovo hoje!']);
+  for (let i = 0; i < 8; i++) { const a = rnd() * TAU, d = 20 + rnd() * 8, x = fx + Math.cos(a) * d, z = fz + Math.sin(a) * d; if (isFree(x, z, 2)) tree(x, z, 1, ['#51cf66', '#94d82d']); }
+})();
+// ---- 3. Praça do Mercado, a leste do Jardim ----
+(function () {
+  const px = 56, pz = 44;
+  disc(px, pz, 24, mat('#ffe8cc')); mapCircle('main', px, pz, 24, '#ffe8cc');
+  const barracas = [['🍎', 'Frutas', '#ff6b6b', '#c92a2a'], ['🥖', 'Pães', '#ffa94d', '#e8590c'], ['🧀', 'Queijos', '#ffd43b', '#e67700'],
+    ['🌻', 'Flores', '#ff8cc6', '#c2255c'], ['🧺', 'Cestas', '#b197fc', '#6741d9'], ['🍯', 'Mel', '#ffe066', '#f08c00']];
+  barracas.forEach(([e, n, c, r], i) => {
+    const a = i / barracas.length * TAU, x = px + Math.cos(a) * 14, z = pz + Math.sin(a) * 14;
+    const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = -a + Math.PI / 2; scene.add(g);
+    put(g, box(4.6, 2.4, 3, c), 0, 1.2, 0);
+    put(g, mesh(new THREE.CylinderGeometry(1, 1, 5, 14, 1, true, 0, Math.PI), new THREE.MeshToonMaterial({map: patternTex('stripes', r, '#ffffff'), gradientMap: TOON, side: THREE.DoubleSide})), 0, 2.4, 1.8).rotation.z = Math.PI / 2;
+    put(g, box(4.2, 0.3, 0.4, '#ffffff'), 0, 1.6, 1.55);
+    for (let k = 0; k < 4; k++) put(g, sph(0.3, mat([c, '#ffffff', r][k % 3])), -1.2 + k * 0.8, 1.9, 1.5);
+    put(g, label(e + ' ' + n, {scale: 0.7}), 0, 4.4, 0);
+    addRect(x, z, 4.6, 3); reserve(x, z, 4); poi(x, z, e, 'Barraca de ' + n, 'main');
+  });
+  // chafariz no meio
+  at(cyl(4, 4.4, 1, 20, '#ffffff'), px, 0.5, pz); at(cyl(3.6, 3.6, 0.12, 20, '#74c0fc', false), px, 1.02, pz);
+  at(cyl(0.5, 0.6, 2.6, 10, '#ffffff'), px, 1.8, pz);
+  const jato = at(mesh(new THREE.SphereGeometry(0.8, 14, 10), new THREE.MeshPhongMaterial({color: '#a5d8ff', transparent: true, opacity: .8})), px, 3.3, pz);
+  onFrame((dt, t) => { if (curArea === 'main') jato.scale.setScalar(1 + Math.sin(t * 4) * 0.12); });
+  addCircle(px, pz, 4.4, 1.6); poi(px, pz, '⛲', 'Praça do Mercado', 'main');
+  [[0, 20, 0], [0, -20, Math.PI]].forEach(([dx, dz, r]) => bench(px + dx, pz + dz, r));
+  [[-20, 0], [20, 0]].forEach(([dx, dz]) => lamp(px + dx, pz + dz));
+  mPerson(px - 6, pz + 6, LK[3], 'Feirante Zeca', ['Fruta fresquinha, olha que delícia!', 'Hoje tem mel da Fazendinha Feliz.']);
+  mPerson(px + 7, pz - 5, LK[2], 'Dona Marta', ['Comprei flores para a minha janela!', 'A praça fica linda de tardinha.']);
+  mCritter(px - 10, pz - 8, 'p_passarinho', 1);
+})();
+// ---- 4. Lago dos Patinhos, ao sul do Jardim ----
+(function () {
+  const lx = -40, lz = -30;
+  at(mesh(new THREE.CylinderGeometry(18, 18, 0.3, 40), new THREE.MeshPhongMaterial({color: '#74c0fc', transparent: true, opacity: .88, shininess: 90}), false), lx, 0.1, lz);
+  mapCircle('main', lx, lz, 18, '#74c0fc');
+  // margem de pedrinhas
+  for (let i = 0; i < 40; i++) { const a = i / 40 * TAU; const x = lx + Math.cos(a) * 18.6, z = lz + Math.sin(a) * 18.6;
+    at(mesh(new THREE.DodecahedronGeometry(0.5 + rnd() * 0.4, 0), mat(['#cfd4dc', '#b8c0cc'][i % 2])), x, 0.2, z); }
+  addCircle(lx, lz, 18, 0.1);
+  // píer de madeira
+  for (let i = 0; i < 7; i++) at(box(3, 0.25, 2, '#c99a5b'), lx + 14 - i * 2.6, 0.7, lz + 12 - i * 1.2);
+  addPlat(lx + 8, lz + 8, 16, 10, 0.85);
+  [[lx + 14, lz + 12], [lx - 2, lz + 5]].forEach(([x, z]) => { at(cyl(0.2, 0.2, 1.6, 8, '#8a5a3a'), x, 0.4, z); });
+  // pedalinho de cisne
+  const ped = new THREE.Group(); ped.position.set(lx - 4, 0, lz - 4); scene.add(ped);
+  put(ped, mesh(new THREE.SphereGeometry(2, 16, 12), mat('#ffffff')), 0, 0.9, 0).scale.set(1, 0.7, 1.4);
+  put(ped, cyl(0.4, 0.5, 2.6, 10, '#ffffff'), 0, 2.2, 1.4).rotation.x = -0.3;
+  put(ped, sph(0.6, mat('#ffffff')), 0, 3.4, 1.9);
+  put(ped, mesh(new THREE.ConeGeometry(0.22, 0.6, 8), mat('#ff922b')), 0, 3.35, 2.5).rotation.x = Math.PI / 2;
+  [-1, 1].forEach(k => put(ped, sph(0.08, mat('#3a2242')), k * 0.22, 3.55, 2.3));
+  onFrame((dt, t) => { if (curArea !== 'main') return; ped.position.set(lx - 4 + Math.sin(t * 0.25) * 7, Math.sin(t * 1.4) * 0.12, lz - 4 + Math.cos(t * 0.25) * 7); ped.rotation.y = -t * 0.25; });
+  poi(lx, lz, '🦢', 'Lago dos Patinhos', 'main');
+  // patinhos boiando
+  for (let i = 0; i < 5; i++) { const g = new THREE.Group(); const a0 = rnd() * TAU, r0 = 5 + rnd() * 9;
+    put(g, sph(0.5, mat('#ffe066')), 0, 0.5, 0); put(g, sph(0.3, mat('#ffe066')), 0, 1, 0.3);
+    put(g, mesh(new THREE.ConeGeometry(0.12, 0.3, 6), mat('#ff922b')), 0, 0.98, 0.6).rotation.x = Math.PI / 2;
+    [-1, 1].forEach(k => put(g, sph(0.05, mat('#3a2242')), k * 0.12, 1.1, 0.5));
+    scene.add(g);
+    onFrame((dt, t) => { if (curArea !== 'main') return; const a = a0 + t * (0.1 + i * 0.03); g.position.set(lx + Math.cos(a) * r0, 0.2 + Math.sin(t * 2 + i) * 0.06, lz + Math.sin(a) * r0); g.rotation.y = -a + Math.PI / 2; }); }
+  // bancos e árvores na beira
+  [[0, 22, 0], [22, 0, -Math.PI / 2], [-22, 0, Math.PI / 2]].forEach(([dx, dz, r]) => bench(lx + dx, lz + dz, r));
+  for (let i = 0; i < 12; i++) { const a = i / 12 * TAU, x = lx + Math.cos(a) * 24, z = lz + Math.sin(a) * 24; if (isFree(x, z, 2)) tree(x, z, 1, ['#5fcf6a', '#8fe08a', '#ffb3d1']); }
+  mPerson(lx + 12, lz + 14, LK[1], 'Pescador Juca', ['Os patinhos daqui são bem mansinhos.', 'Já andou no pedalinho de cisne?']);
+})();
+// ---- 5. Praia Turquesa mais animada ----
+(function () {
+  const bz = 124;
+  // guarda-sóis e cadeiras
+  for (let i = 0; i < 7; i++) { const x = -60 + i * 20;
+    const g = new THREE.Group(); g.position.set(x, 0, bz); scene.add(g);
+    put(g, cyl(0.1, 0.1, 3.4, 8, '#ffffff'), 0, 1.7, 0);
+    put(g, mesh(new THREE.ConeGeometry(2.8, 1.3, 12), new THREE.MeshToonMaterial({map: patternTex('stripes', ['#ff6b6b', '#4dabf7', '#ffd43b'][i % 3], '#ffffff'), gradientMap: TOON})), 0, 3.6, 0);
+    [-1, 1].forEach(k => { const c = put(g, box(1.5, 0.2, 2.4, '#ffffff'), k * 2.2, 0.55, 0); c.rotation.x = -0.25; put(g, box(1.5, 0.2, 1.2, '#ffe066'), k * 2.2, 0.95, -1.1); });
+    addCircle(x, bz, 0.5, 3.4);
+    if (i % 2) { // castelinho de areia
+      const s = new THREE.Group(); s.position.set(x + 7, 0, bz + 6); scene.add(s);
+      put(s, cyl(1.6, 1.8, 1.4, 4, '#f2d08a'), 0, 0.7, 0);
+      [-1, 1].forEach(k => [-1, 1].forEach(j => { put(s, cyl(0.5, 0.6, 2.2, 8, '#f2d08a'), k * 1.3, 1.1, j * 1.3); put(s, mesh(new THREE.ConeGeometry(0.6, 0.8, 8), mat('#ff8cc6')), k * 1.3, 2.5, j * 1.3); }));
+      addCircle(x + 7, bz + 6, 1.8, 2); }
+  }
+  // bola, boias e baldinhos
+  for (let i = 0; i < 6; i++) { const x = -70 + rnd() * 140, z = bz + 8 + rnd() * 14;
+    const b = at(mesh(new THREE.SphereGeometry(0.8, 14, 10), new THREE.MeshToonMaterial({map: patternTex('stripes', ['#ff6b6b', '#4dabf7'][i % 2], '#ffffff'), gradientMap: TOON})), x, 0.8, z);
+    onFrame((dt, t) => { if (curArea === 'main') b.position.y = 0.8 + Math.abs(Math.sin(t * 1.2 + x)) * 0.5; });
+    addCircle(x, z, 0.9, 1.4); }
+  for (let i = 0; i < 5; i++) { const x = -50 + i * 25; const bo = at(mesh(new THREE.TorusGeometry(1.1, 0.4, 10, 20), mat(['#ff8cc6', '#ffd43b', '#74c0fc'][i % 3])), x, 0.3, bz + 26); bo.rotation.x = Math.PI / 2;
+    onFrame((dt, t) => { if (curArea === 'main') bo.position.y = 0.3 + Math.sin(t * 1.6 + i) * 0.18; }); }
+  // quiosque de sucos
+  const q = new THREE.Group(); q.position.set(24, 0, bz - 8); scene.add(q);
+  put(q, box(6, 2.6, 4, '#ffd8a8'), 0, 1.3, 0);
+  put(q, mesh(new THREE.ConeGeometry(5, 2, 8), mat('#2f9e44')), 0, 3.6, 0);
+  put(q, box(5.4, 0.3, 0.5, '#ffffff'), 0, 1.8, 2.1);
+  ['#ff922b', '#ffd43b', '#69db7c'].forEach((c, i) => put(q, cyl(0.3, 0.26, 0.7, 10, c), -1.2 + i * 1.2, 2.2, 2));
+  put(q, label('🥤 Quiosque da Praia', {scale: 0.75}), 0, 5.4, 0);
+  addRect(24, bz - 8, 6, 4); reserve(24, bz - 8, 5); poi(24, bz - 8, '🥤', 'Quiosque da Praia', 'main');
+  // coqueiros extras e conchas
+  for (let i = 0; i < 10; i++) { const x = -75 + i * 17, z = bz - 16 + (i % 2 ? 3 : -3); if (!isFree(x, z, 2)) continue;
+    at(cyl(0.45, 0.6, 7, 8, '#c99a5b'), x, 3.5, z);
+    for (let k = 0; k < 6; k++) { const a = k / 6 * TAU; const f = at(mesh(new THREE.SphereGeometry(2.2, 10, 6), mat('#51cf66')), x + Math.cos(a) * 1.8, 7, z + Math.sin(a) * 1.8); f.scale.set(1, 0.18, 0.6); f.rotation.y = -a; }
+    at(sph(0.4, mat('#8a5a3a')), x, 6.4, z); addCircle(x, z, 0.7, 7); }
+  for (let i = 0; i < 18; i++) { const x = -80 + rnd() * 160, z = bz + 14 + rnd() * 18;
+    at(mesh(new THREE.SphereGeometry(0.3, 10, 6, 0, TAU, 0, Math.PI / 2), mat(['#ffd6ea', '#ffffff', '#ffe8cc'][i % 3])), x, 0.1, z).rotation.y = rnd() * TAU; }
+  mPerson(-10, bz + 4, LK[2], 'Banhista Duda', ['A água está uma delícia hoje!', 'Vamos fazer um castelo de areia?']);
+  mPerson(30, bz - 2, LK[4], 'Suqueiro Nando', ['Suco de laranja geladinho!', 'Tem de maracujá também.']);
+  mCritter(-28, bz + 10, 'p_tartaruga', 1.1);
+})();
+// ---- 6. Trilha da Montanha de Algodão-Doce ----
+(function () {
+  const mz = -112;
+  // trilha de pedras subindo
+  for (let i = 0; i < 16; i++) { const x = -26 + i * 3.4, z = mz + 26 - i * 1.6;
+    at(mesh(new THREE.CylinderGeometry(1.6, 1.8, 0.4, 10), mat('#e9d8f5')), x, 0.2 + i * 0.05, z); }
+  // mirante com telescópio
+  const mir = new THREE.Group(); mir.position.set(30, 0, mz + 8); scene.add(mir);
+  put(mir, cyl(5, 5.6, 2.4, 18, '#e5dbff'), 0, 1.2, 0);
+  for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; put(mir, cyl(0.14, 0.14, 1.2, 6, '#ffffff'), Math.cos(a) * 4.6, 3, Math.sin(a) * 4.6); }
+  put(mir, mesh(new THREE.TorusGeometry(4.6, 0.12, 6, 24), mat('#ffffff')), 0, 3.6, 0).rotation.x = Math.PI / 2;
+  const tele = put(mir, cyl(0.3, 0.45, 2.4, 12, '#b197fc'), 0, 3.4, 0); tele.rotation.x = -0.8;
+  put(mir, label('🔭 Mirante das Nuvens', {scale: 0.8}), 0, 7, 0);
+  addPlat(30, mz + 8, 10, 10, 2.5); reserve(30, mz + 8, 7); poi(30, mz + 8, '🔭', 'Mirante das Nuvens', 'main');
+  // pirulitos gigantes e algodões
+  for (let i = 0; i < 14; i++) { const a = rnd() * TAU, d = 16 + rnd() * 26, x = Math.cos(a) * d, z = mz + Math.sin(a) * d * 0.5;
+    if (!isFree(x, z, 2.5)) continue;
+    at(cyl(0.22, 0.22, 5, 8, '#ffffff'), x, 2.5, z);
+    const pir = at(mesh(new THREE.CylinderGeometry(2, 2, 0.5, 20), new THREE.MeshToonMaterial({map: patternTex('spiral', ['#ff5fa8', '#74c0fc', '#ffd43b'][i % 3], '#ffffff'), gradientMap: TOON})), x, 5.4, z);
+    pir.rotation.x = Math.PI / 2;
+    onFrame((dt, t) => { if (curArea === 'main') pir.rotation.z = t * 0.5; });
+    addCircle(x, z, 0.5, 5); }
+  // teleférico de nuvem
+  [[-20, mz + 18], [26, mz - 8]].forEach(([x, z]) => { at(cyl(0.5, 0.6, 12, 8, '#e9e4ff'), x, 6, z); addCircle(x, z, 0.8, 12); });
+  const cabo = at(cyl(0.08, 0.08, 52, 6, '#ffffff'), 3, 11.6, mz + 5); cabo.rotation.z = Math.PI / 2; cabo.rotation.y = 0.5;
+  const cab = new THREE.Group(); scene.add(cab);
+  put(cab, box(2.6, 2.2, 2.6, '#ffd6ea'), 0, 0, 0); put(cab, mesh(new THREE.ConeGeometry(2, 1, 10), mat('#e64980')), 0, 1.5, 0);
+  put(cab, cyl(0.06, 0.06, 1.4, 4, '#ffffff'), 0, 2.2, 0);
+  onFrame((dt, t) => { if (curArea !== 'main') { cab.visible = false; return; } cab.visible = true; const k = (Math.sin(t * 0.18) + 1) / 2; cab.position.set(-20 + k * 46, 10.4 - Math.sin(k * Math.PI) * 0.6, mz + 18 - k * 26); });
+  mPerson(-6, mz + 20, LK[5], 'Guia Toninho', ['Lá de cima dá para ver o reino inteiro!', 'Cuidado para não comer a montanha, viu? 😄']);
+  mCritter(14, mz + 14, 'p_coelho_nuvem', 1.1);
+})();
+// ---- 7. Floresta Lilás mais densa ----
+(function () {
+  const fx = -102;
+  for (let i = 0; i < 40; i++) { const a = rnd() * TAU, d = 16 + Math.sqrt(rnd()) * 36, x = fx + Math.cos(a) * d, z = Math.sin(a) * d;
+    if (!isFree(x, z, 2.4)) continue;
+    tree(x, z, 1 + rnd() * 0.7, ['#b197fc', '#d0bfff', '#e599f7', '#9775fa']); }
+  // cogumelos e troncos
+  for (let i = 0; i < 26; i++) { const a = rnd() * TAU, d = 12 + rnd() * 40, x = fx + Math.cos(a) * d, z = Math.sin(a) * d;
+    if (!isFree(x, z, 1.4)) continue;
+    at(cyl(0.3, 0.38, 1.1, 8, '#fff3d6'), x, 0.55, z);
+    at(mesh(new THREE.SphereGeometry(0.9, 12, 8, 0, TAU, 0, Math.PI / 2), mat(['#e03131', '#9c36b5', '#ff922b'][i % 3])), x, 1.1, z);
+    addCircle(x, z, 0.8, 1.4); }
+  // casa na árvore
+  const ca = new THREE.Group(); ca.position.set(fx + 18, 0, -26); scene.add(ca);
+  put(ca, cyl(1.6, 2, 9, 10, '#8a5a3a'), 0, 4.5, 0);
+  put(ca, box(8, 4, 7, '#c99a5b'), 0, 10, 0);
+  put(ca, mesh(new THREE.ConeGeometry(6.4, 3, 4), mat('#9775fa')), 0, 13.4, 0).rotation.y = Math.PI / 4;
+  put(ca, box(2, 2.4, 0.3, '#5f3a1e'), 0, 9, 3.6);
+  for (let i = 0; i < 8; i++) { const st = put(ca, box(2.4, 0.3, 0.8, '#c99a5b'), 0, 1.4 + i, 2.4 + i * 0.2); }
+  put(ca, label('🌳 Casa na Árvore', {scale: 0.8}), 0, 16, 0);
+  addCircle(fx + 18, -26, 2.4, 9); reserve(fx + 18, -26, 7); poi(fx + 18, -26, '🌳', 'Casa na Árvore', 'main');
+  // vaga-lumes (brilham à noite)
+  const vagas = [];
+  for (let i = 0; i < 26; i++) { const a = rnd() * TAU, d = 10 + rnd() * 34;
+    const v = at(mesh(new THREE.SphereGeometry(0.16, 8, 6), new THREE.MeshBasicMaterial({color: '#ffe066', transparent: true, opacity: 0})), fx + Math.cos(a) * d, 1.5 + rnd() * 2.5, Math.sin(a) * d);
+    vagas.push({o: v, ph: rnd() * 6, x: v.position.x, y: v.position.y, z: v.position.z}); }
+  onFrame((dt, t) => {
+    if (curArea !== 'main') { vagas.forEach(v => v.o.visible = false); return; }
+    let noite = 0; try { noite = Math.max(0, Math.min(1, (WEATHER.t - 0.68) / 0.14)); } catch (e) {}
+    vagas.forEach(v => { v.o.visible = noite > 0.05; v.o.material.opacity = noite * (0.5 + Math.sin(t * 3 + v.ph) * 0.5); v.o.position.set(v.x + Math.sin(t * 0.5 + v.ph) * 1.6, v.y + Math.sin(t * 0.8 + v.ph) * 0.7, v.z + Math.cos(t * 0.4 + v.ph) * 1.6); });
+  });
+  mPerson(fx + 8, 12, LK[0], 'Fada Violeta', ['A floresta guarda muitos segredos...', 'À noite os vaga-lumes acendem tudo!']);
+  mCritter(fx - 14, 16, 'p_raposa', 1); mCritter(fx + 24, 10, 'p_passarinho', 1);
+})();
+// ---- 8. Jardim Rosa com mais vida ----
+(function () {
+  // pergolado de flores no caminho principal
+  for (let i = 0; i < 5; i++) { const z = 26 + i * 7;
+    [-1, 1].forEach(k => at(cyl(0.2, 0.22, 4.4, 8, '#ffffff'), k * 4.5, 2.2, z));
+    at(box(9.6, 0.25, 0.25, '#ffffff'), 0, 4.4, z);
+    for (let f = 0; f < 5; f++) at(sph(0.3, mat(['#ff8cc6', '#e599f7', '#ffd43b'][f % 3])), -4 + f * 2, 4.5, z); }
+  // canteiros em desenho
+  [[-16, 16], [16, 16], [-16, -16], [16, -16]].forEach(([x, z], i) => {
+    at(cyl(5, 5.2, 0.5, 20, '#c99a5b'), x, 0.25, z);
+    at(cyl(4.6, 4.6, 0.3, 20, '#a0673a'), x, 0.5, z);
+    for (let f = 0; f < 10; f++) { const a = f / 10 * TAU, fx2 = x + Math.cos(a) * 3, fz2 = z + Math.sin(a) * 3;
+      at(cyl(0.06, 0.06, 0.7, 5, '#2f9e44'), fx2, 0.9, fz2); at(sph(0.32, mat(['#ff5fa8', '#ffd43b', '#b197fc', '#ffffff'][(f + i) % 4])), fx2, 1.35, fz2); }
+    addCircle(x, z, 5, 0.6); });
+  // balanço de jardim e piquenique
+  const bal = new THREE.Group(); bal.position.set(-24, 0, 4); scene.add(bal);
+  [-1, 1].forEach(k => { put(bal, cyl(0.16, 0.18, 4.4, 8, '#ff8cc6'), k * 2.6, 2.2, 0); });
+  put(bal, box(5.6, 0.25, 0.25, '#ff8cc6'), 0, 4.4, 0);
+  const assento = new THREE.Group(); assento.position.set(-24, 4.3, 4); scene.add(assento);
+  [-0.8, 0.8].forEach(k => put(assento, cyl(0.04, 0.04, 2.6, 4, '#ffffff'), k, -1.3, 0));
+  put(assento, box(2.2, 0.2, 0.9, '#ffe066'), 0, -2.6, 0); put(assento, box(2.2, 1, 0.15, '#ffe066'), 0, -2.1, -0.4);
+  onFrame((dt, t) => { if (curArea === 'main') assento.rotation.x = Math.sin(t * 1.2) * 0.3; });
+  addCircle(-24, 4, 2.8, 4.4); poi(-24, 4, '🌸', 'Balanço do Jardim', 'main');
+  const toalha = at(mesh(new THREE.BoxGeometry(7, 0.08, 7), new THREE.MeshToonMaterial({map: patternTex('check', '#ff6b6b', '#ffffff'), gradientMap: TOON}), false), 24, 0.07, -4);
+  at(cyl(0.9, 0.8, 0.7, 12, '#c99a5b'), 26, 0.4, -6); at(sph(0.4, mat('#e03131')), 22, 0.4, -2); at(sph(0.4, mat('#ffd43b')), 23, 0.4, -5.5);
+  poi(24, -4, '🧺', 'Piquenique no Jardim', 'main');
+  mPerson(-8, 18, LK[0], 'Dona Margarida', ['Minhas rosas são as mais bonitas do reino!', 'Sente no balanço, é gostoso.']);
+  mPerson(10, -14, LK[3], 'Tia Carminha', ['Trouxe bolo para o piquenique!', 'Que dia lindo para um passeio.']);
+  mCritter(-20, 22, 'p_borboleta', 1.2); mCritter(18, 22, 'p_gato', 0.9); mCritter(-6, -22, 'p_cachorro', 0.9);
+})();
+// ---- 9. Detalhes por todo o reino: arbustos, pedras e flores ----
+(function () {
+  let n = 0;
+  for (let i = 0; i < 700 && n < 150; i++) {
+    const x = (rnd() - .5) * 320, z = (rnd() - .5) * 320;
+    if (Math.hypot(x, z) < 14) continue;
+    if (!isFree(x, z, 2.6)) continue;
+    n++;
+    const k = i % 4;
+    if (k === 0) { const b = at(mesh(new THREE.SphereGeometry(1.4 + rnd(), 12, 10), mat(['#51cf66', '#69db7c', '#94d82d'][i % 3])), x, 0.85, z); b.scale.y = 0.75; addCircle(x, z, 1.3, 1.4); }
+    else if (k === 1) { const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g); [[0, 0, 0.8], [0.9, 0.15, 0.55], [-0.7, 0.1, 0.5]].forEach(([dx, dy, r]) => put(g, mesh(new THREE.DodecahedronGeometry(r, 0), mat('#cfd4dc')), dx, dy + r * 0.5, 0)); addCircle(x, z, 1, 0.9); }
+    else if (k === 2) { for (let f = 0; f < 6; f++) { const fx2 = x + (rnd() - .5) * 3.4, fz2 = z + (rnd() - .5) * 3.4; at(mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.5, 5), mat('#2f9e44'), false), fx2, 0.25, fz2); at(mesh(new THREE.SphereGeometry(0.24, 10, 8), mat(['#ff5fa8', '#ffd43b', '#e599f7', '#74c0fc', '#ff922b'][f % 5])), fx2, 0.55, fz2); } }
+    else { if (isFree(x, z, 3.2)) tree(x, z, 0.8 + rnd() * 0.6, ['#5fcf6a', '#8fe08a', '#94d82d']); }
+  }
+})();
+
 // ---------- moedas (instanciadas) ----------
 const coins = [];
 const coinAt = (x, y, z) => coins.push({x, y, z, bx: x, bz: z, taken: false, back: 0});
@@ -6744,7 +7060,7 @@ frame();
 // ---------- TRAVA POR CÓDIGO E CONFIGURAÇÕES DOS PAIS ----------
 const CODE_DEFAULT = '021100', CODE_KEY = 'mundo-destrava', UNLOCK_H = 4;
 // carimbo do build: o valor é trocado pelo build.py na hora de gerar o index.html
-const BUILD_VER = '3.4', BUILD_AT = '2026-10-20T09:22:38';
+const BUILD_VER = '3.4', BUILD_AT = '2026-10-20T09:49:11';
 function buildLabel() {
   const iso = /^\d{4}-\d{2}-\d{2}T/.test(BUILD_AT) ? BUILD_AT : null;
   if (!iso) return 'versão ' + BUILD_VER;
@@ -7444,11 +7760,13 @@ function rideModel(id) {
   const g = new THREE.Group();
   const wheel = (x, y, z, r2, c) => { const w = put(g, cyl(r2, r2, 0.16, 16, c || '#3a2242'), x, y, z); w.rotation.z = Math.PI / 2; const h2 = put(g, cyl(r2 * 0.4, r2 * 0.4, 0.2, 10, '#ffd43b'), x, y, z); h2.rotation.z = Math.PI / 2; return w; };
   if (id === 'patinete') {
-    put(g, box(0.36, 0.12, 1.5, '#ff5fa8'), 0, 0.3, 0);
-    put(g, cyl(0.06, 0.06, 1.3, 8, '#e9e4ff'), 0, 0.95, 0.6).rotation.x = -0.12;
-    put(g, box(0.7, 0.08, 0.08, '#ffffff'), 0, 1.55, 0.68);
-    [-1, 1].forEach(k => put(g, sph(0.08, mat('#ffd43b')), k * 0.35, 1.55, 0.68));
-    g.userData.wheels = [wheel(0, 0.24, 0.66, 0.24), wheel(0, 0.24, -0.62, 0.24)];
+    put(g, box(0.44, 0.14, 1.9, '#ff5fa8'), 0, 0.32, -0.1);
+    put(g, box(0.5, 0.06, 2, '#ffd6ea'), 0, 0.4, -0.1);
+    put(g, cyl(0.07, 0.07, 2, 8, '#e9e4ff'), 0, 1.3, 0.92).rotation.x = -0.14;
+    put(g, box(0.95, 0.1, 0.1, '#ffffff'), 0, 2.25, 1.05);
+    [-1, 1].forEach(k => put(g, sph(0.11, mat('#ffd43b')), k * 0.47, 2.25, 1.05));
+    put(g, mesh(starGeo(0.18, 0.08, 0.04), shiny('#ffd43b', .6)), 0, 1.95, 1.08);
+    g.userData.wheels = [wheel(0, 0.26, 0.92, 0.26), wheel(0, 0.26, -0.98, 0.26)];
   } else if (id === 'bike') {
     put(g, cyl(0.05, 0.05, 1.5, 8, '#ff8cc6'), 0, 0.72, 0).rotation.x = Math.PI / 2;
     put(g, cyl(0.05, 0.05, 0.9, 8, '#ff8cc6'), 0, 0.95, 0.5).rotation.x = -0.5;
@@ -7490,10 +7808,11 @@ onFrame((dt, t) => {
   const esconder = player.riding || !player.onGround && rideId === 'carruagem';
   rideObj.visible = !player.riding;
   if (!rideObj.visible) return;
-  rideObj.position.set(player.pos.x, player.pos.y, player.pos.z);
+  const fwd = rideId === 'patinete' ? 0.5 : 0;
+  rideObj.position.set(player.pos.x + Math.sin(player.yaw) * fwd, player.pos.y, player.pos.z + Math.cos(player.yaw) * fwd);
   rideObj.rotation.y = player.yaw;
   // na carruagem a princesa vai sentada lá dentro
-  if (avatarObj && avatarObj.group) avatarObj.group.position.y = player.pos.y + (rideId === 'carruagem' ? 1.15 : rideId === 'patinete' ? 0.42 : rideId === 'patins' ? 0.2 : 0.6);
+  if (avatarObj && avatarObj.group) avatarObj.group.position.y = player.pos.y + (rideId === 'carruagem' ? 1.15 : rideId === 'patinete' ? 0.5 : rideId === 'patins' ? 0.2 : 0.6);
   const v = (player.speed || 0);
   (rideObj.userData.wheels || []).forEach(w => { w.rotation.x -= v * dt * 2.4; });
   if (rideId === 'patins' || rideId === 'patinete') rideObj.position.y += Math.sin(t * 12) * 0.02 * (v > 0.5 ? 1 : 0);
