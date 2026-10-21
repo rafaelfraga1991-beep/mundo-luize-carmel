@@ -64,6 +64,14 @@ wss.on('connection', ws => {
       ws.area = clean(m.area, 24); ws.x = +m.x || 0; ws.z = +m.z || 0; ws.yaw = +m.yaw || 0;
       if (!rooms.has(ws.sala)) rooms.set(ws.sala, new Set());
       const r = rooms.get(ws.sala);
+      // uma princesa por vez: se ela já estava jogando em outro aparelho, aquele sai
+      [...r].forEach(c => {
+        if (c !== ws && c.nome && c.nome.toLowerCase() === ws.nome.toLowerCase()) {
+          send(c, {t: 'expulso', nome: c.nome});
+          r.delete(c); broadcast(c, {t: 'saiu', id: c.id});
+          c.sala = null; setTimeout(() => { try { c.close(4000, 'outro aparelho'); } catch (e) {} }, 200);
+        }
+      });
       if (r.size >= 8) return send(ws, {t: 'cheio'});
       r.add(ws);
       // conta quem já está lá e avisa os outros
