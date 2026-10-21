@@ -580,6 +580,8 @@ body.land .sheet.wide .isl .in{font-size:9px;max-width:11vw}
 .pill.danger{background:#e03131;color:#fff;box-shadow:0 3px 0 #a51111}
 .li .ok2{font-weight:800;color:#2b8a3e;font-size:20px;flex:none}
 #clockChip{font-size:17px;margin-left:2px}
+.isl .icount{position:absolute;left:-6px;top:-6px;min-width:20px;height:20px;border-radius:999px;background:#fff;color:var(--ink);font-size:11px;font-weight:800;display:grid;place-items:center;box-shadow:0 0 0 2px var(--ic,#ff8cc6)}
+body.mob .sheet.wide .isl .icount{min-width:15px;height:15px;font-size:9px;left:-4px;top:-4px}
 /* sem barras de rolagem visíveis */
 *{scrollbar-width:none;-ms-overflow-style:none}
 *::-webkit-scrollbar{width:0;height:0;display:none}
@@ -587,6 +589,37 @@ body.land .sheet.wide .isl .in{font-size:9px;max-width:11vw}
 .cfgtabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;overflow:visible;padding:0;margin:0 0 10px;touch-action:auto}
 .cfgtabs .tab{width:100%;white-space:normal;text-align:center;padding:9px 8px;line-height:1.1}
 @media (min-width:560px){.cfgtabs{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* palco do guarda-roupa */
+#stage{position:fixed;left:0;top:0;z-index:19;overflow:hidden;background:linear-gradient(180deg,#ffe3f1,#e2d6ff)}
+#stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#stage .st-bar{position:absolute;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px}
+#stage .st-frames{right:10px}
+#stage .st-tools{left:10px}
+@media (max-height:520px){#stage .st-b small{display:none}#stage .st-b{min-width:40px;padding:5px 6px}}
+body.mob #stage .st-b{min-width:44px;padding:4px 6px}
+body.mob #stage .st-b small{font-size:9.5px}
+body.mob #stage .st-b span{font-size:17px}
+body.mob #stage .st-bar{gap:4px}
+#stage .st-b{border:0;border-radius:16px;padding:6px 10px;background:rgba(255,255,255,.92);box-shadow:0 0 0 2px var(--line),0 3px 0 rgba(90,42,122,.18);display:flex;flex-direction:column;align-items:center;font-weight:800;color:var(--ink);min-width:54px}
+#stage .st-b span{font-size:20px;line-height:1}
+#stage .st-b small{font-size:11px}
+#stage .st-b.on{background:var(--pink);color:#fff;box-shadow:0 0 0 2px #fff,0 3px 0 var(--pink-d)}
+#stage .st-b.sm{min-width:40px;font-size:18px;justify-content:center}
+#stage .st-hint{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:999px;padding:4px 12px;font-weight:800;font-size:13px;color:var(--soft);transition:opacity .4s;pointer-events:none}
+#stage .st-hint.off{opacity:0}
+body.stage-open #hud,body.stage-open #mini,body.stage-open #actBtn,body.stage-open #joy,body.stage-open #jumpBtn,body.stage-open .mob-top,body.stage-open #mTop{visibility:hidden}
+body.stage-open #stage + *{}
+/* controle de zoom da câmera */
+#camZoom{position:fixed;right:12px;top:50%;transform:translateY(-50%);z-index:6;display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.82);border-radius:999px;padding:8px 6px;box-shadow:0 0 0 2px var(--line),0 4px 0 rgba(90,42,122,.15)}
+#camZoom input{writing-mode:vertical-lr;direction:rtl;-webkit-appearance:slider-vertical;width:26px;height:130px;accent-color:var(--pink);margin:0}
+#camZoom .zb{border:0;background:var(--chip);width:34px;height:34px;border-radius:50%;font-size:14px;display:grid;place-items:center;position:relative;padding:0}
+#camZoom .zb b{position:absolute;right:2px;bottom:0;font-size:14px;color:var(--pink);line-height:1}
+body.modal-open #camZoom,body.stage-open #camZoom,#start:not(.hidden) ~ #camZoom,#lock:not(.hidden) ~ #camZoom{display:none}
+body.mob #camZoom{right:6px;top:46%;padding:6px 4px}
+body.mob #camZoom input{height:96px}
+body.mob #camZoom .zb{width:30px;height:30px;font-size:12px}
+#frontHint{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);z-index:7;background:rgba(255,255,255,.92);border-radius:999px;padding:8px 16px;font-weight:800;font-size:14px;color:var(--pink);box-shadow:0 0 0 2px var(--line),0 4px 0 rgba(90,42,122,.15);pointer-events:none;white-space:nowrap}
+body.mob #frontHint{bottom:calc(env(safe-area-inset-bottom,0px) + 120px);font-size:12px;white-space:normal;text-align:center;max-width:80%}
 </style>
 </head>
 <body>
@@ -853,7 +886,10 @@ NEW_WORLDS.forEach((w, i) => {
 });
 function areaOf(x, z) {
   if (z > 1700) return 'w_cidade';
-  if (z < -2500) { const k = Math.round((x - 3000) / 80); return BUILDINGS[k] ? BUILDINGS[k].area : 'main'; }
+  if (z < -2500) {
+    if (z < -3300) { const h2 = Math.round((x - 3000) / 80); return typeof HOME_ROOMS !== 'undefined' && HOME_ROOMS[h2] ? HOME_ROOMS[h2].area : 'main'; }
+    const k = Math.round((x - 3000) / 80); return BUILDINGS[k] ? BUILDINGS[k].area : 'main';
+  }
   if (z > 900) { const w = NEW_WORLDS[Math.round((x + 2000) / 400)]; return w ? w.area : 'main'; }
   if (x > 550 && z > 550) return 'quarto';
   if (z < -400) return 'castelo';
@@ -1381,6 +1417,212 @@ WORLD_BUILDINGS.forEach(b => {
   REGIONS.push({id: b.area, n: b.n, x: b.ix, z: b.iz, r: 14, col: b.col, e: b.e, area: b.area, building: b.id});
   BUILDINGS.push(b);
 });
+
+// ---------- MINHA CASINHA: quatro cômodos ----------
+const HOME_ROOMS = [
+  {id: 'sala', n: 'Sala de Estar', e: '🛋️', floor: '#e8c89a', wall: '#ffd6ea', wall2: '#e64980'},
+  {id: 'cozinha', n: 'Cozinha', e: '🍳', floor: '#dfe8f0', wall: '#c3fae8', wall2: '#0ca678'},
+  {id: 'quarto', n: 'Quarto', e: '🛏️', floor: '#f0dfe8', wall: '#e5dbff', wall2: '#6741d9'},
+  {id: 'jardim', n: 'Quintal', e: '🌷', floor: '#8ce99a', wall: '#bfe6ff', wall2: '#2b8a3e', outdoor: true}];
+HOME_ROOMS.forEach((r, i) => {
+  r.area = 'hm_' + r.id; r.cx = 3000 + i * 80; r.cz = -3600;
+  AREAS[r.area] = {cx: r.cx, cz: r.cz, half: 12, sky: r.outdoor ? 0xbfe6ff : 0xfff0f6, spawn: [r.cx, r.cz + 9]};
+  REGIONS.push({id: r.area, n: 'Minha Casinha · ' + r.n, x: r.cx, z: r.cz, r: 15, col: r.wall, e: r.e, area: r.area});
+});
+const HOME_BY = {}; HOME_ROOMS.forEach(r => HOME_BY[r.id] = r);
+// móveis novos, um conjunto por cômodo
+const DEC = (id, n, price, e) => I(id, n, 'decor', price, {e});
+// sala
+DEC('dc_sofa', 'Sofá Fofinho', 90, '🛋️');
+DEC('dc_tv', 'Televisão', 110, '📺');
+DEC('dc_estante', 'Estante de Livros', 80, '📚');
+DEC('dc_mesinha', 'Mesinha de Centro', 50, '🪑');
+DEC('dc_poltrona', 'Poltrona de Veludo', 70, '🪑');
+DEC('dc_lareira', 'Lareirinha', 140, '🔥');
+// cozinha
+DEC('dc_fogao', 'Fogão', 100, '🍳');
+DEC('dc_geladeira', 'Geladeira', 130, '🧊');
+DEC('dc_pia', 'Pia da Cozinha', 70, '🚰');
+DEC('dc_mesa_jantar', 'Mesa de Jantar', 90, '🍽️');
+DEC('dc_armario_coz', 'Armário da Cozinha', 60, '🗄️');
+DEC('dc_bolo_mesa', 'Bolo na Travessa', 40, '🎂');
+// quarto
+DEC('dc_beliche', 'Beliche das Irmãs', 150, '🛏️');
+DEC('dc_guarda_roupa', 'Guarda-roupa de Madeira', 110, '🚪');
+DEC('dc_escrivaninha', 'Escrivaninha', 80, '✏️');
+DEC('dc_pelucia', 'Montinho de Pelúcias', 45, '🧸');
+DEC('dc_luzes', 'Varal de Luzinhas', 55, '✨');
+// quintal
+DEC('dc_balanco', 'Balanço de Jardim', 120, '🌸');
+DEC('dc_horta', 'Canteiro de Horta', 60, '🥕');
+DEC('dc_piscininha', 'Piscininha', 160, '🏊');
+DEC('dc_churrasqueira', 'Churrasqueirinha', 90, '🍢');
+DEC('dc_casinha_passaro', 'Casinha de Passarinho', 40, '🐦');
+
+const WORLD_BUILDINGS_MAIN = [];
+// ---------- INTERIORES DO REINO PRINCIPAL ----------
+// Lojas da Vila Dourada e casinhas do Bairro: a fachada já existe no mundo,
+// aqui só registramos o interior navegável e a porta de volta.
+const VILA_SHOPS = [
+  ['boutique', 86, -22, 0], ['joalheria', 100, -22, 0], ['salao', 114, -22, 0],
+  ['doceria', 86, 22, Math.PI], ['petshop', 100, 22, Math.PI], ['moveis', 114, 22, Math.PI], ['pacotes', 126, 0, -Math.PI / 2]];
+const VILA_THEME = {
+  boutique: {paper: 'stripes', w1: '#ffb3d1', w2: '#ff8cc6', f1: '#c98e62', f2: '#a0673a', curtain: '#c2255c', panel: '#e64980', trim: '#ffffff', rug: '#ffc2dc', lamp: '#ff5fa8', counter: '#e64980'},
+  joalheria: {paper: 'dots', w1: '#c9b3ff', w2: '#ffffff', floor: 'checker', f1: '#ffffff', f2: '#b197fc', curtain: '#5f3dc4', panel: '#7048e8', trim: '#ffd43b', rug: '#d0bfff', lamp: '#ffd43b', counter: '#7048e8'},
+  salao: {paper: 'stripes', w1: '#a5d8ff', w2: '#74c0fc', floor: 'checker', f1: '#ffffff', f2: '#4dabf7', curtain: '#1864ab', panel: '#1c7ed6', trim: '#ffffff', rug: '#a5d8ff', lamp: '#4dabf7', counter: '#1c7ed6'},
+  doceria: {paper: 'hearts', w1: '#ffe066', w2: '#ff6b9d', f1: '#c98e62', f2: '#a0673a', curtain: '#e64980', panel: '#ff8cc6', trim: '#ffffff', rug: '#ffe066', lamp: '#ff5fa8', counter: '#ff6b9d'},
+  petshop: {paper: 'dots', w1: '#8ce99a', w2: '#ffffff', f1: '#c98e62', f2: '#a0673a', curtain: '#2b8a3e', panel: '#2f9e44', trim: '#ffffff', rug: '#b2f2bb', lamp: '#40c057', counter: '#2f9e44'},
+  moveis: {paper: 'flowers', w1: '#ffc078', w2: '#ffffff', f1: '#a0673a', f2: '#7a4b2a', curtain: '#d9480f', panel: '#e8590c', trim: '#ffffff', rug: '#ffd8a8', lamp: '#ff922b', counter: '#c98e62'},
+  pacotes: {paper: 'hearts', w1: '#ff8cc6', w2: '#ffffff', floor: 'checker', f1: '#ffffff', f2: '#ff8cc6', curtain: '#a61e4d', panel: '#c2255c', trim: '#ffd43b', rug: '#ffc2e2', lamp: '#ffd43b', counter: '#c2255c'}};
+VILA_SHOPS.forEach(([id, x, z, rot]) => {
+  const s = SHOPS[id];
+  const fx = Math.sin(rot), fz = Math.cos(rot);
+  WORLD_BUILDINGS_MAIN.push({id: 'vila_' + id, shop: id, n: s.n, e: s.e, theme: 'vila', noFacade: true, col: VILA_THEME[id].w2,
+    door: {x: x + fx * 6.2, z: z + fz * 6.2, yaw: Math.atan2(fx, fz)}});
+});
+// casinhas do Bairro das Casinhas (posições de 04g)
+const BAIRRO = {x: 46, z: -46};
+[[-18, -11, '#ffd6ea', 'Casa da Dona Rosa', 'Dona Rosa'], [0, -11, '#d0ebff', 'Casa do Seu Jorge', 'Seu Jorge'],
+ [18, -11, '#fff3bf', 'Casa da Tia Nair', 'Tia Nair'], [-18, 11, '#d3f9d8', 'Casa da Lia', 'Lia'],
+ [0, 11, '#e5dbff', 'Casa do Nando', 'Nando'], [18, 11, '#ffe8cc', 'Casa da Bel', 'Bel']].forEach(([dx, dz, c, n, dono], i) => {
+  const x = BAIRRO.x + dx, z = BAIRRO.z + dz, fz = dz < 0 ? 1 : -1;
+  WORLD_BUILDINGS_MAIN.push({id: 'casa_b' + i, n, e: '🏠', theme: 'casa_bairro', noFacade: true, col: c, dono, kind: 'house',
+    door: {x, z: z + fz * 6.4, yaw: fz > 0 ? 0 : Math.PI}});
+});
+WORLD_BUILDINGS_MAIN.forEach(b => {
+  const i = BUILDINGS.length;
+  b.area = 'in_' + b.id; b.ix = 3000 + i * 80; b.iz = -3000;
+  AREAS[b.area] = {cx: b.ix, cz: b.iz, half: 11, sky: 0xfff0f6, spawn: [b.ix, b.iz + 8]};
+  REGIONS.push({id: b.area, n: b.n, x: b.ix, z: b.iz, r: 14, col: b.col, e: b.e, area: b.area, building: b.id});
+  BUILDINGS.push(b);
+});
+
+// ---------- MAIS LUGARES PARA VISITAR: 5 por mundo ----------
+// tipo -> o que acontece lá dentro (loja que já existe, desafio ou visita)
+const MB_TYPES = {
+  roupas: {act: 'shop:boutique', theme: 'lei', deco: ['#ff8cc6', '#ffffff']},
+  joias: {act: 'shop:joalheria', theme: 'log', deco: ['#b197fc', '#ffd43b']},
+  cabelo: {act: 'shop:salao', theme: 'log', deco: ['#74c0fc', '#ffffff']},
+  doces: {act: 'shop:doceria', theme: 'mat', deco: ['#ffe066', '#ff8cc6']},
+  pets: {act: 'shop:petshop', theme: 'pets', deco: ['#69db7c', '#ffd43b']},
+  moveis: {act: 'shop:moveis', theme: 'log', deco: ['#c98e62', '#ffd8a8']},
+  festa: {act: 'shop:pacotes', theme: 'mat', deco: ['#ff6b6b', '#ffd43b']},
+  veiculos: {act: 'rides', theme: 'mat', deco: ['#4dabf7', '#ffd43b']},
+  foto: {act: 'wardrobe', theme: 'log', deco: ['#ffffff', '#ff8cc6']},
+  casa: {act: 'casa', kind: 'house'},
+  mat: {act: 'edu', theme: 'mat', deco: ['#ffd43b', '#4dabf7']},
+  lei: {act: 'edu', theme: 'lei', deco: ['#69db7c', '#ff8cc6']},
+  ing: {act: 'edu', theme: 'ing', deco: ['#74c0fc', '#ff922b']},
+  log: {act: 'edu', theme: 'log', deco: ['#b197fc', '#69db7c']}};
+// mundo -> [id, nome, emoji, tipo, cor, telhado, tema da atividade]
+const MORE_BUILDINGS = {
+  main: [['mb_bicicletaria', 'Bicicletaria Pedal Feliz', '🚲', 'veiculos', '#74c0fc', '#1864ab', 'Escolha seu veículo'],
+    ['mb_festas', 'Empório das Festas', '🎉', 'festa', '#ffd43b', '#e03131', 'Monte a festa: conte os balões'],
+    ['mb_correio', 'Correio do Reino', '📮', 'lei', '#ff8787', '#c92a2a', 'Leia as cartinhas'],
+    ['mb_banco', 'Banco do Porquinho', '🐷', 'mat', '#ffc2e2', '#e64980', 'Conte as moedinhas'],
+    ['mb_casa_vovo2', 'Casa do Vovô Chico', '🏡', 'casa', '#d3f9d8', '#2b8a3e']],
+  cidade: [['mb_pizzaria', 'Pizzaria Bella Fatia', '🍕', 'mat', '#ff922b', '#c92a2a', 'Divida a pizza'],
+    ['mb_brinquedos2', 'Fábrica de Brinquedos', '🧸', 'log', '#ffd43b', '#e67700', 'Monte o brinquedo'],
+    ['mb_musica', 'Escola de Música Dó-Ré-Mi', '🎵', 'ing', '#b197fc', '#5f3dc4', 'Músicas em inglês'],
+    ['mb_estudio', 'Estúdio de Fotos Click', '📸', 'foto', '#ffffff', '#e64980', 'Hora da foto!'],
+    ['mb_lavanderia', 'Lavanderia Bolhinha', '🫧', 'mat', '#a5d8ff', '#1c7ed6', 'Conte as meias']],
+  borboletas: [['mb_mel', 'Casa do Mel', '🍯', 'doces', '#ffe066', '#e67700', 'Potinhos de mel'],
+    ['mb_semente', 'Loja de Sementes', '🌱', 'lei', '#8ce99a', '#2b8a3e', 'Nomes das plantas'],
+    ['mb_casulo', 'Casulo das Fadas', '🧚', 'log', '#e5dbff', '#9775fa', 'Do casulo à borboleta'],
+    ['mb_chapeus', 'Ateliê de Chapéus Floridos', '👒', 'roupas', '#ffd6ea', '#e64980', 'Escolha um chapéu'],
+    ['mb_casa_abelha', 'Casa da Abelhinha Zuzu', '🐝', 'casa', '#fff3bf', '#f08c00']],
+  feira: [['mb_algodao', 'Fábrica de Algodão-Doce', '🍭', 'doces', '#ffc2e2', '#c2255c', 'Conte os algodões'],
+    ['mb_magico', 'Loja do Mágico Abracadabra', '🎩', 'log', '#5f3dc4', '#e64980', 'Truques de lógica'],
+    ['mb_fantasias', 'Loja de Fantasias', '🦸', 'roupas', '#ff6b6b', '#5f3dc4', 'Escolha a fantasia'],
+    ['mb_premios', 'Barraca dos Prêmios', '🎯', 'mat', '#ffd43b', '#1864ab', 'Some os pontos'],
+    ['mb_casa_palhaco', 'Casa do Palhaço Pipoca', '🤡', 'casa', '#ffe066', '#e03131']],
+  fashion: [['mb_sapatos', 'Sapataria Passinho', '👠', 'roupas', '#ff8cc6', '#a61e4d', 'Pares de sapatos'],
+    ['mb_bijuterias', 'Bijuterias Brilho Fácil', '💍', 'joias', '#ffd43b', '#e67700', 'Combine as joias'],
+    ['mb_unhas', 'Esmalteria Unhinha', '💅', 'cabelo', '#e599f7', '#862e9c', 'Cores dos esmaltes'],
+    ['mb_tecidos', 'Loja de Tecidos', '🧵', 'log', '#74c0fc', '#1864ab', 'Padrões de tecido'],
+    ['mb_casa_modelo', 'Casa da Modelo Lu', '🏠', 'casa', '#ffd6ea', '#5f3dc4']],
+  cores: [['mb_giz', 'Loja de Gizes', '🖍️', 'log', '#ffd43b', '#e03131', 'Mistura de cores'],
+    ['mb_massinha', 'Fábrica de Massinha', '🟣', 'mat', '#b197fc', '#2b8a3e', 'Bolinhas de massinha'],
+    ['mb_galeria', 'Galeria de Arte', '🖼️', 'lei', '#ffffff', '#1864ab', 'Nomes dos quadros'],
+    ['mb_adesivos', 'Loja de Adesivos', '⭐', 'festa', '#ff8cc6', '#ffd43b', 'Cole os adesivos'],
+    ['mb_casa_pintor', 'Casa do Pintor Téo', '🏡', 'casa', '#ff922b', '#1864ab']],
+  escola: [['mb_papelaria2', 'Papelaria da Escola', '✏️', 'lei', '#69db7c', '#2b8a3e', 'Letras e sílabas'],
+    ['mb_laboratorio', 'Laboratório de Ciências', '🔬', 'log', '#ffffff', '#1c7ed6', 'Experiências'],
+    ['mb_cantina', 'Cantina da Tia Lurdes', '🥪', 'mat', '#ffe066', '#e8590c', 'Monte o lanche'],
+    ['mb_ingles', 'Cantinho do Inglês', '🇬🇧', 'ing', '#a5d8ff', '#c92a2a', 'Palavras em inglês'],
+    ['mb_casa_diretora', 'Casa da Diretora Vera', '🏠', 'casa', '#e5dbff', '#5f3dc4']],
+  bosque: [['mb_veterinario', 'Posto do Veterinário', '🩺', 'pets', '#d3f9d8', '#2b8a3e', 'Cuidar dos bichinhos'],
+    ['mb_racao', 'Loja de Ração Mordidinha', '🦴', 'pets', '#ffd8a8', '#d9480f', 'Comidinha certa'],
+    ['mb_toca', 'Toca da Coruja Sábia', '🦉', 'lei', '#c98e62', '#5f3a1e', 'Histórias da coruja'],
+    ['mb_trilhas', 'Centro de Trilhas', '🥾', 'ing', '#8ce99a', '#1864ab', 'Bichos em inglês'],
+    ['mb_casa_raposa', 'Casa da Família Raposa', '🦊', 'casa', '#ff922b', '#5f3a1e']],
+  aquatico: [['mb_perolas', 'Loja de Pérolas', '🦪', 'joias', '#ffffff', '#0ca678', 'Conte as pérolas'],
+    ['mb_aquario', 'Grande Aquário', '🐠', 'ing', '#74c0fc', '#1864ab', 'Peixes em inglês'],
+    ['mb_mergulho', 'Escola de Mergulho', '🤿', 'mat', '#ffe066', '#0ca678', 'Quantas bolhas?'],
+    ['mb_boias', 'Loja de Boias e Barquinhos', '🛟', 'veiculos', '#ff8787', '#ffffff', 'Escolha seu barquinho'],
+    ['mb_casa_polvo', 'Casa do Polvo Oito', '🐙', 'casa', '#e599f7', '#0ca678']],
+  estrelas: [['mb_foguetes', 'Loja de Foguetes', '🚀', 'veiculos', '#e9ecef', '#c92a2a', 'Escolha sua nave'],
+    ['mb_lunar', 'Padaria Lunar', '🥐', 'doces', '#ffe066', '#5f3dc4', 'Pães em forma de lua'],
+    ['mb_constelacoes', 'Escola das Constelações', '✨', 'log', '#4c3fa0', '#ffd43b', 'Ligue as estrelas'],
+    ['mb_astronauta', 'Loja do Astronauta', '👩‍🚀', 'roupas', '#ffffff', '#1c7ed6', 'Roupas espaciais'],
+    ['mb_casa_cometa', 'Casa do Cometa', '☄️', 'casa', '#d0bfff', '#3b2f7a']],
+  unicornios: [['mb_crinas', 'Salão das Crinas', '🎀', 'cabelo', '#ffd6ea', '#9775fa', 'Penteado mágico'],
+    ['mb_ferraduras', 'Ferraria das Ferraduras', '🧲', 'mat', '#adb5bd', '#5f3dc4', 'Conte as ferraduras'],
+    ['mb_purpurina', 'Fábrica de Purpurina', '💫', 'festa', '#e599f7', '#ffd43b', 'Brilho para todos'],
+    ['mb_feno', 'Celeiro do Feno Doce', '🌾', 'pets', '#ffe066', '#e64980', 'Lanche dos unicórnios'],
+    ['mb_casa_fada', 'Casa da Fada Madrinha', '🏰', 'casa', '#e5dbff', '#ff8cc6']],
+  arcoiris: [['mb_pintura', 'Loja de Tintas Mil Cores', '🎨', 'log', '#ff6b6b', '#ffd43b', 'Ordem das cores'],
+    ['mb_balas', 'Loja de Balas Coloridas', '🍬', 'doces', '#69db7c', '#ff8cc6', 'Conte as balas'],
+    ['mb_guarda_chuva', 'Loja de Guarda-chuvas', '☂️', 'roupas', '#74c0fc', '#ff6b6b', 'Combine as cores'],
+    ['mb_pipas', 'Fábrica de Pipas', '🪁', 'ing', '#ffd43b', '#4dabf7', 'Cores em inglês'],
+    ['mb_casa_duende', 'Casa do Duende Pote-de-Ouro', '🍀', 'casa', '#8ce99a', '#e67700']],
+  nuvens: [['mb_travesseiros', 'Loja de Travesseiros', '🛏️', 'moveis', '#ffffff', '#ff8cc6', 'Travesseiros fofinhos'],
+    ['mb_chuva', 'Fábrica de Chuvinha', '🌧️', 'mat', '#d0ebff', '#4dabf7', 'Conte as gotas'],
+    ['mb_arcos', 'Ateliê de Arco-íris', '🌈', 'log', '#ffd6ea', '#9775fa', 'Monte o arco-íris'],
+    ['mb_balões', 'Loja de Balões Voadores', '🎈', 'festa', '#ffe066', '#e64980', 'Balões coloridos'],
+    ['mb_casa_nuvem', 'Casinha da Nuvem Fofa', '☁️', 'casa', '#ffffff', '#74c0fc']],
+  gelado: [['mb_sorvetes', 'Sorveteria do Pinguim', '🍨', 'doces', '#d0ebff', '#ff8cc6', 'Sabores em inglês'],
+    ['mb_patins', 'Aluguel de Patins', '⛸️', 'veiculos', '#a5d8ff', '#1864ab', 'Escolha seus patins'],
+    ['mb_cachecois', 'Loja de Cachecóis', '🧣', 'roupas', '#ff6b6b', '#ffffff', 'Roupas de frio'],
+    ['mb_chocolate', 'Chocolataria Quentinha', '☕', 'mat', '#c98e62', '#5f3a1e', 'Conte os marshmallows'],
+    ['mb_casa_esquimo', 'Iglu da Família Neve', '🧊', 'casa', '#ffffff', '#74c0fc']]};
+// lugar para cada mundo: centro e tamanho útil
+const MB_REALM = {
+  main: {area: 'main', cx: 0, cz: 0, half: 150, avoid: [[46, -46, 34], [-46, 50, 32], [56, 44, 28], [-40, -30, 26], [100, 100, 30], [100, 0, 44], [0, -40, 22], [80, 84, 18], [-20, 0, 8]]},
+  cidade: {area: 'w_cidade', cx: CITY.cx, cz: CITY.cz, half: 82, road: true},
+  nuvens: {area: 'nuvens', fixed: [[356, 70], [444, 72], [478, 24], [324, 28], [400, 92]]},
+  gelado: {area: 'gelado', cx: -400, cz: 0, half: 60}};
+NEW_WORLDS.forEach(w => { MB_REALM[w.id] = {area: w.area, cx: w.cx, cz: w.cz, half: 58, world: w.id}; });
+Object.entries(MORE_BUILDINGS).forEach(([realm, lista]) => lista.forEach(([id, n, e, tipo, col, roof, tema], k) => {
+  const T = MB_TYPES[tipo];
+  const b = {id, n, e, tipo, act: T.act, theme: T.theme || 'casa', tema: tema || 'Visita', deco: T.deco, col, roof, realm, auto: true, w: 12, d: 9, h: 7, kind: T.kind || 'shop', world: MB_REALM[realm].world};
+  if (MB_REALM[realm].fixed) b.fixedAt = MB_REALM[realm].fixed[k];
+  const i = BUILDINGS.length;
+  b.area = 'in_' + b.id; b.ix = 3000 + i * 80; b.iz = -3000;
+  AREAS[b.area] = {cx: b.ix, cz: b.iz, half: 11, sky: 0xfff0f6, spawn: [b.ix, b.iz + 8]};
+  REGIONS.push({id: b.area, n: b.n, x: b.ix, z: b.iz, r: 14, col: b.col, e: b.e, area: b.area, building: b.id});
+  BUILDINGS.push(b);
+}));
+// ---------- ACHADINHOS: objetos escondidos de várias raridades ----------
+const ACH_KINDS = {
+  comum: [['🐚', 'Concha Perolada', '#ffd6ea'], ['🍀', 'Trevo da Sorte', '#69db7c'], ['⭐', 'Estrelinha Caída', '#ffd43b'], ['🌸', 'Flor Encantada', '#ff8cc6']],
+  raro: [['💎', 'Cristal Lilás', '#b197fc'], ['🔮', 'Bolinha de Cristal', '#74c0fc'], ['🪶', 'Pena Dourada', '#ffd43b']],
+  superraro: [['🥚', 'Ovo Dourado', '#ffd43b'], ['🗝️', 'Chave Antiga', '#e8b06a'], ['🧭', 'Bússola das Fadas', '#ff922b']],
+  lendario: [['👑', 'Coroa Perdida', '#ffd43b'], ['🦄', 'Chifre de Unicórnio', '#e5dbff'], ['🌈', 'Arco-íris de Bolso', '#ff6b6b']]};
+const ACH_RAR = {comum: {n: 'Comum', e: '⚪', c: '#adb5bd', moedas: 10, rr: 'comum'}, raro: {n: 'Raro', e: '✨', c: '#b197fc', moedas: 30, rr: 'raro'},
+  superraro: {n: 'Super Raro', e: '💜', c: '#9c36b5', moedas: 80, rr: 'epico'}, lendario: {n: 'Lendário', e: '🌟', c: '#ffc83d', moedas: 150, rr: 'lendario'}};
+const ACHADOS = [];
+Object.keys(MB_REALM).forEach((realm, wi) => {
+  const plano = ['comum', 'comum', 'comum', 'raro', 'raro', 'superraro', 'lendario'];
+  plano.forEach((rar, k) => {
+    const op = ACH_KINDS[rar], esc = op[(wi + k) % op.length];
+    ACHADOS.push({id: 'ach_' + realm + '_' + k, realm, rar, e: esc[0], n: esc[1], c: esc[2]});
+  });
+});
+
+ACHIEVEMENTS.push({id: 'achadinhos10', n: 'Caçadora de achadinhos', d: 'Encontre 10 achadinhos escondidos', e: '🔍'},
+  {id: 'achado_lendario', n: 'Achado lendário', d: 'Encontre um achadinho lendário', e: '🌟'},
+  {id: 'visitante50', n: 'Visitante do universo', d: 'Visite 50 lugares diferentes', e: '🏘️'});
 
 // ---------- estado e salvamento ----------
 const SAVE_KEY = 'mundo-princesas-v1';
@@ -2154,6 +2396,430 @@ function buildPet(id) {
   return {group: g, parts};
 }
 
+// ---------- KIT DE FACHADAS DETALHADAS ----------
+// Prédios com telhado de beiral, janelas com moldura e floreira, porta com degraus,
+// toldo recortado, placa pendurada, chaminé, calha e plantinhas. A frente fica em +z.
+const BK = {};
+// texturas de tijolinho, telha e madeira
+BK.tex = {};
+BK.brick = (c1, c2) => {
+  const k = 'b' + c1 + c2; if (BK.tex[k]) return BK.tex[k];
+  const t = canvasTex(64, 64, g => { g.fillStyle = c2; g.fillRect(0, 0, 64, 64); g.fillStyle = c1;
+    for (let r = 0; r < 8; r++) for (let c = 0; c < 4; c++) g.fillRect(c * 16 + (r % 2 ? 8 : 0) + 1, r * 8 + 1, 14, 6); }, [3, 2]);
+  return BK.tex[k] = t;
+};
+BK.tiles = (c1, c2) => {
+  const k = 't' + c1 + c2; if (BK.tex[k]) return BK.tex[k];
+  const t = canvasTex(64, 64, g => { g.fillStyle = c1; g.fillRect(0, 0, 64, 64); g.fillStyle = c2;
+    for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) { g.beginPath(); g.arc(c * 8 + (r % 2 ? 4 : 0), r * 8 + 8, 4.4, Math.PI, 0); g.fill(); } }, [4, 3]);
+  return BK.tex[k] = t;
+};
+BK.siding = (c1, c2) => {
+  const k = 's' + c1 + c2; if (BK.tex[k]) return BK.tex[k];
+  const t = canvasTex(64, 64, g => { g.fillStyle = c1; g.fillRect(0, 0, 64, 64); g.fillStyle = c2; for (let r = 0; r < 8; r++) g.fillRect(0, r * 8 + 6, 64, 2); }, [3, 3]);
+  return BK.tex[k] = t;
+};
+BK.tmat = tx => new THREE.MeshToonMaterial({map: tx, gradientMap: TOON});
+BK.glass = () => new THREE.MeshPhongMaterial({color: '#bfe6ff', emissive: '#4a7aa8', emissiveIntensity: 0.12, shininess: 120});
+// janela com moldura, cruzeta, peitoril, venezianas opcionais e floreira
+BK.window = (g, x, y, z, w, h, o = {}) => {
+  const fr = o.frame || '#ffffff';
+  put(g, box(w + 0.36, h + 0.36, 0.22, fr), x, y, z);
+  put(g, mesh(new THREE.BoxGeometry(w, h, 0.12), BK.glass()), x, y, z + 0.08);
+  put(g, box(0.1, h, 0.08, fr), x, y, z + 0.16); put(g, box(w, 0.1, 0.08, fr), x, y, z + 0.16);
+  put(g, box(w + 0.6, 0.18, 0.5, fr), x, y - h / 2 - 0.2, z + 0.18);
+  if (o.arch) { const a = put(g, mesh(new THREE.CylinderGeometry(w / 2 + 0.18, w / 2 + 0.18, 0.22, 16, 1, false, 0, Math.PI), mat(fr)), x, y + h / 2, z); a.rotation.x = Math.PI / 2; a.rotation.z = Math.PI / 2;
+    const ag = put(g, mesh(new THREE.CylinderGeometry(w / 2, w / 2, 0.12, 16, 1, false, 0, Math.PI), BK.glass()), x, y + h / 2, z + 0.08); ag.rotation.x = Math.PI / 2; ag.rotation.z = Math.PI / 2; }
+  if (o.shutter) [-1, 1].forEach(k => { const sh = put(g, box(w * 0.42, h + 0.2, 0.12, o.shutter), x + k * (w / 2 + w * 0.27), y, z + 0.06);
+    for (let i = 0; i < 4; i++) put(g, box(w * 0.36, 0.05, 0.05, '#ffffff'), x + k * (w / 2 + w * 0.27), y - h / 2 + 0.25 + i * (h / 4), z + 0.14); });
+  if (o.flowers) { put(g, box(w + 0.4, 0.4, 0.5, o.flowers), x, y - h / 2 - 0.5, z + 0.32);
+    for (let i = 0; i < 5; i++) put(g, sph(0.17, mat(['#ff5fa8', '#ffd43b', '#ffffff', '#b197fc', '#ff922b'][i])), x - w / 2 + 0.1 + i * (w / 4.2), y - h / 2 - 0.22, z + 0.36);
+    for (let i = 0; i < 4; i++) put(g, sph(0.14, mat('#51cf66')), x - w / 2 + 0.3 + i * (w / 3.4), y - h / 2 - 0.3, z + 0.42); }
+};
+// porta com batente, almofadas, maçaneta, bandeira em arco e degraus
+BK.door = (g, x, z, o = {}) => {
+  const w = o.w || 1.9, h = o.h || 3, c = o.color || '#9a5530', fr = o.frame || '#ffffff';
+  put(g, box(w + 0.5, h + 0.4, 0.25, fr), x, h / 2 + 0.2, z);
+  put(g, box(w, h, 0.18, c), x, h / 2 + 0.2, z + 0.08);
+  [[-w / 4, h * 0.3], [w / 4, h * 0.3], [-w / 4, h * 0.72], [w / 4, h * 0.72]].forEach(([dx, dy]) => put(g, box(w * 0.36, h * 0.3, 0.06, new THREE.Color(c).offsetHSL(0, 0, 0.08).getStyle()), x + dx, dy + 0.2, z + 0.2));
+  put(g, sph(0.12, shiny('#ffd43b', .6)), x + w / 2 - 0.3, h * 0.5 + 0.2, z + 0.26);
+  if (o.glassDoor) put(g, mesh(new THREE.BoxGeometry(w * 0.7, h * 0.45, 0.06), BK.glass()), x, h * 0.62 + 0.2, z + 0.22);
+  const tr = put(g, mesh(new THREE.CylinderGeometry(w / 2 + 0.25, w / 2 + 0.25, 0.25, 18, 1, false, 0, Math.PI), mat(fr)), x, h + 0.4, z); tr.rotation.x = Math.PI / 2; tr.rotation.z = Math.PI / 2;
+  const tg = put(g, mesh(new THREE.CylinderGeometry(w / 2, w / 2, 0.14, 18, 1, false, 0, Math.PI), BK.glass()), x, h + 0.4, z + 0.08); tg.rotation.x = Math.PI / 2; tg.rotation.z = Math.PI / 2;
+  // degraus
+  put(g, box(w + 1.6, 0.2, 1.2, '#e9e4ff'), x, 0.1, z + 0.7);
+  put(g, box(w + 1, 0.2, 0.7, '#ffffff'), x, 0.28, z + 0.45);
+  // capachinho
+  put(g, box(w, 0.04, 0.6, o.mat || '#ff8cc6'), x, 0.41, z + 0.5);
+};
+// toldo listrado com bordinha recortada
+BK.awning = (g, x, y, z, w, c1, c2) => {
+  const aw = put(g, mesh(new THREE.BoxGeometry(w, 0.14, 1.8), new THREE.MeshToonMaterial({map: patternTex('stripes', c1, c2 || '#ffffff'), gradientMap: TOON})), x, y, z + 0.85);
+  aw.rotation.x = 0.38;
+  const n = Math.max(4, Math.round(w / 0.55));
+  for (let i = 0; i < n; i++) put(g, sph(0.3, mat(i % 2 ? c1 : (c2 || '#ffffff'))), x - w / 2 + (i + 0.5) * (w / n), y - 0.36, z + 1.68).scale.set(1, 0.7, 0.5);
+  [-1, 1].forEach(k => put(g, cyl(0.04, 0.04, 1.6, 6, '#adb5bd'), x + k * (w / 2 - 0.1), y - 0.2, z + 0.9).rotation.x = 0.9);
+};
+// placa pendurada em suporte de ferro
+BK.hangSign = (g, x, y, z, txt, c) => {
+  put(g, box(0.1, 0.1, 1.6, '#3a2242'), x, y, z + 0.8);
+  [-0.35, 0.35].forEach(k => put(g, cyl(0.02, 0.02, 0.5, 4, '#3a2242'), x, y - 0.25, z + 0.8 + k));
+  put(g, box(0.14, 1.1, 1.3, c || '#ffffff'), x, y - 0.95, z + 0.8);
+  const lb = label(txt, {scale: 0.55, bg: false}); lb.position.set(x + 0.12, y - 0.95, z + 0.8); g.add(lb);
+};
+// telhado de duas águas com beiral, cumeeira e frontão
+BK.gable = (g, w, d, y, hgt, roofTex, trim, o = {}) => {
+  const over = 0.7, L = Math.hypot(w / 2 + over, hgt);
+  const ang = Math.atan2(hgt, w / 2 + over);
+  [-1, 1].forEach(k => {
+    const r = put(g, mesh(new THREE.BoxGeometry(L, 0.32, d + over * 2), BK.tmat(roofTex)), k * (w / 4 + over / 2), y + hgt / 2, 0);
+    r.rotation.z = -k * ang;
+    const e = put(g, box(L, 0.16, 0.22, trim), k * (w / 4 + over / 2), y + hgt / 2 - 0.2, d / 2 + over);
+    e.rotation.z = -k * ang;
+  });
+  put(g, box(0.4, 0.4, d + over * 2 + 0.1, trim), 0, y + hgt + 0.08, 0);
+  // frontão triangular na frente e atrás
+  const sh = new THREE.Shape(); sh.moveTo(-w / 2, 0); sh.lineTo(w / 2, 0); sh.lineTo(0, hgt); sh.closePath();
+  [d / 2 - 0.05, -d / 2 + 0.05].forEach(zz => { const f = put(g, mesh(new THREE.ShapeGeometry(sh), new THREE.MeshToonMaterial({color: o.wall || '#ffffff', gradientMap: TOON, side: THREE.DoubleSide})), 0, y, zz); });
+  if (o.roundWin) { put(g, mesh(new THREE.TorusGeometry(0.62, 0.12, 8, 20), mat(trim)), 0, y + hgt * 0.42, d / 2 + 0.06); put(g, mesh(new THREE.CircleGeometry(0.56, 20), BK.glass()), 0, y + hgt * 0.42, d / 2 + 0.04); }
+};
+// chaminé
+BK.chimney = (g, x, y, z, c) => { put(g, mesh(new THREE.BoxGeometry(1, 2.4, 1), BK.tmat(BK.brick(c || '#e8835a', '#f2c6a8'))), x, y, z); put(g, box(1.3, 0.25, 1.3, '#ffffff'), x, y + 1.3, z); };
+// lampião de parede
+BK.wallLamp = (g, x, y, z) => { put(g, box(0.1, 0.1, 0.5, '#3a2242'), x, y, z + 0.25); const l = put(g, mesh(new THREE.SphereGeometry(0.24, 12, 10), new THREE.MeshBasicMaterial({color: '#fff3bf'})), x, y - 0.2, z + 0.5); put(g, mesh(new THREE.ConeGeometry(0.3, 0.26, 10), mat('#3a2242')), x, y + 0.06, z + 0.5); return l; };
+// vaso com plantinha arredondada
+BK.pot = (g, x, z, c) => { put(g, cyl(0.42, 0.32, 0.7, 12, c || '#e8835a'), x, 0.35, z); put(g, sph(0.6, mat('#51cf66')), x, 1.05, z); put(g, sph(0.2, mat('#ff5fa8')), x + 0.25, 1.35, z + 0.3); };
+// prédio comercial completo
+function fancyShop(g, o) {
+  const W = o.W || 11, H = o.H || 7, D = o.D || 8, wall = o.wall, roof = o.roof, trim = o.trim || '#ffffff';
+  const floors = o.floors || 1;
+  // embasamento de tijolinho
+  put(g, mesh(new THREE.BoxGeometry(W + 0.3, 1, D + 0.3), BK.tmat(BK.brick('#e8835a', '#f2c6a8'))), 0, 0.5, 0);
+  // corpo com textura (siding) e faixas
+  put(g, mesh(new THREE.BoxGeometry(W, H - 1, D), BK.tmat(BK.siding(wall, new THREE.Color(wall).offsetHSL(0, 0, -0.06).getStyle()))), 0, 1 + (H - 1) / 2, 0);
+  put(g, box(W + 0.36, 0.3, D + 0.36, trim), 0, 1.05, 0);
+  if (floors > 1) put(g, box(W + 0.36, 0.3, D + 0.36, trim), 0, H * 0.55, 0);
+  put(g, box(W + 0.5, 0.5, D + 0.5, trim), 0, H + 0.1, 0);
+  // cantoneiras
+  [-1, 1].forEach(k => put(g, box(0.4, H, 0.4, trim), k * W / 2, H / 2, D / 2));
+  // vitrine grande com o produto da loja
+  const vy = 2.6;
+  [-1, 1].forEach(k => {
+    BK.window(g, k * W * 0.3, vy, D / 2 + 0.04, W * 0.24, 2.2, {frame: trim});
+    if (o.display) { const dp = o.display(); dp.position.set(k * W * 0.3, vy - 0.9, D / 2 - 0.2); dp.scale.setScalar(0.75); g.add(dp); }
+  });
+  BK.door(g, 0, D / 2 + 0.05, {color: o.door || '#ffffff', frame: trim, glassDoor: true, mat: roof});
+  BK.awning(g, 0, 4.4, D / 2, W * 0.86, roof, '#ffffff');
+  // andar de cima
+  if (floors > 1) {
+    [-1, 0, 1].forEach(k => BK.window(g, k * W * 0.3, H * 0.75, D / 2 + 0.04, 1.6, 1.6, {frame: trim, shutter: o.shutter || roof, flowers: '#ffffff', arch: k === 0}));
+    // sacadinha
+    put(g, box(3, 0.2, 1.2, trim), 0, H * 0.75 - 1.2, D / 2 + 0.6);
+    for (let i = -6; i <= 6; i++) put(g, cyl(0.04, 0.04, 0.8, 4, trim), i * 0.22, H * 0.75 - 0.8, D / 2 + 1.15);
+    put(g, box(3, 0.1, 0.1, trim), 0, H * 0.75 - 0.4, D / 2 + 1.15);
+  }
+  // telhado
+  if (o.roofType === 'flat') {
+    for (let i = -4; i <= 4; i++) put(g, box(W / 9, 0.6, 0.4, trim), i * W / 9, H + 0.6, D / 2 + 0.1);
+  } else {
+    BK.gable(g, W, D, H + 0.35, o.roofH || 3.2, BK.tiles(roof, new THREE.Color(roof).offsetHSL(0, 0, -0.1).getStyle()), trim, {wall, roundWin: true});
+    BK.chimney(g, W * 0.28, H + 2.4, -D * 0.15);
+  }
+  // placa pendurada e lampiões
+  BK.hangSign(g, W / 2 + 0.2, 4.8, D / 2 - 1.4, o.e || '★', '#ffffff');
+  [-1, 1].forEach(k => BK.wallLamp(g, k * 1.7, 3.8, D / 2 + 0.1));
+  // calha
+  put(g, cyl(0.1, 0.1, H, 6, '#adb5bd'), -W / 2 + 0.3, H / 2, D / 2 + 0.25);
+  // plantinhas na entrada
+  [-1, 1].forEach(k => BK.pot(g, k * 2.2, D / 2 + 1.2, o.potColor));
+}
+// ---------- castelo detalhado ----------
+BK.stone = (c1, c2) => {
+  const k = 'st' + c1 + c2; if (BK.tex[k]) return BK.tex[k];
+  const t = canvasTex(64, 64, g => { g.fillStyle = c2; g.fillRect(0, 0, 64, 64); g.fillStyle = c1;
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) { const w2 = 18 + (r + c) % 2 * 3; g.beginPath(); g.roundRect ? g.roundRect(c * 21 + (r % 2 ? 10 : 0) + 1, r * 16 + 1, w2, 14, 3) : g.rect(c * 21 + (r % 2 ? 10 : 0) + 1, r * 16 + 1, w2, 14); g.fill(); } }, [4, 4]);
+  return BK.tex[k] = t;
+};
+BK.crenels = (g, x, y, z, w, d, c) => {
+  const n = Math.max(3, Math.round(w / 1.1));
+  for (let i = 0; i < n; i++) { const xx = x - w / 2 + (i + 0.5) * (w / n); put(g, box(w / n * 0.62, 0.9, 0.9, c), xx, y, z + d / 2); put(g, box(w / n * 0.62, 0.9, 0.9, c), xx, y, z - d / 2); }
+  const m = Math.max(2, Math.round(d / 1.1));
+  for (let i = 0; i < m; i++) { const zz = z - d / 2 + (i + 0.5) * (d / m); put(g, box(0.9, 0.9, d / m * 0.62, c), x - w / 2, y, zz); put(g, box(0.9, 0.9, d / m * 0.62, c), x + w / 2, y, zz); }
+};
+BK.tower = (g, x, z, r, h, wall, roof, trim) => {
+  const sm = BK.tmat(BK.stone(wall, new THREE.Color(wall).offsetHSL(0, 0, -0.07).getStyle()));
+  put(g, mesh(new THREE.CylinderGeometry(r, r * 1.08, h, 18), sm), x, h / 2, z);
+  put(g, cyl(r * 1.18, r * 1.18, 0.5, 18, trim), x, h + 0.1, z);
+  for (let i = 0; i < 10; i++) { const a = i / 10 * TAU; put(g, box(0.7, 0.8, 0.7, trim), x + Math.cos(a) * r * 1.08, h + 0.7, z + Math.sin(a) * r * 1.08); }
+  const cone = put(g, mesh(new THREE.ConeGeometry(r * 1.3, r * 2.4, 18), BK.tmat(BK.tiles(roof, new THREE.Color(roof).offsetHSL(0, 0, -0.1).getStyle()))), x, h + 1.1 + r * 1.2, z);
+  put(g, mesh(new THREE.SphereGeometry(0.32, 10, 8), shiny('#ffd43b', .6)), x, h + 1.1 + r * 2.4, z);
+  put(g, cyl(0.06, 0.06, 2, 6, '#8a5a3a'), x, h + 2.2 + r * 2.4, z);
+  const fl = put(g, mesh(new THREE.PlaneGeometry(1.4, 0.8), new THREE.MeshLambertMaterial({color: '#ff5fa8', side: THREE.DoubleSide})), x + 0.7, h + 2.8 + r * 2.4, z);
+  onFrame((dt, t) => { fl.rotation.y = Math.sin(t * 2 + x) * 0.3; });
+  // janelinhas em arco na torre
+  [0.35, 0.65].forEach(f => { const a = Math.PI / 2; BK.window(g, x, h * f, z + r * 1.02, 0.8, 1.2, {frame: trim, arch: true}); });
+};
+function fancyCastle(g, o) {
+  const wall = o.wall || '#ffd6ea', wall2 = o.wall2 || '#e7d0ff', roof = o.roof || '#b06ad9', trim = o.trim || '#ffffff';
+  const sm = BK.tmat(BK.stone(wall, new THREE.Color(wall).offsetHSL(0, 0, -0.07).getStyle()));
+  const sm2 = BK.tmat(BK.stone(wall2, new THREE.Color(wall2).offsetHSL(0, 0, -0.07).getStyle()));
+  // corpo principal
+  put(g, mesh(new THREE.BoxGeometry(20, 10, 12), sm), 0, 5, 0);
+  put(g, box(20.6, 0.4, 12.6, trim), 0, 3.6, 0);
+  BK.crenels(g, 0, 10.4, 0, 20, 12, trim);
+  // torre central (torre de menagem)
+  put(g, mesh(new THREE.BoxGeometry(9, 17, 8), sm2), 0, 8.5, -3);
+  BK.crenels(g, 0, 17.4, -3, 9, 8, trim);
+  put(g, mesh(new THREE.ConeGeometry(6.6, 6, 4), BK.tmat(BK.tiles(roof, new THREE.Color(roof).offsetHSL(0, 0, -0.1).getStyle()))), 0, 20.6, -3).rotation.y = Math.PI / 4;
+  // rosácea (vitral redondo)
+  put(g, mesh(new THREE.TorusGeometry(1.5, 0.22, 10, 26), mat(trim)), 0, 13.5, 1.05);
+  const vit = canvasTex(64, 64, x => { const cols = ['#ff5fa8', '#ffd43b', '#74c0fc', '#69db7c', '#b197fc', '#ff922b']; for (let i = 0; i < 12; i++) { x.fillStyle = cols[i % 6]; x.beginPath(); x.moveTo(32, 32); x.arc(32, 32, 32, i / 12 * Math.PI * 2, (i + 1) / 12 * Math.PI * 2); x.fill(); } x.fillStyle = '#ffffff'; x.beginPath(); x.arc(32, 32, 7, 0, Math.PI * 2); x.fill(); });
+  put(g, mesh(new THREE.CircleGeometry(1.4, 26), new THREE.MeshBasicMaterial({map: vit})), 0, 13.5, 1.08);
+  // quatro torres
+  [[-10, 6], [10, 6], [-10, -6], [10, -6]].forEach(([x, z]) => BK.tower(g, x, z, 2.6, 15, wall2, roof, trim));
+  // portão em arco com grade e escadaria
+  put(g, box(5.2, 6.2, 0.6, trim), 0, 3.1, 6.1);
+  const arc = put(g, mesh(new THREE.CylinderGeometry(2.6, 2.6, 0.6, 22, 1, false, 0, Math.PI), mat(trim)), 0, 6.2, 6.1); arc.rotation.x = Math.PI / 2; arc.rotation.z = Math.PI / 2;
+  put(g, box(4, 5.4, 0.3, '#9a5530'), 0, 2.7, 6.25);
+  const ap = put(g, mesh(new THREE.CylinderGeometry(2, 2, 0.3, 22, 1, false, 0, Math.PI), mat('#9a5530')), 0, 5.4, 6.25); ap.rotation.x = Math.PI / 2; ap.rotation.z = Math.PI / 2;
+  for (let i = -3; i <= 3; i++) put(g, box(0.1, 6, 0.1, '#ffd43b'), i * 0.55, 3.4, 6.45);
+  for (let j = 0; j < 6; j++) put(g, box(3.8, 0.1, 0.1, '#ffd43b'), 0, 0.8 + j, 6.45);
+  for (let i = 0; i < 4; i++) put(g, box(8 - i * 0.8, 0.3, 1, i % 2 ? '#ffffff' : '#ffe3ef'), 0, 0.15 + i * 0.3, 7.6 - i * 0.6);
+  // tapete vermelho
+  put(g, box(3, 0.06, 6, '#e64980'), 0, 0.04, 10.5);
+  // janelas em arco na fachada
+  [[-6, 6.6], [6, 6.6], [-6, 2.6], [6, 2.6]].forEach(([x, y]) => BK.window(g, x, y, 6.04, 1.6, 2, {frame: trim, arch: true, flowers: y < 4 ? '#ffffff' : null}));
+  // estandartes pendurados
+  [-3.6, 3.6].forEach(x => { put(g, box(1.2, 3.4, 0.08, '#ff5fa8'), x, 7.6, 6.15); put(g, mesh(new THREE.ConeGeometry(0.6, 0.6, 3), mat('#ff5fa8')), x, 5.7, 6.15).rotation.z = Math.PI; put(g, mesh(starGeo(0.35, 0.15, 0.04), shiny('#ffd43b', .6)), x, 8, 6.22); });
+  // jardineiras ao longo da base
+  [-8, -5, 5, 8].forEach(x => BK.pot(g, x, 7.2, '#ffffff'));
+}
+// ---------- KIT DE INTERIORES DETALHADOS ----------
+BK.wallpaper = (kind, c1, c2) => {
+  const k = 'wp' + kind + c1 + c2; if (BK.tex[k]) return BK.tex[k];
+  const t = canvasTex(64, 64, g => { g.fillStyle = c1; g.fillRect(0, 0, 64, 64); g.fillStyle = c2;
+    if (kind === 'stripes') { for (let i = 0; i < 4; i++) g.fillRect(i * 16, 0, 7, 64); }
+    else if (kind === 'dots') { for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) { g.beginPath(); g.arc(c * 16 + (r % 2 ? 8 : 0) + 4, r * 16 + 8, 3, 0, Math.PI * 2); g.fill(); } }
+    else if (kind === 'hearts') { g.font = '14px sans-serif'; for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) g.fillText('♥', c * 16 + (r % 2 ? 8 : 0), r * 16 + 13); }
+    else { for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) { const x = c * 16 + (r % 2 ? 8 : 0) + 6, y = r * 16 + 8; for (let p = 0; p < 5; p++) { const a = p / 5 * Math.PI * 2; g.beginPath(); g.arc(x + Math.cos(a) * 3, y + Math.sin(a) * 3, 2.2, 0, Math.PI * 2); g.fill(); } } }
+  }, [5, 2]);
+  return BK.tex[k] = t;
+};
+BK.planks = (c1, c2) => {
+  const k = 'pk' + c1 + c2; if (BK.tex[k]) return BK.tex[k];
+  const t = canvasTex(64, 64, g => { g.fillStyle = c1; g.fillRect(0, 0, 64, 64); g.fillStyle = c2;
+    for (let r = 0; r < 4; r++) { g.fillRect(0, r * 16, 64, 1.5); g.fillRect((r * 23) % 64, r * 16, 1.5, 16); } }, [8, 8]);
+  return BK.tex[k] = t;
+};
+BK.checker = (c1, c2) => {
+  const k = 'ck' + c1 + c2; if (BK.tex[k]) return BK.tex[k];
+  const t = canvasTex(64, 64, g => { g.fillStyle = c1; g.fillRect(0, 0, 64, 64); g.fillStyle = c2; g.fillRect(0, 0, 32, 32); g.fillRect(32, 32, 32, 32); }, [8, 8]);
+  return BK.tex[k] = t;
+};
+// sala completa: piso, paredes com papel de parede + lambri + rodapé + sanca, janelas com cortina
+BK.room = (b, th) => {
+  const X = b.ix, Z = b.iz, S = 24, half = 12;
+  const floorTx = th.floor === 'checker' ? BK.checker(th.f1, th.f2) : BK.planks(th.f1 || '#d9a46c', th.f2 || '#b8834c');
+  at(mesh(new THREE.BoxGeometry(S, 2, S), BK.tmat(floorTx), false), X, -1, Z);
+  mapRect(b.area, X, Z, S, S, th.f1 || '#d9a46c');
+  const walls = [];
+  const wp = BK.wallpaper(th.paper || 'stripes', th.w1, th.w2);
+  [[X, Z - half, S, 0.4, 'n'], [X, Z + half, S, 0.4, 's'], [X - half, Z, 0.4, S, 'w'], [X + half, Z, 0.4, S, 'e']].forEach(([x, z, w, d, side]) => {
+    const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+    const wm = put(g, mesh(new THREE.BoxGeometry(w, 7.4, d), new THREE.MeshToonMaterial({map: wp, gradientMap: TOON, transparent: true})), 0, 3.7, 0);
+    // lambri, rodapé e sanca
+    const lam = put(g, box(w + 0.02, 2.4, d + 0.12, th.panel || '#ffffff'), 0, 1.2, 0); lam.material = lam.material.clone(); lam.material.transparent = true;
+    const tp = put(g, box(w + 0.04, 0.2, d + 0.24, th.trim || '#ffffff'), 0, 2.46, 0); tp.material = tp.material.clone(); tp.material.transparent = true;
+    const sc = put(g, box(w + 0.04, 0.4, d + 0.3, th.trim || '#ffffff'), 0, 7.2, 0); sc.material = sc.material.clone(); sc.material.transparent = true;
+    g.userData.side = side;
+    wm.userData.side = side; walls.push(wm, lam, tp, sc);
+    [lam, tp, sc].forEach(m => m.userData.side = side);
+    addRect(x, z, w, d); mapRect(b.area, x, z, w, d, th.w2);
+  });
+  // janelas com cortinas na parede do fundo
+  [-7, 7].forEach(dx => {
+    const g = new THREE.Group(); g.position.set(X + dx, 0, Z - half + 0.25); scene.add(g);
+    BK.window(g, 0, 4.4, 0, 2.6, 2.4, {frame: th.trim || '#ffffff'});
+    [-1, 1].forEach(k => { const c = put(g, box(0.9, 3.6, 0.15, th.curtain || '#ff8cc6'), k * 1.9, 4.3, 0.3); });
+    put(g, cyl(0.06, 0.06, 4.6, 6, '#ffd43b'), 0, 6.1, 0.3).rotation.z = Math.PI / 2;
+  });
+  // porta de saída
+  const dr = at(mesh(new THREE.BoxGeometry(2.6, 3.8, 0.2), new THREE.MeshToonMaterial({color: th.door || '#ff8cc6', gradientMap: TOON, transparent: true}), false), X, 1.9, Z + half - 0.15); dr.userData.side = 's'; walls.push(dr);
+  INT_WALLS[b.area] = [walls, X, Z, 11.5];
+  interact({x: X, z: Z + 10, r: 2.6, text: () => '🚪 Sair: ' + b.n, act: () => exitBuilding(b.id)});
+  // lustre pendente
+  [[-5, -2], [5, -2], [0, 5]].forEach(([dx, dz], i) => {
+    const g = new THREE.Group(); g.position.set(X + dx, 7.2, Z + dz); scene.add(g);
+    put(g, cyl(0.03, 0.03, 1.2, 4, '#3a2242'), 0, -0.6, 0);
+    put(g, mesh(new THREE.ConeGeometry(0.7, 0.6, 14, 1, true), new THREE.MeshToonMaterial({color: th.lamp || '#ffd43b', gradientMap: TOON, side: THREE.DoubleSide})), 0, -1.3, 0);
+    put(g, mesh(new THREE.SphereGeometry(0.22, 10, 8), new THREE.MeshBasicMaterial({color: '#fff3bf'})), 0, -1.5, 0);
+  });
+  // tapete
+  const tp = at(cyl(3.2, 3.2, 0.06, 28, '#ffffff', false), X, 0.04, Z + 3.5);
+  tp.material = BK.tmat(BK.wallpaper('dots', th.rug || '#ffd6ea', '#ffffff'));
+  // quadros na parede lateral
+  [[-half + 0.3, -3, Math.PI / 2], [half - 0.3, -3, -Math.PI / 2]].forEach(([dx, dz, r], i) => {
+    const g = new THREE.Group(); g.position.set(X + dx, 4.4, Z + dz); g.rotation.y = r; scene.add(g);
+    put(g, box(2.4, 1.8, 0.14, '#ffd43b'), 0, 0, 0);
+    put(g, box(2, 1.4, 0.06, ['#a5d8ff', '#d3f9d8'][i]), 0, 0, 0.08);
+    put(g, sph(0.3, mat(['#ff922b', '#ff8cc6'][i])), 0.4, 0.2, 0.12);
+    put(g, mesh(new THREE.ConeGeometry(0.6, 0.6, 3), mat(['#69db7c', '#4dabf7'][i])), -0.3, -0.3, 0.12);
+  });
+  // plantas nos cantos
+  [[-10, 9], [10, 9]].forEach(([dx, dz]) => { const g = new THREE.Group(); g.position.set(X + dx, 0, Z + dz); scene.add(g); BK.pot(g, 0, 0, th.potColor || '#e8835a'); g.scale.setScalar(1.4); addCircle(X + dx, Z + dz, 0.7, 1.6); });
+  return {X, Z};
+};
+// balcão com tampo, frente em almofadas e caixinha registradora
+BK.counter = (x, z, w, c, top) => {
+  const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+  put(g, box(w, 1.3, 1.6, c), 0, 0.65, 0);
+  put(g, box(w + 0.3, 0.18, 1.9, top || '#ffffff'), 0, 1.38, 0);
+  const n = Math.max(2, Math.round(w / 1.8));
+  for (let i = 0; i < n; i++) put(g, box(w / n - 0.3, 0.8, 0.06, new THREE.Color(c).offsetHSL(0, 0, 0.08).getStyle()), -w / 2 + (i + 0.5) * (w / n), 0.65, 0.82);
+  put(g, box(0.9, 0.6, 0.6, '#ffffff'), w / 2 - 0.8, 1.8, -0.1); put(g, box(0.8, 0.2, 0.3, '#ff8cc6'), w / 2 - 0.8, 2.15, 0.05);
+  addRect(x, z, w, 1.6, 1.4);
+  return g;
+};
+// prateleira de parede com itens
+BK.shelfWall = (x, z, rot, len, items) => {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot; scene.add(g);
+  put(g, box(len, 5, 0.9, '#ffffff'), 0, 2.5, 0);
+  for (let r = 0; r < 3; r++) { put(g, box(len - 0.2, 0.14, 0.9, '#d9a46c'), 0, 1 + r * 1.4, 0.05);
+    const n = Math.round(len / 1.1);
+    for (let i = 0; i < n; i++) { const it = items((r * n + i)); it.position.set(-len / 2 + 0.6 + i * ((len - 1.2) / Math.max(1, n - 1)), 1.1 + r * 1.4, 0.15); g.add(it); } }
+  const sw = Math.abs(Math.sin(rot)) > 0.5; addRect(x, z, sw ? 0.9 : len, sw ? len : 0.9, 5);
+  return g;
+};
+// ---------- casa residencial detalhada ----------
+function fancyHouse(g, o) {
+  const w = o.w || 8, h = o.h || 5, d = o.d || 7, c = o.wall, roof = o.roof, trim = o.trim || '#ffffff';
+  put(g, mesh(new THREE.BoxGeometry(w + 0.3, 0.8, d + 0.3), BK.tmat(BK.brick('#e8835a', '#f2c6a8'))), 0, 0.4, 0);
+  put(g, mesh(new THREE.BoxGeometry(w, h - 0.8, d), BK.tmat(BK.siding(c, new THREE.Color(c).offsetHSL(0, 0, -0.06).getStyle()))), 0, 0.8 + (h - 0.8) / 2, 0);
+  put(g, box(w + 0.3, 0.24, d + 0.3, trim), 0, 0.82, 0);
+  put(g, box(w + 0.4, 0.34, d + 0.4, trim), 0, h, 0);
+  [-1, 1].forEach(k => put(g, box(0.32, h, 0.32, trim), k * w / 2, h / 2, d / 2));
+  BK.gable(g, w, d, h + 0.15, Math.min(3.4, w * 0.42), BK.tiles(roof, new THREE.Color(roof).offsetHSL(0, 0, -0.1).getStyle()), trim, {wall: c, roundWin: w >= 7});
+  if (o.chimney !== false) BK.chimney(g, w * 0.28, h + 1.8, -d * 0.18);
+  // porta, janelas, varandinha
+  BK.door(g, 0, d / 2 + 0.04, {w: Math.min(1.8, w * 0.24), h: Math.min(2.8, h * 0.56), color: o.door || '#c2255c', frame: trim, mat: roof});
+  const ww = Math.min(1.5, w * 0.19), wh = Math.min(1.5, h * 0.3);
+  [-1, 1].forEach(k => BK.window(g, k * w * 0.3, h * 0.56, d / 2 + 0.04, ww, wh, {frame: trim, shutter: roof, flowers: '#ffffff'}));
+  // telhadinho sobre a porta
+  const tp = put(g, box(Math.min(3, w * 0.4), 0.16, 1.2, roof), 0, Math.min(2.8, h * 0.56) + 1.1, d / 2 + 0.6); tp.rotation.x = 0.3;
+  [-1, 1].forEach(k => put(g, cyl(0.07, 0.07, Math.min(2.8, h * 0.56) + 0.9, 6, trim), k * Math.min(1.35, w * 0.18), (Math.min(2.8, h * 0.56) + 0.9) / 2, d / 2 + 1.1));
+  BK.wallLamp(g, Math.min(1.6, w * 0.22), Math.min(2.8, h * 0.56) + 0.5, d / 2 + 0.06);
+  // laterais com janela também
+  [-1, 1].forEach(k => { const sg = new THREE.Group(); sg.position.set(k * (w / 2 + 0.02), 0, 0); sg.rotation.y = k * Math.PI / 2; g.add(sg); BK.window(sg, 0, h * 0.56, 0, ww, wh, {frame: trim}); });
+  [-1, 1].forEach(k => BK.pot(g, k * (w * 0.42), d / 2 + 0.9, o.potColor));
+  put(g, cyl(0.08, 0.08, h, 6, '#adb5bd'), -w / 2 + 0.25, h / 2, d / 2 + 0.2);
+}
+
+// ---------- MÓVEIS DA CASINHA (carregados cedo para todos os interiores usarem) ----------
+const homeAnimOk = () => { try { return curArea.slice(0, 3) === 'hm_' || curArea.slice(0, 3) === 'in_'; } catch (e) { return false; } };
+// ---------- móveis novos ----------
+const HOME_DECOR = {
+  dc_carrossel: g => { put(g, cyl(2.2, 2.4, 0.4, 22, '#ffffff'), 0, 0.2, 0); put(g, cyl(0.2, 0.2, 4, 10, '#ffd43b'), 0, 2.2, 0);
+    const top = put(g, mesh(new THREE.ConeGeometry(2.6, 1.4, 22), new THREE.MeshToonMaterial({map: patternTex('stripes', '#ff5fa8', '#ffffff'), gradientMap: TOON})), 0, 4.6, 0);
+    put(g, sph(0.3, shiny('#ffd43b', .6)), 0, 5.4, 0);
+    const roda = new THREE.Group(); roda.position.y = 0; g.add(roda);
+    ['#ff8cc6', '#74c0fc', '#ffd43b', '#b197fc'].forEach((c, i) => { const a = i / 4 * TAU, x = Math.cos(a) * 1.5, z = Math.sin(a) * 1.5;
+      put(roda, cyl(0.05, 0.05, 3.4, 6, '#ffd43b'), x, 2.2, z);
+      const cv = put(roda, box(0.5, 0.6, 1.1, c), x, 1.4, z); cv.rotation.y = -a;
+      put(roda, sph(0.25, mat(c)), x + Math.cos(a + Math.PI / 2) * 0.55, 1.75, z + Math.sin(a + Math.PI / 2) * 0.55); });
+    onFrame((dt, t) => { roda.rotation.y = t * 0.6; roda.children.forEach((m, i) => { if (m.geometry && m.geometry.type === 'BoxGeometry') m.position.y = 1.4 + Math.sin(t * 2 + i) * 0.25; }); }); },
+  dc_sofa: g => { const B = (w, h, d, c, x, y, z) => put(g, box(w, h, d, c), x, y, z);
+    B(3.4, 0.7, 1.5, '#ff8cc6', 0, 0.45, 0); B(3.4, 1.3, 0.4, '#ff8cc6', 0, 1.1, -0.6);
+    [-1, 1].forEach(k => B(0.4, 1, 1.5, '#ff8cc6', k * 1.7, 0.9, 0));
+    [-0.9, 0.9].forEach(k => B(1.2, 0.28, 1.1, '#ffd6ea', k, 0.9, 0.1));
+    [-1, 1].forEach(k => put(g, box(0.5, 0.5, 0.18, '#ffffff'), k * 0.8, 1.2, -0.3)); },
+  dc_tv: g => { put(g, box(0.8, 0.5, 0.8, '#5f3a4a'), 0, 0.25, 0); put(g, box(0.2, 0.6, 0.2, '#343a40'), 0, 0.8, 0);
+    put(g, box(3.4, 2, 0.25, '#343a40'), 0, 2.1, 0); const tela = put(g, box(3.1, 1.7, 0.1, '#74c0fc'), 0, 2.1, 0.14);
+    onFrame((dt, t) => { if (homeAnimOk()) tela.material.color.setHSL((t * 0.05) % 1, 0.5, 0.75); }); },
+  dc_estante: g => { put(g, box(2.6, 4, 0.8, '#a0673a'), 0, 2, 0);
+    for (let r = 0; r < 4; r++) { put(g, box(2.4, 0.12, 0.7, '#c99a5b'), 0, 0.5 + r, 0.05);
+      for (let i = 0; i < 6; i++) put(g, box(0.22, 0.6, 0.5, ['#ff6b6b', '#4dabf7', '#ffd43b', '#69db7c', '#b197fc'][(i + r) % 5]), -1 + i * 0.36, 0.86 + r, 0.08); } },
+  dc_mesinha: g => { put(g, cyl(1.1, 1.1, 0.15, 18, '#c99a5b'), 0, 0.8, 0); put(g, cyl(0.18, 0.22, 0.8, 8, '#a0673a'), 0, 0.4, 0);
+    put(g, cyl(0.45, 0.4, 0.25, 12, '#ffffff'), 0.3, 1, 0.2); put(g, sph(0.2, mat('#ff8cc6')), -0.35, 1.05, -0.1); },
+  dc_poltrona: g => { put(g, box(1.6, 0.6, 1.5, '#9775fa'), 0, 0.4, 0); put(g, box(1.6, 1.4, 0.35, '#9775fa'), 0, 1.1, -0.55);
+    [-1, 1].forEach(k => put(g, box(0.3, 0.9, 1.4, '#b197fc'), k * 0.8, 0.85, 0)); put(g, box(0.9, 0.25, 0.9, '#e5dbff'), 0, 0.78, 0.1); },
+  dc_lareira: g => { put(g, box(3, 2.6, 1, '#cfd4dc'), 0, 1.3, 0); put(g, box(1.8, 1.4, 0.6, '#5f3a4a'), 0, 0.7, 0.3);
+    const f = put(g, mesh(new THREE.ConeGeometry(0.6, 1.1, 10), new THREE.MeshBasicMaterial({color: '#ff922b'})), 0, 0.9, 0.35);
+    put(g, box(3.4, 0.25, 1.2, '#ffffff'), 0, 2.7, 0);
+    onFrame((dt, t) => { if (homeAnimOk()) { f.scale.setScalar(0.85 + Math.sin(t * 7) * 0.15); } }); },
+  dc_fogao: g => { put(g, box(2.4, 1.5, 1.6, '#ffffff'), 0, 0.75, 0); put(g, box(2.4, 0.12, 1.6, '#495057'), 0, 1.54, 0);
+    [[-0.6, -0.4], [0.6, -0.4], [-0.6, 0.4], [0.6, 0.4]].forEach(([x, z]) => put(g, cyl(0.3, 0.3, 0.06, 14, '#343a40'), x, 1.6, z));
+    put(g, box(2.2, 0.9, 0.1, '#cfeeff'), 0, 0.8, 0.84); put(g, box(2.4, 1.2, 0.2, '#ffffff'), 0, 2.3, -0.7);
+    put(g, cyl(0.35, 0.3, 0.3, 14, '#ff6b6b'), 0.5, 1.8, 0.1); },
+  dc_geladeira: g => { put(g, box(2, 4, 1.6, '#e7f5ff'), 0, 2, 0); put(g, box(2.05, 0.12, 1.65, '#adb5bd'), 0, 2.6, 0);
+    put(g, box(0.14, 1.4, 0.14, '#adb5bd'), 0.8, 1.6, 0.85); put(g, box(0.14, 0.6, 0.14, '#adb5bd'), 0.8, 3.1, 0.85);
+    [['#ff6b6b', -0.4, 2.9], ['#ffd43b', 0.2, 3.3], ['#69db7c', -0.1, 2.4]].forEach(([c, x, y]) => put(g, box(0.3, 0.3, 0.06, c), x, y, 0.83)); },
+  dc_pia: g => { put(g, box(2.6, 1.4, 1.4, '#ffffff'), 0, 0.7, 0); put(g, box(2.6, 0.15, 1.4, '#cfd4dc'), 0, 1.45, 0);
+    put(g, cyl(0.6, 0.55, 0.3, 16, '#dfe8f0'), -0.5, 1.4, 0); put(g, cyl(0.07, 0.07, 0.8, 8, '#adb5bd'), -0.5, 1.9, -0.5);
+    put(g, box(0.5, 0.08, 0.4, '#adb5bd'), -0.5, 2.25, -0.3); },
+  dc_mesa_jantar: g => { put(g, box(3.4, 0.2, 2, '#c99a5b'), 0, 1.1, 0);
+    [[-1.4, -0.8], [1.4, -0.8], [-1.4, 0.8], [1.4, 0.8]].forEach(([x, z]) => put(g, box(0.2, 1.1, 0.2, '#a0673a'), x, 0.55, z));
+    [-1, 1].forEach(k => { put(g, box(0.9, 0.15, 0.9, '#ff8cc6'), k * 2.4, 0.7, 0); put(g, box(0.9, 1.1, 0.15, '#ff8cc6'), k * 2.4, 1.3, k * -0.4); });
+    put(g, cyl(0.45, 0.45, 0.08, 16, '#ffffff'), -0.7, 1.24, 0); put(g, cyl(0.45, 0.45, 0.08, 16, '#ffffff'), 0.7, 1.24, 0); },
+  dc_armario_coz: g => { put(g, box(2.4, 3.2, 1.2, '#ffffff'), 0, 1.6, 0); put(g, box(2.45, 0.1, 1.25, '#c3fae8'), 0, 1.6, 0);
+    [-1, 1].forEach(k => put(g, box(0.1, 0.5, 0.1, '#adb5bd'), k * 0.5, 1.8, 0.65)); put(g, cyl(0.3, 0.26, 0.4, 12, '#ff922b'), -0.6, 3.4, 0); put(g, cyl(0.3, 0.26, 0.4, 12, '#4dabf7'), 0.2, 3.4, 0); },
+  dc_bolo_mesa: g => { put(g, cyl(0.7, 0.7, 0.1, 18, '#ffffff'), 0, 0.05, 0); put(g, cyl(0.15, 0.2, 0.3, 10, '#ffffff'), 0, 0.2, 0);
+    put(g, cyl(0.62, 0.62, 0.45, 18, '#ffe3ef'), 0, 0.58, 0); put(g, cyl(0.45, 0.45, 0.3, 18, '#ff8cc6'), 0, 0.95, 0);
+    for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; put(g, sph(0.09, mat('#e03131')), Math.cos(a) * 0.3, 1.14, Math.sin(a) * 0.3); } },
+  dc_beliche: g => { put(g, box(2.4, 0.4, 4, '#ffffff'), 0, 0.6, 0); put(g, box(2.3, 0.3, 3.8, '#ff9ccc'), 0, 0.92, 0);
+    put(g, box(2.4, 0.4, 4, '#ffffff'), 0, 3, 0); put(g, box(2.3, 0.3, 3.8, '#a5d8ff'), 0, 3.32, 0);
+    [[-1.1, -1.9], [1.1, -1.9], [-1.1, 1.9], [1.1, 1.9]].forEach(([x, z]) => put(g, cyl(0.1, 0.1, 4, 8, '#ffc83d'), x, 2, z));
+    for (let i = 0; i < 5; i++) put(g, cyl(0.06, 0.06, 1.1, 6, '#ffc83d'), 1.1, 1.4 + i * 0.38, 1.9 - i * 0.02);
+    put(g, box(1.6, 0.25, 0.6, '#ffffff'), 0, 1.1, -1.5); put(g, box(1.6, 0.25, 0.6, '#ffffff'), 0, 3.5, -1.5); },
+  dc_guarda_roupa: g => { put(g, box(3, 4.4, 1.4, '#c99a5b'), 0, 2.2, 0);
+    [-1, 1].forEach(k => { put(g, box(1.4, 4.1, 0.1, '#a0673a'), k * 0.72, 2.2, 0.72); put(g, box(0.1, 0.5, 0.1, '#ffd43b'), k * 0.2, 2.2, 0.8); });
+    put(g, mesh(starGeo(0.26, 0.11, 0.05), shiny('#ffd43b', .6)), 0, 4.1, 0.75); },
+  dc_escrivaninha: g => { put(g, box(2.6, 0.18, 1.3, '#ffd6ea'), 0, 1.2, 0);
+    [[-1.1, -0.5], [1.1, -0.5], [-1.1, 0.5], [1.1, 0.5]].forEach(([x, z]) => put(g, box(0.16, 1.2, 0.16, '#ffffff'), x, 0.6, z));
+    put(g, box(0.9, 0.7, 0.6, '#b197fc'), -0.7, 1.55, -0.2); put(g, box(0.5, 0.06, 0.4, '#ffffff'), 0.6, 1.32, 0);
+    put(g, cyl(0.2, 0.18, 0.35, 10, '#4dabf7'), 0.9, 1.45, -0.3); for (let i = 0; i < 4; i++) put(g, cyl(0.02, 0.02, 0.4, 4, ['#e03131', '#ffd43b', '#4dabf7', '#69db7c'][i]), 0.9 + i * 0.05, 1.75, -0.3); },
+  dc_pelucia: g => { const cores = ['#ffd6ea', '#c3fae8', '#ffe066', '#d0bfff'];
+    cores.forEach((c, i) => { const a = i / cores.length * TAU; const u = put(g, sph(0.5, mat(c)), Math.cos(a) * 0.55, 0.5, Math.sin(a) * 0.55);
+      put(g, sph(0.3, mat(c)), Math.cos(a) * 0.55, 1.05, Math.sin(a) * 0.55);
+      [-1, 1].forEach(k => put(g, sph(0.11, mat(c)), Math.cos(a) * 0.55 + k * 0.2, 1.25, Math.sin(a) * 0.55));
+      [-1, 1].forEach(k => put(g, sph(0.04, mat('#3a2242')), Math.cos(a) * 0.55 + k * 0.1, 1.1, Math.sin(a) * 0.55 + 0.26)); }); },
+  dc_luzes: g => { const n = 9; for (let i = 0; i < n; i++) { const x = -2 + i * 0.5, y = 2.6 - Math.sin(i / (n - 1) * Math.PI) * 0.5;
+      put(g, mesh(new THREE.SphereGeometry(0.14, 10, 8), new THREE.MeshBasicMaterial({color: ['#ffd43b', '#ff8cc6', '#74c0fc', '#69db7c'][i % 4]})), x, y, 0); }
+    put(g, box(4.4, 0.04, 0.04, '#ffffff'), 0, 2.72, 0);
+    [-1, 1].forEach(k => put(g, cyl(0.06, 0.06, 2.8, 6, '#ffffff'), k * 2.2, 1.4, 0)); },
+  dc_balanco: g => { [-1, 1].forEach(k => put(g, cyl(0.16, 0.18, 4, 8, '#ff8cc6'), k * 1.6, 2, 0));
+    put(g, box(3.6, 0.22, 0.22, '#ff8cc6'), 0, 4, 0);
+    [-0.7, 0.7].forEach(k => put(g, cyl(0.04, 0.04, 2.4, 4, '#ffffff'), k, 2.8, 0));
+    put(g, box(1.8, 0.18, 0.7, '#ffe066'), 0, 1.6, 0); put(g, box(1.8, 0.9, 0.12, '#ffe066'), 0, 2, -0.3);
+    for (let i = 0; i < 5; i++) put(g, sph(0.16, mat(['#ff5fa8', '#ffd43b', '#b197fc'][i % 3])), -1.4 + i * 0.7, 4.1, 0); },
+  dc_horta: g => { put(g, box(3.4, 0.6, 2.2, '#a0673a'), 0, 0.3, 0); put(g, box(3.6, 0.2, 2.4, '#c99a5b'), 0, 0.62, 0);
+    for (let i = 0; i < 9; i++) { const x = -1.2 + (i % 3) * 1.2, z = -0.6 + Math.floor(i / 3) * 0.6;
+      put(g, cyl(0.06, 0.06, 0.6, 5, '#2b8a3e'), x, 1, z); put(g, sph(0.26, mat(['#e03131', '#ff922b', '#69db7c'][i % 3])), x, 1.35, z); }
+    put(g, box(0.5, 0.4, 0.06, '#ffffff'), -1.4, 1.4, 1.2); },
+  dc_piscininha: g => { put(g, cyl(2.6, 2.7, 0.9, 24, '#74c0fc'), 0, 0.45, 0);
+    put(g, cyl(2.4, 2.4, 0.1, 24, new THREE.MeshPhongMaterial({color: '#a5d8ff', transparent: true, opacity: .85, shininess: 120})), 0, 0.85, 0);
+    put(g, mesh(new THREE.TorusGeometry(2.65, 0.3, 10, 26), mat('#ffffff')), 0, 0.9, 0).rotation.x = Math.PI / 2;
+    const boia = put(g, mesh(new THREE.TorusGeometry(0.6, 0.22, 10, 18), mat('#ff8cc6')), 0.7, 0.95, 0.4); boia.rotation.x = Math.PI / 2;
+    onFrame((dt, t) => { if (homeAnimOk()) { boia.position.y = 0.95 + Math.sin(t * 1.6) * 0.07; boia.rotation.z = t * 0.3; } }); },
+  dc_churrasqueira: g => { put(g, box(1.8, 1, 1.2, '#495057'), 0, 1, 0); put(g, box(1.9, 0.1, 1.3, '#adb5bd'), 0, 1.54, 0);
+    [-1, 1].forEach(k => put(g, cyl(0.08, 0.08, 1, 6, '#343a40'), k * 0.7, 0.5, 0));
+    for (let i = 0; i < 4; i++) put(g, cyl(0.09, 0.09, 1.1, 8, '#7a4b2a'), -0.5 + i * 0.34, 1.62, 0).rotation.z = Math.PI / 2;
+    const fu = put(g, mesh(new THREE.ConeGeometry(0.3, 0.7, 10), new THREE.MeshBasicMaterial({color: '#ff922b', transparent: true, opacity: .8})), 0, 1.9, 0);
+    onFrame((dt, t) => { if (homeAnimOk()) fu.scale.setScalar(0.8 + Math.sin(t * 6) * 0.2); }); },
+  dc_casinha_passaro: g => { put(g, cyl(0.12, 0.12, 3, 8, '#c99a5b'), 0, 1.5, 0);
+    put(g, box(1.2, 1, 1, '#ffd43b'), 0, 3.3, 0); put(g, mesh(new THREE.ConeGeometry(1.1, 0.7, 4), mat('#e64980')), 0, 4.1, 0).rotation.y = Math.PI / 4;
+    put(g, mesh(new THREE.CircleGeometry(0.22, 16), new THREE.MeshBasicMaterial({color: '#5f3a4a'})), 0, 3.3, 0.51);
+    put(g, cyl(0.04, 0.04, 0.3, 6, '#c99a5b'), 0, 3, 0.6).rotation.x = Math.PI / 2;
+    const p = put(g, sph(0.2, mat('#4dabf7')), 0, 3.05, 0.75); put(g, mesh(new THREE.ConeGeometry(0.06, 0.14, 6), mat('#ffd43b')), 0, 3.05, 0.92).rotation.x = Math.PI / 2;
+    onFrame((dt, t) => { if (homeAnimOk()) p.position.y = 3.05 + Math.abs(Math.sin(t * 2)) * 0.1; }); }};
+// liga os móveis novos ao construtor de decoração
+(function () {
+  const old = decorModel;
+  decorModel = function (id) {
+    if (HOME_DECOR[id]) { const g = new THREE.Group(); HOME_DECOR[id](g); addOutlines(g); return g; }
+    return old(id);
+  };
+})();
+
 // ---------- registros ----------
 const circles = [], rects = [], platforms = [];
 const addCircle = (x, z, r, h = 99) => circles.push({x, z, r, h});
@@ -2240,10 +2906,7 @@ function scatterTrees(cx, cz, r, n, colors, kind, inner = 0) {
 }
 function house(x, z, rot, c, roofC, w = 6, h = 4.5, d = 6) {
   const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot; scene.add(g);
-  put(g, box(w, h, d, c), 0, h / 2, 0);
-  const r = put(g, mesh(new THREE.ConeGeometry(Math.max(w, d) * 0.78, 3, 4), roofC), 0, h + 1.5, 0); r.rotation.y = Math.PI / 4;
-  put(g, box(1.4, 2.3, 0.15, '#9a5530'), 0, 1.15, d / 2 + 0.05);
-  [-1, 1].forEach(k => put(g, box(1.1, 1.1, 0.12, '#8fd3ff'), k * w * 0.3, h * 0.62, d / 2 + 0.05));
+  fancyHouse(g, {w, h, d, wall: typeof c === 'string' ? c : '#ffe8f2', roof: typeof roofC === 'string' ? roofC : '#e64980'});
   const sw = Math.abs(Math.sin(rot)) > 0.5;
   addRect(x, z, sw ? d : w, sw ? w : d);
   mapRect(areaOf(x, z), x, z, sw ? d : w, sw ? w : d, '#c58ed8');
@@ -2296,16 +2959,8 @@ mapCircle('main', 0, 0, 3.3, '#bfe6ff'); poi(0, 0, '⛲', 'Fonte'); reserve(0, 0
 // castelo real
 const CZ = -40;
 const pink = '#ffb8dc', lilac = '#e7d0ff', roofP = '#b06ad9';
-at(box(20, 10, 12, pink), 0, 5, CZ);
-at(box(9, 17, 8, lilac), 0, 8.5, CZ - 3);
-at(mesh(new THREE.ConeGeometry(6.6, 6, 4), roofP), 0, 20, CZ - 3).rotation.y = Math.PI / 4;
-for (let i = -9; i <= 9; i += 2) at(box(1, 1, 1, pink), i, 10.5, CZ + 5.6);
-[[-10, CZ + 6], [10, CZ + 6], [-10, CZ - 6], [10, CZ - 6]].forEach(([x, z]) => {
-  at(cyl(2.6, 2.6, 15, 14, lilac), x, 7.5, z); at(mesh(new THREE.ConeGeometry(3.3, 5.5, 14), roofP), x, 17.7, z);
-  at(cyl(0.08, 0.08, 2.2, 6, '#8a5a3a'), x, 21.2, z); at(box(1.3, 0.8, 0.08, '#ff5fa8'), x + 0.68, 21.8, z); addCircle(x, z, 2.7);
-});
-at(box(3.6, 5.2, 0.4, '#9a5530'), 0, 2.6, CZ + 6.05);
-[[-6, 6], [6, 6], [-6, 2.4], [6, 2.4]].forEach(([x, y]) => at(box(1.4, 1.8, 0.2, '#6b4aa0'), x, y + 0.5, CZ + 6.05));
+{ const cg = new THREE.Group(); cg.position.set(0, 0, CZ); scene.add(cg); fancyCastle(cg, {wall: pink, wall2: lilac, roof: roofP, trim: '#ffffff'}); }
+[[-10, CZ + 6], [10, CZ + 6], [-10, CZ - 6], [10, CZ - 6]].forEach(([x, z]) => addCircle(x, z, 2.7));
 addRect(0, CZ, 20, 12); mapRect('main', 0, CZ, 22, 14, '#d39be8'); poi(0, CZ, '🏰', 'Castelo Real'); reserve(0, CZ, 18);
 // lago
 const PX = 34, PZ = -14;
@@ -2368,24 +3023,28 @@ const SHOP_DEFS = [
   ['doceria', 86, 22, Math.PI, '#fff0a8', '#ff7ab0'], ['petshop', 100, 22, Math.PI, '#b8f0c0', '#2f9e44'], ['moveis', 114, 22, Math.PI, '#ffd8b0', '#c46d2d'],
   ['pacotes', 126, 0, -Math.PI / 2, '#ffc2e2', '#a83279']];
 const stripeTexCache = {};
+// o que aparece na vitrine de cada loja
+const SHOP_DISPLAY = {
+  boutique: () => { const g = new THREE.Group(); put(g, mesh(bell(0.3, 2.2, 0.7, 1.6, 1.2), dmat('#ff5fa8')), 0, 0, 0); put(g, sph(0.3, mat('#ffd6ea')), 0, 2.4, 0); return g; },
+  joalheria: () => { const g = new THREE.Group(); put(g, cyl(0.6, 0.7, 0.8, 12, '#ffffff'), 0, 0.4, 0); put(g, mesh(new THREE.OctahedronGeometry(0.6, 0), shiny('#b197fc', .8)), 0, 1.4, 0); return g; },
+  salao: () => { const g = new THREE.Group(); put(g, cyl(0.15, 0.15, 1.2, 8, '#adb5bd'), 0, 0.6, 0); put(g, sph(0.7, mat('#74c0fc')), 0, 1.6, 0).scale.y = 0.7; return g; },
+  doceria: () => { const g = new THREE.Group(); put(g, cyl(0.8, 0.8, 0.6, 16, '#ffe3ef'), 0, 0.3, 0); put(g, cyl(0.6, 0.6, 0.5, 16, '#ff8cc6'), 0, 0.85, 0); put(g, sph(0.15, mat('#e03131')), 0, 1.2, 0); return g; },
+  petshop: () => { const g = new THREE.Group(); put(g, cyl(0.15, 0.15, 1.2, 8, '#ffffff'), 0, 0.6, 0).rotation.z = Math.PI / 2; [-1, 1].forEach(k => put(g, sph(0.28, mat('#ffffff')), k * 0.6, 0.6, 0)); return g; },
+  moveis: () => { const g = new THREE.Group(); put(g, box(1.4, 0.5, 1, '#c99a5b'), 0, 0.5, 0); put(g, box(1.4, 1, 0.25, '#c99a5b'), 0, 1, -0.4); return g; },
+  pacotes: () => { const g = new THREE.Group(); put(g, box(1, 1, 1, '#ff8cc6'), 0, 0.5, 0); put(g, box(1.05, 0.2, 1.05, '#ffd43b'), 0, 0.5, 0); put(g, box(0.2, 1.05, 1.05, '#ffd43b'), 0, 0.5, 0); return g; }};
 SHOP_DEFS.forEach(([id, x, z, rot, c, c2]) => {
   const s = SHOPS[id];
   const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot; scene.add(g);
-  const W = 11, H = 7, D = 8;
-  put(g, box(W, H, D, c), 0, H / 2, 0);
-  put(g, box(W + 0.6, 0.6, D + 0.6, c2), 0, H + 0.3, 0);
-  if (id !== 'pacotes') { const r = put(g, mesh(new THREE.ConeGeometry(W * 0.62, 2.6, 4), c2), 0, H + 1.9, 0); r.rotation.y = Math.PI / 4; r.scale.z = D / W; }
-  const aw = put(g, mesh(new THREE.BoxGeometry(W * 0.8, 0.25, 2), new THREE.MeshLambertMaterial({map: patternTex('stripes', c2, '#ffffff')})), 0, 3.6, D / 2 + 1); aw.rotation.x = 0.25;
-  put(g, box(2.2, 3, 0.2, '#7a4a2a'), 0, 1.5, D / 2 + 0.05);
-  [-3.4, 3.4].forEach(k => put(g, box(2.2, 1.8, 0.15, '#bfe9ff'), k, 2.2, D / 2 + 0.06));
-  const lb = label(s.e + ' ' + s.n, {scale: 1.25}); put(g, lb, 0, H + 1.2, D / 2 + 0.6);
+  const W = 11, H = id === 'pacotes' ? 7 : 9, D = 8;
+  fancyShop(g, {W, H, D, wall: c, roof: c2, e: s.e, floors: id === 'pacotes' ? 1 : 2, roofType: id === 'pacotes' ? 'flat' : 'gable', display: SHOP_DISPLAY[id], door: '#ffffff'});
+  const lb = label(s.e + ' ' + s.n, {scale: 1.15}); put(g, lb, 0, H + (id === 'pacotes' ? 1.8 : 5.4), D / 2 + 0.6);
   const sw = Math.abs(Math.sin(rot)) > 0.5;
   addRect(x, z, sw ? D : W, sw ? W : D);
   if (id === 'pacotes') addPlat(x, z, D, W, H + 0.6, H - 0.4);
   mapRect('main', x, z, sw ? D : W, sw ? W : D, c2);
   const ix = x + Math.sin(rot) * (D / 2 + 2), iz = z + Math.cos(rot) * (D / 2 + 2);
   poi(x, z, s.e, s.n);
-  interact({x: ix, z: iz, r: 3, text: () => 'Entrar: ' + s.n, act: () => openShop(id)});
+
 });
 // pista do baile
 const danceTiles = [];
@@ -2674,6 +3333,18 @@ mapRect('castelo', 14.5, KZ + 1, 8, 4, '#d0b0f5'); poi(17, KZ + 9, '🪜', 'Esca
 interact({x: KX, z: KZ + 17.6, r: 2.8, text: () => 'Sair do castelo', act: () => teleport(0, -30.5, 0)});
 interact({id: 'castleEnter', x: 0, z: CZ + 8, r: 3.2, text: () => 'Entrar no Castelo Real', act: () => teleport(KX, KZ + 16, Math.PI)});
 interact({x: 0, z: KZ - 13.5, r: 3, text: () => P.stats.coroa ? 'Sentar no Trono Real' : coronationReady() ? '👑 Começar a coroação!' : 'Trono Real: complete as 3 missões do castelo', act: () => coronation()});
+// retoques no estilo novo: cortinas, molduras douradas e quadros reais
+[-12, -4, 4, 12].forEach(x => {
+  [-1, 1].forEach(k => at(box(0.9, 4.2, 0.18, '#e64980'), x + k * 1.7, 5.2, KZ - 19.75));
+  at(cyl(0.07, 0.07, 4.4, 6, '#ffc83d'), x, 7.4, KZ - 19.7).rotation.z = Math.PI / 2;
+  at(box(2.9, 0.22, 0.4, '#ffc83d'), x, 3.25, KZ - 19.8);
+});
+[[-19.9, -6, Math.PI / 2, '#a5d8ff', '#ff8cc6'], [19.9, 6, -Math.PI / 2, '#d3f9d8', '#b197fc'], [-19.9, 12, Math.PI / 2, '#fff3bf', '#ff922b']].forEach(([x, dz, r, c, c2]) => {
+  const g = new THREE.Group(); g.position.set(x, 5, KZ + dz); g.rotation.y = r; scene.add(g);
+  put(g, box(3.4, 2.6, 0.16, '#ffc83d'), 0, 0, 0); put(g, box(2.9, 2.1, 0.06, c), 0, 0, 0.09);
+  put(g, sph(0.45, mat(c2)), 0, 0.2, 0.14); put(g, box(1.6, 0.3, 0.06, '#69db7c'), 0, -0.7, 0.13);
+  put(g, mesh(new THREE.OctahedronGeometry(0.18, 0), shiny('#ffd43b', .6)), 0, 1.5, 0.12);
+});
 
 // ---------- NOVOS MUNDOS ----------
 const W_BY = {}; NEW_WORLDS.forEach(w => W_BY[w.id] = w);
@@ -2941,6 +3612,68 @@ stationArch(0, 44, 0, '#ff8cc6');
 });
 [[RX + 7, RZ + 7]].forEach(([x, z]) => { const m2 = decorModel('dc_espelho'); m2.position.set(x, 0, z); m2.rotation.y = -Math.PI / 4; scene.add(m2); interact({x, z, r: 2.6, text: () => '🪞 Espelho mágico: viajar entre mundos', act: () => openMap('uni')}); });
 
+// ---------- INTERIORES DO REINO PRINCIPAL: cenário ----------
+const MAIN_INT = {};
+// produtos que enfeitam as prateleiras de cada loja
+const SHOP_PRODUCT = {
+  boutique: i => { const g = new THREE.Group(); put(g, mesh(bell(0.12, 0.9, 0.3, 0.7, 1.2), dmat(['#ff8cc6', '#74c0fc', '#ffd43b', '#b197fc'][i % 4])), 0, 0, 0); return g; },
+  joalheria: i => { const g = new THREE.Group(); put(g, mesh(new THREE.OctahedronGeometry(0.22, 0), shiny(['#b197fc', '#74c0fc', '#ff8cc6', '#ffd43b'][i % 4], .8)), 0, 0.25, 0); return g; },
+  salao: i => { const g = new THREE.Group(); put(g, cyl(0.14, 0.12, 0.5, 10, ['#ff8cc6', '#74c0fc', '#ffd43b', '#69db7c'][i % 4]), 0, 0.25, 0); put(g, cyl(0.06, 0.06, 0.16, 8, '#ffffff'), 0, 0.58, 0); return g; },
+  doceria: i => { const g = new THREE.Group(); put(g, cyl(0.24, 0.2, 0.22, 12, '#e8b06a'), 0, 0.11, 0); put(g, sph(0.24, mat(['#ff8cc6', '#ffffff', '#ffd43b', '#b197fc'][i % 4])), 0, 0.3, 0); return g; },
+  petshop: i => { const g = new THREE.Group(); put(g, box(0.5, 0.6, 0.3, ['#ff922b', '#4dabf7', '#69db7c', '#ff8cc6'][i % 4]), 0, 0.3, 0); put(g, sph(0.1, mat('#ffffff')), 0, 0.4, 0.16); return g; },
+  moveis: i => { const g = new THREE.Group(); put(g, box(0.5, 0.25, 0.4, ['#c98e62', '#ff8cc6', '#74c0fc', '#ffd43b'][i % 4]), 0, 0.2, 0); put(g, box(0.5, 0.4, 0.08, ['#c98e62', '#ff8cc6', '#74c0fc', '#ffd43b'][i % 4]), 0, 0.45, -0.16); return g; },
+  pacotes: i => { const g = new THREE.Group(); const c = ['#ff8cc6', '#74c0fc', '#ffd43b', '#b197fc'][i % 4]; put(g, box(0.5, 0.5, 0.5, c), 0, 0.25, 0); put(g, box(0.52, 0.1, 0.52, '#ffffff'), 0, 0.25, 0); return g; }};
+const SHOP_CLERK = {
+  boutique: {n: 'Estilista Mel', look: {skin: 1, hairColor: 12, hairStyle: 13, dress: 'd_babado_rosa', bag: 'bg_gatinho', expr: 1}},
+  joalheria: {n: 'Joalheira Safira', look: {skin: 3, hairColor: 2, hairStyle: 2, dress: 'd_lilas', head: 'a_tiara_cristal', expr: 1}},
+  salao: {n: 'Cabeleireira Luli', look: {skin: 0, hairColor: 11, hairStyle: 5, dress: null, top: 't_branca', bottom: 'b_saia_xadrez', expr: 2}},
+  doceria: {n: 'Doceira Bel', look: {skin: 2, hairColor: 4, hairStyle: 13, dress: 'd_listras', head: 'a_chef', expr: 1}},
+  petshop: {n: 'Tratador Davi', look: {skin: 4, hairColor: 2, hairStyle: 4, dress: null, top: 't_azul', bottom: 'b_calca', head: 'a_bone', expr: 1}},
+  moveis: {n: 'Marceneiro Beto', look: {skin: 5, hairColor: 8, hairStyle: 4, dress: null, top: 't_listrada', bottom: 'b_calca', expr: 0}},
+  pacotes: {n: 'Moça dos Presentes', look: {skin: 1, hairColor: 13, hairStyle: 7, dress: 'd_flores', clip: 'cl_lacinhos', expr: 1}}};
+MAIN_INT.vila = b => {
+  const th = VILA_THEME[b.shop], {X, Z} = BK.room(b, th);
+  BK.counter(X, Z - 6, 9, th.counter, '#ffffff');
+  BK.shelfWall(X - 11.4, Z - 2, Math.PI / 2, 8, SHOP_PRODUCT[b.shop]);
+  BK.shelfWall(X + 11.4, Z - 2, -Math.PI / 2, 8, SHOP_PRODUCT[b.shop]);
+  // expositor central
+  const ex = new THREE.Group(); ex.position.set(X, 0, Z + 2); scene.add(ex);
+  put(ex, cyl(1.6, 1.8, 1, 18, '#ffffff'), 0, 0.5, 0); put(ex, cyl(1.7, 1.7, 0.12, 18, th.counter), 0, 1.06, 0);
+  for (let i = 0; i < 5; i++) { const a = i / 5 * TAU; const it = SHOP_PRODUCT[b.shop](i); it.position.set(Math.cos(a) * 1, 1.12, Math.sin(a) * 1); it.scale.setScalar(1.4); ex.add(it); }
+  addCircle(X, Z + 2, 1.8, 1.2);
+  // detalhes por loja
+  if (b.shop === 'boutique' || b.shop === 'salao') { const mir = decorModel('dc_espelho'); mir.position.set(X + 8, 0, Z - 10.8); mir.scale.setScalar(1.4); scene.add(mir); }
+  if (b.shop === 'salao') [-4, 4].forEach(dx => { const c = new THREE.Group(); c.position.set(X + dx, 0, Z + 6); scene.add(c); put(c, cyl(0.9, 0.9, 0.3, 14, '#ffffff'), 0, 1, 0); put(c, box(1.6, 1.4, 0.3, '#4dabf7'), 0, 1.8, -0.7); put(c, cyl(0.12, 0.2, 1, 8, '#adb5bd'), 0, 0.5, 0); put(c, sph(0.8, mat('#e7f5ff')), 0, 3.2, -0.4).scale.y = 0.7; addCircle(X + dx, Z + 6, 1, 3); });
+  if (b.shop === 'doceria') for (let i = 0; i < 3; i++) { const t = new THREE.Group(); t.position.set(X - 6 + i * 6, 0, Z + 7); scene.add(t); put(t, cyl(1, 1, 0.12, 16, '#ffffff'), 0, 1, 0); put(t, cyl(0.1, 0.1, 1, 8, '#adb5bd'), 0, 0.5, 0); [-1, 1].forEach(k => put(t, cyl(0.42, 0.42, 0.45, 12, '#ff8cc6'), k * 1.5, 0.25, 0)); addCircle(X - 6 + i * 6, Z + 7, 1, 1.1); }
+  if (b.shop === 'petshop') [-6, 6].forEach(dx => { const o = buildPet(dx < 0 ? 'p_cachorro' : 'p_gato'); o.group.position.set(X + dx, 0, Z + 6); scene.add(o.group); addCircle(X + dx, Z + 6, 0.8, 1.5); });
+  // atendente atrás do balcão
+  const d = SHOP_CLERK[b.shop];
+  { const o = buildAvatar(Object.assign(defaultLook(), {head: null, dress: null}, d.look)); o.group.position.set(X + 2, 0, Z - 8.2); scene.add(o.group);
+    const nl = label(d.n, {scale: 0.68}); nl.position.set(X + 2, 4.6, Z - 8.2); scene.add(nl); addCircle(X + 2, Z - 8.2, 0.8, 3);
+    const ph = rnd() * 6; onFrame((dt, t) => { if (curArea !== b.area) return; if (o.parts.armR) o.parts.armR.rotation.z = 0.2 + Math.sin(t * 2 + ph) * 0.2; blink(o.parts, t + ph); }); }
+  interact({x: X, z: Z - 4.4, r: 3, text: () => '🛍️ Ver produtos: ' + b.n, act: () => openShop(b.shop)});
+  interact({x: X + 2, z: Z - 8.2, r: 3.2, text: () => 'Conversar com ' + d.n, act: () => { sfx('click'); dialog(d.n, SHOPS[b.shop].hello, [{t: '🛍️ Ver produtos', fn: () => openShop(b.shop)}, {t: 'Tchau!'}]); }});
+  return {npc: [X + 2, Z - 8.2], job: null};
+};
+MAIN_INT.casa_bairro = b => {
+  const c2 = new THREE.Color(b.col).offsetHSL(0, 0.25, -0.22).getStyle();
+  const th = {paper: ['flowers', 'stripes', 'dots'][b.id.slice(-1) % 3], w1: new THREE.Color(b.col).offsetHSL(0, 0.2, -0.1).getStyle(), w2: '#ffffff', f1: '#c98e62', f2: '#a0673a', curtain: c2, panel: c2, trim: '#ffffff', rug: b.col, lamp: '#ffd43b'};
+  const {X, Z} = BK.room(b, th);
+  // sala: sofá, mesinha, tv; cozinha: fogão e mesa; quarto: cama
+  [['dc_sofa', X - 6, Z - 8, 0], ['dc_tv', X - 6, Z - 11.2, 0], ['dc_mesinha', X - 6, Z - 4.6, 0], ['dc_estante', X + 9, Z - 11.2, 0],
+   ['dc_fogao', X + 8, Z + 2, -Math.PI / 2], ['dc_mesa_jantar', X + 3, Z + 4, 0], ['dc_cama', X - 8.5, Z + 4, Math.PI / 2], ['dc_luzes', X, Z - 11.3, 0]].forEach(([id, x, z, r]) => {
+    const m = decorModel(id); m.position.set(x, 0, z); m.rotation.y = r; scene.add(m); addCircle(x, z, 1.2, 1.2);
+  });
+  { const look = [{skin: 0, hairColor: 4, hairStyle: 2, dress: 'd_flores'}, {skin: 2, hairColor: 2, hairStyle: 4, dress: null, top: 't_azul', bottom: 'b_calca'}, {skin: 4, hairColor: 8, hairStyle: 3, dress: 'd_menta'}, {skin: 1, hairColor: 11, hairStyle: 12, dress: 'd_alcinha'}, {skin: 3, hairColor: 2, hairStyle: 4, dress: null, top: 't_listrada', bottom: 'b_shorts_jeans'}, {skin: 5, hairColor: 13, hairStyle: 7, dress: 'd_listras'}][+b.id.slice(-1) % 6];
+    const o = buildAvatar(Object.assign(defaultLook(), {head: null, dress: null}, look)); o.group.position.set(X + 1, 0, Z - 2); scene.add(o.group);
+    const nl = label(b.dono, {scale: 0.68}); nl.position.set(X + 1, 4.6, Z - 2); scene.add(nl); addCircle(X + 1, Z - 2, 0.8, 3);
+    const ph = rnd() * 6; onFrame((dt, t) => { if (curArea !== b.area) return; blink(o.parts, t + ph); });
+    const falas = ['Que bom que você veio me visitar!', 'Fique à vontade, a casa é sua!', 'Quer um suquinho? 🍹', 'Já viu a Praça do Mercado hoje?'];
+    let visitou = false;
+    interact({x: X + 1, z: Z - 2, r: 3.2, text: () => 'Conversar com ' + b.dono, act: () => { sfx('click'); if (!visitou && P && !(P.city && P.city.done && P.city.done[b.id])) { visitou = true; P.city = P.city || {done: {}}; P.city.done = P.city.done || {}; P.city.done[b.id] = 1; addCoins(8); saveSoon(); return dialog(b.dono, falas[0] + ' Tome 8 moedinhas! 🍪'); } dialog(b.dono, pickR(falas)); }}); }
+  return {npc: [X + 1, Z - 2], job: null};
+};
+
 // ---------- CIDADE ALEGRE ----------
 const CX = CITY.cx, CZC = CITY.cz;
 const cAt = (o, x, y, z) => at(o, CX + x, y, CZC + z);
@@ -2961,33 +3694,44 @@ const cRect = (x, z, w, d, col) => mapRect('w_cidade', CX + x, CZC + z, w, d, co
 })();
 function prism(w, h, d, c) { const sh = new THREE.Shape(); sh.moveTo(-w / 2, 0); sh.lineTo(w / 2, 0); sh.lineTo(0, h); sh.closePath(); const g = new THREE.ExtrudeGeometry(sh, {depth: d, bevelEnabled: true, bevelSize: 0.2, bevelThickness: 0.2, bevelSegments: 2}); g.translate(0, 0, -d / 2); return mesh(g, c); }
 const BUILD = {};
+// encontra um lugar livre para os prédios novos, com a porta virada para o centro
+function mbSpot(b, k) {
+  const R = MB_REALM[b.realm];
+  if (b.fixedAt) {
+    const [x, z] = b.fixedAt;
+    cloudPlat(x, z, 11, 0); bridge(400, 40, x, z, 0);
+    return {x, z, rot: Math.atan2(400 - x, 40 - z)};
+  }
+  const off = (b.id.length * 1.7) % TAU;
+  for (let r = R.half - 6; r > R.half * 0.35; r -= 5) {
+    for (let i = 0; i < 28; i++) {
+      const a = off + k * 1.26 + i * TAU / 28;
+      const x = R.cx + Math.cos(a) * r, z = R.cz + Math.sin(a) * r;
+      if (!isFree(x, z, 9.5)) continue;
+      if (R.road && (Math.abs(x - R.cx) < 17 || Math.abs(z - R.cz) < 17)) continue;
+      if (R.avoid && R.avoid.some(([ax, az, ar]) => Math.hypot(x - ax, z - az) < ar + 9)) continue;
+      return {x, z, rot: Math.atan2(R.cx - x, R.cz - z)};
+    }
+  }
+  return {x: R.cx + 30, z: R.cz + 30, rot: 0};
+}
+let mbCount = 0;
 BUILDINGS.forEach(b => {
-  const home = b.world ? W_BY[b.world] : null;
-  const OX = home ? home.cx : CX, OZ = home ? home.cz : CZC, ARE = home ? home.area : 'w_cidade';
+  if (b.noFacade) { BUILD[b.id] = b; return; }
+  if (b.auto) { const p = mbSpot(b, mbCount++); b.x = p.x; b.z = p.z; b.rot = p.rot; }
+  const home = b.realm ? null : b.world ? W_BY[b.world] : null;
+  const OX = b.realm ? 0 : home ? home.cx : CX, OZ = b.realm ? 0 : home ? home.cz : CZC, ARE = b.realm ? MB_REALM[b.realm].area : home ? home.area : 'w_cidade';
   const bRect = (x, z, w2, d2, col) => mapRect(ARE, OX + x, OZ + z, w2, d2, col);
-  const rot = b.face === 1 ? Math.PI / 2 : b.face === -1 ? -Math.PI / 2 : b.face === 2 ? 0 : Math.PI;
+  const rot = b.rot !== undefined ? b.rot : b.face === 1 ? Math.PI / 2 : b.face === -1 ? -Math.PI / 2 : b.face === 2 ? 0 : Math.PI;
   const g = new THREE.Group(); g.position.set(OX + b.x, 0, OZ + b.z); g.rotation.y = rot; scene.add(g);
   const {w, d, h} = b;
-  put(g, box(w, h, d, b.col), 0, h / 2, 0);
-  if (b.kind === 'house') {
-    put(g, prism(w + 1.4, 3.6, d + 1.2, b.roof), 0, h, 0);
-    put(g, box(1, 2.2, 1, '#c98e62'), w * 0.25, h + 2.2, -1);
-    [-1, 1].forEach(k => { put(g, box(1.8, 1.6, 0.2, '#bfe9ff'), k * w * 0.28, h * 0.55, d / 2 + 0.05); put(g, box(2.1, 0.25, 0.4, '#ffffff'), k * w * 0.28, h * 0.55 - 0.95, d / 2 + 0.2); for (let i = 0; i < 3; i++) put(g, sph(0.18, mat(['#ff5fa8', '#ffd43b', '#b197fc'][i])), k * w * 0.28 - 0.6 + i * 0.6, h * 0.55 - 0.7, d / 2 + 0.25); });
-    for (let i = -w / 2 - 1; i <= w / 2 + 1; i += 1.4) put(g, box(0.2, 0.9, 0.2, '#ffffff'), i, 0.45, d / 2 + 5);
-    put(g, box(w + 2.4, 0.15, 0.12, '#ffffff'), 0, 0.75, d / 2 + 5);
-    put(g, mesh(new THREE.BoxGeometry(2.4, 0.06, 5), mat('#ffe8cc'), false), 0, 0.05, d / 2 + 2.5);
-    [-1, 1].forEach(k => { for (let i = 0; i < 4; i++) put(g, sph(0.3, mat(['#ff8cc6', '#ffd43b', '#69db7c', '#b197fc'][i])), k * (2.4 + i * 0.9), 0.3, d / 2 + 3.5); });
-  } else {
-    put(g, box(w + 0.6, 0.8, d + 0.6, b.roof), 0, h + 0.4, 0);
-    const aw = put(g, mesh(new THREE.CylinderGeometry(1.1, 1.1, w * 0.85, 18, 1, true, 0, Math.PI), new THREE.MeshToonMaterial({map: patternTex('stripes', b.roof, '#ffffff'), gradientMap: TOON, side: THREE.DoubleSide})), 0, h * 0.62, d / 2 + 0.2);
-    aw.rotation.z = Math.PI / 2;
-    [-1, 1].forEach(k => put(g, box(w * 0.28, h * 0.38, 0.15, '#cfeeff'), k * w * 0.3, h * 0.33, d / 2 + 0.05));
-    put(g, label(b.e + ' ' + b.n, {scale: 1.0}), 0, h + 1.6, d / 2 + 0.4);
-    put(g, mesh(new THREE.SphereGeometry(0.8, 14, 10), shiny(b.roof, .3)), 0, h + 0.9, d / 2 + 0.3).scale.z = 0.4;
+  if (/palacio/.test(b.id)) { const cg = new THREE.Group(); cg.scale.setScalar(0.78); g.add(cg); fancyCastle(cg, {wall: b.col, wall2: new THREE.Color(b.col).offsetHSL(0.05, 0, 0.06).getStyle(), roof: b.roof, trim: '#ffffff'}); const sgn = label(b.e + ' ' + b.n, {scale: 1.0}); put(g, sgn, 0, 21, 0); }
+  else if (b.kind === 'house') fancyHouse(g, {w, h: h + 0.5, d, wall: b.col, roof: b.roof});
+  else {
+    const H2 = Math.max(h, 8.5);
+    fancyShop(g, {W: w, H: H2, D: d, wall: b.col, roof: b.roof, e: b.e, floors: 2, roofType: (b.id.length % 3 === 0) ? 'flat' : 'gable', door: '#ffffff', display: () => { const dg = new THREE.Group(); put(dg, sph(0.5, mat(b.roof)), 0, 0.5, 0); put(dg, cyl(0.5, 0.6, 0.4, 12, '#ffffff'), 0, 0, 0); return dg; }});
+    const sgn = label(b.e + ' ' + b.n, {scale: 1.0}); put(g, sgn, 0, H2 + 5.2, d / 2 + 0.4);
   }
-  put(g, box(2.6, 3.6, 0.3, '#ffffff'), 0, 1.8, d / 2 + 0.06);
-  put(g, box(2.1, 3.2, 0.2, b.kind === 'house' ? '#9a5530' : '#ff8cc6'), 0, 1.6, d / 2 + 0.16);
-  put(g, sph(0.12, shiny('#ffd43b', .5)), 0.7, 1.6, d / 2 + 0.3);
   const sw = Math.abs(Math.sin(rot)) > 0.5;
   addRect(OX + b.x, OZ + b.z, sw ? d : w, sw ? w : d);
   bRect(b.x, b.z, sw ? d : w, sw ? w : d, b.kind === 'house' ? b.roof : b.col);
@@ -3038,18 +3782,12 @@ BUILDINGS.forEach(b => {
 })();
 const INT_WALLS = {};
 function room(b, floorCol, wallCol, wallCol2) {
-  const X = b.ix, Z = b.iz;
-  const ft = canvasTex(64, 64, g => { g.fillStyle = floorCol; g.fillRect(0, 0, 64, 64); g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(0, 0, 32, 32); g.fillRect(32, 32, 32, 32); }, [8, 8]);
-  at(mesh(new THREE.BoxGeometry(24, 2, 24), new THREE.MeshToonMaterial({map: ft, gradientMap: TOON}), false), X, -1, Z);
-  mapRect(b.area, X, Z, 24, 24, floorCol);
-  const wt = canvasTex(64, 64, g => { g.fillStyle = wallCol; g.fillRect(0, 0, 64, 64); g.fillStyle = wallCol2; g.fillRect(0, 44, 64, 20); g.fillStyle = '#ffffff'; g.fillRect(0, 42, 64, 3); }, [6, 2]);
-  const walls = [];
-  [[X, Z - 12, 24, 0.4, 'n'], [X, Z + 12, 24, 0.4, 's'], [X - 12, Z, 0.4, 24, 'w'], [X + 12, Z, 0.4, 24, 'e']].forEach(([x, z, w, d, side]) => { const wm = at(mesh(new THREE.BoxGeometry(w, 7, d), new THREE.MeshToonMaterial({map: wt, gradientMap: TOON, transparent: true}), false), x, 3.5, z); wm.userData.side = side; walls.push(wm); addRect(x, z, w, d); mapRect(b.area, x, z, w, d, '#b197fc'); });
-  const dr = at(mesh(new THREE.BoxGeometry(2.6, 3.8, 0.2), new THREE.MeshToonMaterial({color: '#ff8cc6', gradientMap: TOON, transparent: true}), false), X, 1.9, Z + 11.85); dr.userData.side = 's'; walls.push(dr);
-  INT_WALLS[b.area] = [walls, X, Z, 11.5];
-  interact({x: X, z: Z + 10, r: 2.6, text: () => '🚪 Sair: ' + b.n, act: () => exitBuilding(b.id)});
-  for (let i = -1; i <= 1; i++) at(mesh(new THREE.SphereGeometry(0.5, 12, 10), new THREE.MeshBasicMaterial({color: '#fff3bf'}), false), X + i * 7, 6.2, Z - 2);
-  return {X, Z};
+  // mesmo estilo dos interiores do Reino Principal: papel de parede, lambri, cortinas e luminárias
+  const k = [...b.id].reduce((a, ch) => a + ch.charCodeAt(0), 0);
+  const th = {paper: ['stripes', 'dots', 'hearts', 'flowers'][k % 4], w1: wallCol, w2: '#ffffff',
+    floor: (k % 2 && b.kind !== 'house') ? 'checker' : 'planks', f1: (k % 2 && b.kind !== 'house') ? '#ffffff' : '#c98e62', f2: (k % 2 && b.kind !== 'house') ? wallCol2 : '#a0673a',
+    curtain: wallCol2, panel: wallCol2, trim: '#ffffff', rug: floorCol, lamp: wallCol2};
+  return BK.room(b, th);
 }
 const counter = (x, z, w, d, c, top = '#ffffff') => { at(box(w, 1.2, d, c), x, 0.6, z); at(box(w + 0.2, 0.15, d + 0.2, top), x, 1.27, z); addRect(x, z, w, d, 1.35); };
 const table = (x, z, c = '#ffffff') => { at(cyl(1.1, 1.1, 0.12, 18, c), x, 1.0, z); at(cyl(0.12, 0.12, 1, 8, '#adb5bd'), x, 0.5, z); [-1, 1].forEach(k => at(cyl(0.45, 0.45, 0.5, 14, '#ff8cc6'), x + k * 1.6, 0.25, z)); addCircle(x, z, 1.1, 1.1); };
@@ -3167,10 +3905,12 @@ INTERIOR.pets = b => { const {X, Z} = room(b, '#fff3d6', '#ffe066', '#e67700');
   return {npc: [X, Z - 9], job: [X, Z - 6.4, b.e + ' ' + b.tema]};
 };
 const INT = {};
-BUILDINGS.forEach(b => { INT[b.id] = (INTERIOR[b.id] || (b.kind === 'house' ? INTERIOR.house : INTERIOR[b.theme] || INTERIOR.generic))(b); interact({x: b.door.x, z: b.door.z, r: 3, text: () => '🚪 Entrar: ' + b.n, act: () => enterBuilding(b.id)}); });
+BUILDINGS.forEach(b => { INT[b.id] = (MAIN_INT[b.theme] || INTERIOR[b.id] || (b.kind === 'house' ? INTERIOR.house : INTERIOR[b.theme] || INTERIOR.generic))(b); interact({x: b.door.x, z: b.door.z, r: 3, text: () => '🚪 Entrar: ' + b.n, act: () => enterBuilding(b.id)}); });
 
 // ---------- MUNDOS MAIS VIVOS: construções, bichinhos e detalhes ----------
 // Helpers curtinhos usados por todos os mundos
+// existe um prédio visitável neste ponto? então não monta a versão só decorativa
+const hasB = (w, x, z, r = 9) => BUILDINGS.some(b => b.world === w.id && Math.hypot(b.x - x, b.z - z) < r);
 const wAt = (w, o, x, y, z) => at(o, w.cx + x, y, w.cz + z);
 const wBench = (w, x, z, r) => bench(w.cx + x, w.cz + z, r);
 const wLamp = (w, x, z) => lamp(w.cx + x, w.cz + z);
@@ -3222,12 +3962,12 @@ const wLook = i => LOOKS[i % LOOKS.length];
 (function () {
   const w = W_BY.borboletas;
   // estufa de vidro
-  const gh = new THREE.Group(); gh.position.set(w.cx + 34, 0, w.cz - 14); scene.add(gh);
+  if (!hasB(w, 34, -14)) { const gh = new THREE.Group(); gh.position.set(w.cx + 34, 0, w.cz - 14); scene.add(gh);
   put(gh, box(10, 5, 8, '#d3f9d8'), 0, 2.5, 0);
   put(gh, mesh(new THREE.CylinderGeometry(4.4, 4.4, 10, 14, 1, true, 0, Math.PI), new THREE.MeshPhongMaterial({color: '#c3fae8', transparent: true, opacity: .55, side: THREE.DoubleSide})), 0, 5, 0).rotation.z = Math.PI / 2;
   put(gh, box(2, 3, 0.3, '#2f9e44'), 0, 1.5, 4.1);
   put(gh, label('🌺 Estufa das Flores', {scale: 0.75}), 0, 8, 0);
-  addRect(w.cx + 34, w.cz - 14, 10, 8); reserve(w.cx + 34, w.cz - 14, 8); wPoi(w, 34, -14, '🌺', 'Estufa das Flores');
+  addRect(w.cx + 34, w.cz - 14, 10, 8); reserve(w.cx + 34, w.cz - 14, 8); wPoi(w, 34, -14, '🌺', 'Estufa das Flores'); }
   for (let i = 0; i < 10; i++) wAt(w, sph(0.4, mat(['#ff5fa8', '#ffd43b', '#b197fc', '#ff922b', '#69db7c'][i % 5])), 30 + (i % 5) * 2, 0.4, -20 + Math.floor(i / 5) * 2);
   // canteiros com cerquinha
   [[-44, 8], [-40, 26], [12, -40]].forEach(([x, z], k) => {
@@ -3236,9 +3976,9 @@ const wLook = i => LOOKS[i % LOOKS.length];
     addRect(w.cx + x, w.cz + z, 9, 6, 0.8);
   });
   // casinhas de jardineiro
-  wHouse(w, -46, -26, 0.4, '#d3f9d8', '#2f9e44', 7, 4.5, 6);
+  if (!hasB(w, -46, -26)) wHouse(w, -46, -26, 0.4, '#d3f9d8', '#2f9e44', 7, 4.5, 6);
   wHouse(w, 44, 30, -0.6, '#ffd6ea', '#e64980', 7, 4.5, 6);
-  wPoi(w, -46, -26, '🏡', 'Casa da Jardineira');
+
   // bancos, postes e borboletas pousadas
   [[-6, 30, 0], [8, 30, Math.PI], [-26, 4, 1.6]].forEach(([x, z, r]) => wBench(w, x, z, r));
   [[-12, 18], [12, 18], [-12, -6], [12, -6]].forEach(([x, z]) => wLamp(w, x, z));
@@ -3263,11 +4003,11 @@ const wLook = i => LOOKS[i % LOOKS.length];
   for (let i = -5; i <= 5; i++) { wLamp(w, i * 9, 36); }
   for (let i = -40; i < 40; i += 2.5) { const f = wAt(w, mesh(new THREE.ConeGeometry(0.5, 0.9, 3), mat(['#ff6b6b', '#ffd43b', '#4dabf7', '#69db7c', '#b197fc'][Math.abs(i) % 5]), false), i, 5 + Math.sin(i * 0.3) * 0.4, 36); f.rotation.x = Math.PI; }
   // tenda da sorte e caixa de brinquedos
-  const tent = new THREE.Group(); tent.position.set(w.cx - 2, 0, w.cz - 34); scene.add(tent);
+  if (!hasB(w, -2, -34)) { const tent = new THREE.Group(); tent.position.set(w.cx - 2, 0, w.cz - 34); scene.add(tent);
   put(tent, mesh(new THREE.ConeGeometry(5, 6, 12), new THREE.MeshToonMaterial({map: patternTex('stripes', '#9c36b5', '#ffd6ea'), gradientMap: TOON})), 0, 3, 0);
   put(tent, box(2, 2.6, 0.3, '#3b2f7a'), 0, 1.3, 4.3);
   put(tent, label('🔮 Tenda da Sorte', {scale: 0.75}), 0, 7.4, 0);
-  addCircle(w.cx - 2, w.cz - 34, 4.6, 5.6); reserve(w.cx - 2, w.cz - 34, 7); wPoi(w, -2, -34, '🔮', 'Tenda da Sorte');
+  addCircle(w.cx - 2, w.cz - 34, 4.6, 5.6); reserve(w.cx - 2, w.cz - 34, 7); wPoi(w, -2, -34, '🔮', 'Tenda da Sorte'); }
   wPerson(w, -16, 6, wLook(1), 'Zequinha'); wPerson(w, 16, 2, wLook(2), 'Duda'); wPerson(w, 2, 24, wLook(5), 'Tico');
   wCritter(w, -20, 30, 'p_ursinho', 1.1); wCritter(w, 22, -24, 'p_cachorro', 0.9);
 })();
@@ -3278,6 +4018,7 @@ const wLook = i => LOOKS[i % LOOKS.length];
   cores.forEach(([c, r, t], i) => {
     const lado = i < 3 ? -1 : 1, k = i % 3;
     const x = lado * 26, z = -22 + k * 22;
+    if (hasB(w, x, z)) return;
     const g = new THREE.Group(); g.position.set(w.cx + x, 0, w.cz + z); g.rotation.y = lado > 0 ? -Math.PI / 2 : Math.PI / 2; scene.add(g);
     put(g, box(12, 8, 10, c), 0, 4, 0);
     put(g, box(12.6, 0.8, 10.6, r), 0, 8.4, 0);
@@ -3311,12 +4052,12 @@ const wLook = i => LOOKS[i % LOOKS.length];
     wAt(w, mesh(new THREE.SphereGeometry(2.2, 14, 10, 0, TAU, 0, Math.PI / 2), shiny(c, .4)), x, 4.2, z);
     addCircle(w.cx + x, w.cz + z, 2.6, 4.4); wPoi(w, x, z, '🎨', 'Pote de Tinta'); });
   // ateliê central
-  const at2 = new THREE.Group(); at2.position.set(w.cx, 0, w.cz - 8); scene.add(at2);
+  if (!hasB(w, 0, -8)) { const at2 = new THREE.Group(); at2.position.set(w.cx, 0, w.cz - 8); scene.add(at2);
   put(at2, box(12, 6, 10, '#ffffff'), 0, 3, 0);
   put(at2, mesh(new THREE.ConeGeometry(9, 3.4, 4), new THREE.MeshToonMaterial({map: patternTex('rainbow', '#fff'), gradientMap: TOON})), 0, 7.6, 0).rotation.y = Math.PI / 4;
   put(at2, box(2.4, 3.4, 0.3, '#ff6b6b'), 0, 1.7, 5.1);
   put(at2, label('🖌️ Ateliê das Cores', {scale: 0.85}), 0, 10, 0);
-  addRect(w.cx, w.cz - 8, 12, 10); reserve(w.cx, w.cz - 8, 9); wPoi(w, 0, -8, '🖌️', 'Ateliê das Cores');
+  addRect(w.cx, w.cz - 8, 12, 10); reserve(w.cx, w.cz - 8, 9); wPoi(w, 0, -8, '🖌️', 'Ateliê das Cores'); }
   // cavaletes e esculturas
   for (let i = 0; i < 6; i++) { const x = -24 + i * 10, z = 20;
     wAt(w, box(0.25, 3, 0.25, '#c99a5b'), x, 1.5, z); wAt(w, box(3, 2.2, 0.2, '#ffffff'), x, 2.6, z);
@@ -3332,7 +4073,7 @@ const wLook = i => LOOKS[i % LOOKS.length];
 // ---- 5. Escola Encantada: prédio, quadra e pátio cheio ----
 (function () {
   const w = W_BY.escola;
-  const sc = new THREE.Group(); sc.position.set(w.cx, 0, w.cz - 24); scene.add(sc);
+  if (!hasB(w, 0, -24)) { const sc = new THREE.Group(); sc.position.set(w.cx, 0, w.cz - 24); scene.add(sc);
   put(sc, box(26, 9, 12, '#ffd43b'), 0, 4.5, 0);
   put(sc, box(27, 1, 13, '#e67700'), 0, 9.4, 0);
   put(sc, box(8, 11, 8, '#ff922b'), 0, 5.5, 2);
@@ -3342,7 +4083,7 @@ const wLook = i => LOOKS[i % LOOKS.length];
   for (let i = 0; i < 6; i++) { const x = -10.5 + (i % 3) * 7 + (i > 2 ? 0 : 0), y = i < 3 ? 3 : 7;
     put(sc, box(3, 2.4, 0.2, '#cfeeff'), -8 + (i % 3) * 8, y, 6.15); put(sc, box(3.4, 0.3, 0.4, '#ffffff'), -8 + (i % 3) * 8, y - 1.4, 6.3); }
   put(sc, label('🏫 Escola Encantada', {scale: 1}), 0, 16, 0);
-  addRect(w.cx, w.cz - 24, 26, 12); reserve(w.cx, w.cz - 24, 16); wPoi(w, 0, -24, '🏫', 'Prédio da Escola');
+  addRect(w.cx, w.cz - 24, 26, 12); reserve(w.cx, w.cz - 24, 16); wPoi(w, 0, -24, '🏫', 'Prédio da Escola'); }
   // quadra de esportes
   wAt(w, mesh(new THREE.BoxGeometry(24, 0.2, 16), mat('#ff922b'), false), 26, 0.12, 16);
   for (let i = -11; i <= 11; i += 2) wAt(w, box(0.3, 0.05, 15, '#ffffff', false), 26 + i, 0.24, 16);
@@ -3364,8 +4105,8 @@ const wLook = i => LOOKS[i % LOOKS.length];
 // ---- 6. Bosque dos Animais: cabanas, tronco-ponte e mais bichos ----
 (function () {
   const w = W_BY.bosque;
-  wHouse(w, -32, -18, 0.5, '#c99a5b', '#2b8a3e', 8, 5, 7); wPoi(w, -32, -18, '🪵', 'Cabana do Guarda');
-  wHouse(w, 34, 20, -0.5, '#ffe066', '#d9480f', 7, 4.5, 6); wPoi(w, 34, 20, '🏡', 'Casa da Bióloga');
+  if (!hasB(w, -32, -18)) wHouse(w, -32, -18, 0.5, '#c99a5b', '#2b8a3e', 8, 5, 7);
+  if (!hasB(w, 34, 20)) wHouse(w, 34, 20, -0.5, '#ffe066', '#d9480f', 7, 4.5, 6);
   // comedouros e toquinhas
   [[-14, 26], [16, 26], [-20, -30], [22, -26]].forEach(([x, z], i) => {
     wAt(w, cyl(0.25, 0.3, 2.4, 8, '#8a5a3a'), x, 1.2, z);
@@ -3390,6 +4131,7 @@ const wLook = i => LOOKS[i % LOOKS.length];
   const w = W_BY.aquatico;
   // casinhas de concha
   [[-30, -16, '#ffd6ea'], [-36, 6, '#c3fae8'], [-28, 24, '#d0ebff'], [32, -10, '#ffe8cc'], [34, 16, '#e5dbff']].forEach(([x, z, c], i) => {
+    if (hasB(w, x, z, 11)) return;
     const g = new THREE.Group(); g.position.set(w.cx + x, 0, w.cz + z); g.rotation.y = rnd() * TAU; scene.add(g);
     put(g, mesh(new THREE.SphereGeometry(4, 16, 12, 0, TAU, 0, Math.PI / 2), mat(c)), 0, 0, 0);
     for (let k = 0; k < 7; k++) { const a = -Math.PI / 2 + k / 6 * Math.PI; put(g, mesh(new THREE.TorusGeometry(3.6, 0.2, 6, 14, Math.PI), mat('#ffffff')), 0, 0.1, 0).rotation.y = a; }
@@ -3414,7 +4156,7 @@ const wLook = i => LOOKS[i % LOOKS.length];
     const grp = new THREE.Group(); scene.add(grp);
     const c = ['#ffd43b', '#ff6b9d', '#74c0fc', '#ff922b', '#b197fc'][g2];
     for (let i = 0; i < 9; i++) { const f = put(grp, sph(0.35, mat(c)), (rnd() - .5) * 4, (rnd() - .5) * 2, (rnd() - .5) * 4); f.scale.set(1.5, 0.9, 0.7); const tl = put(grp, mesh(new THREE.ConeGeometry(0.28, 0.5, 6), mat(c)), f.position.x - 0.6, f.position.y, f.position.z); tl.rotation.z = Math.PI / 2; }
-    const r = 18 + g2 * 7, ph = rnd() * 6;
+    const r = 18 + g2 * 7, ph = rnd() * 6; grp.position.set(w.cx + r, 3, w.cz);
     wFrame(w, (dt, t) => { const a = t * 0.25 + ph; grp.position.set(w.cx + Math.cos(a) * r, 3 + Math.sin(t * 0.7 + ph) * 1.4, w.cz + Math.sin(a) * r); grp.rotation.y = -a + Math.PI / 2; });
   }
   // bolhas subindo
@@ -3428,13 +4170,13 @@ const wLook = i => LOOKS[i % LOOKS.length];
 (function () {
   const w = W_BY.estrelas;
   // domo do observatório
-  const ob = new THREE.Group(); ob.position.set(w.cx + 28, 0, w.cz - 18); scene.add(ob);
+  if (!hasB(w, 28, -18)) { const ob = new THREE.Group(); ob.position.set(w.cx + 28, 0, w.cz - 18); scene.add(ob);
   put(ob, cyl(6, 6.6, 6, 20, '#4c3fa0'), 0, 3, 0);
   put(ob, mesh(new THREE.SphereGeometry(6.2, 20, 12, 0, TAU, 0, Math.PI / 2), shiny('#b197fc', .35)), 0, 6, 0);
   const tel = put(ob, cyl(0.8, 1.1, 7, 12, '#e5dbff'), 0, 8, 1.4); tel.rotation.x = -0.9;
   put(ob, box(2.4, 3.4, 0.3, '#ffd43b'), 0, 1.7, 6.6);
   put(ob, label('🔭 Observatório', {scale: 0.85}), 0, 13, 0);
-  addCircle(w.cx + 28, w.cz - 18, 6.6, 6.2); reserve(w.cx + 28, w.cz - 18, 9); wPoi(w, 28, -18, '🔭', 'Observatório');
+  addCircle(w.cx + 28, w.cz - 18, 6.6, 6.2); reserve(w.cx + 28, w.cz - 18, 9); wPoi(w, 28, -18, '🔭', 'Observatório'); }
   // planetas flutuando
   [['#ff922b', 3, -30, 20, 9], ['#4dabf7', 2.2, 10, 34, 11], ['#ffd43b', 2.6, -14, -32, 8], ['#e599f7', 1.8, 36, 26, 12]].forEach(([c, r, x, z, y], i) => {
     const p = wAt(w, mesh(new THREE.SphereGeometry(r, 18, 14), shiny(c, .4)), x, y, z);
@@ -3458,20 +4200,20 @@ const wLook = i => LOOKS[i % LOOKS.length];
 (function () {
   const w = W_BY.unicornios;
   // castelinho cor-de-rosa
-  const ct = new THREE.Group(); ct.position.set(w.cx, 0, w.cz - 28); scene.add(ct);
+  if (!hasB(w, 0, -28)) { const ct = new THREE.Group(); ct.position.set(w.cx, 0, w.cz - 28); scene.add(ct);
   put(ct, box(20, 10, 12, '#ffd6ea'), 0, 5, 0);
   [-1, 1].forEach(k => { put(ct, cyl(3.2, 3.6, 14, 16, '#ffc2e2'), k * 11, 7, 0); put(ct, mesh(new THREE.ConeGeometry(4.2, 6, 16), mat('#9775fa')), k * 11, 17, 0); put(ct, mesh(new THREE.SphereGeometry(0.7, 12, 10), shiny('#ffd43b', .6)), k * 11, 20.4, 0); });
   put(ct, mesh(new THREE.ConeGeometry(7, 5, 16), mat('#b197fc')), 0, 12.5, 0);
   put(ct, box(3.4, 4.6, 0.4, '#9a5530'), 0, 2.3, 6.3);
   put(ct, label('🏰 Palácio dos Unicórnios', {scale: 0.95}), 0, 24, 0);
-  addRect(w.cx, w.cz - 28, 20, 12); reserve(w.cx, w.cz - 28, 16); wPoi(w, 0, -28, '🏰', 'Palácio dos Unicórnios');
+  addRect(w.cx, w.cz - 28, 20, 12); reserve(w.cx, w.cz - 28, 16); wPoi(w, 0, -28, '🏰', 'Palácio dos Unicórnios'); }
   // estábulo encantado
-  const es = new THREE.Group(); es.position.set(w.cx - 32, 0, w.cz + 16); scene.add(es);
+  if (!hasB(w, -32, 16)) { const es = new THREE.Group(); es.position.set(w.cx - 32, 0, w.cz + 16); scene.add(es);
   put(es, box(14, 5, 8, '#ffe066'), 0, 2.5, 0);
   put(es, mesh(new THREE.CylinderGeometry(4.6, 4.6, 14, 14, 1, true, 0, Math.PI), new THREE.MeshToonMaterial({color: '#e64980', side: THREE.DoubleSide})), 0, 5, 0).rotation.z = Math.PI / 2;
   for (let i = -1; i <= 1; i++) put(es, box(3, 3, 0.3, '#c99a5b'), i * 4.4, 1.5, 4.1);
   put(es, label('🦄 Estábulo Encantado', {scale: 0.8}), 0, 9, 0);
-  addRect(w.cx - 32, w.cz + 16, 14, 8); reserve(w.cx - 32, w.cz + 16, 10); wPoi(w, -32, 16, '🦄', 'Estábulo Encantado');
+  addRect(w.cx - 32, w.cz + 16, 14, 8); reserve(w.cx - 32, w.cz + 16, 10); wPoi(w, -32, 16, '🦄', 'Estábulo Encantado'); }
   // unicórnios pastando
   [[-26, 6], [-20, 24], [22, 10], [30, -8], [6, 30]].forEach(([x, z], i) => wCritter(w, x, z, i % 2 ? 'p_unicornio' : 'p_unicornio_estelar', 1));
   // trilha de pedras brilhantes e arbustos floridos
@@ -3495,7 +4237,7 @@ const wLook = i => LOOKS[i % LOOKS.length];
   // chão em faixas de arco-íris
   PAL.forEach((c, i) => { const z = -45 + i * 18; wAt(w, mesh(new THREE.BoxGeometry(120, 0.12, 16), mat(c), false), 0, 0.08, z); mapRect(w.area, w.cx, w.cz + z, 120, 16, c); });
   // casinhas coloridas em fileira
-  PAL.forEach((c, i) => { const x = -45 + i * 18; wHouse(w, x, -34, Math.PI, c, PAL[(i + 3) % 6], 9, 5, 8); });
+  PAL.forEach((c, i) => { const x = -45 + i * 18; if (hasB(w, x, -34, 10)) return; wHouse(w, x, -34, Math.PI, c, PAL[(i + 3) % 6], 9, 5, 8); });
   wPoi(w, 0, -34, '🏘️', 'Vila Colorida');
   // cachoeira de arco-íris
   const cf = new THREE.Group(); cf.position.set(w.cx + 34, 0, w.cz + 24); scene.add(cf);
@@ -3545,12 +4287,12 @@ NEW_WORLDS.forEach(w => {
 // Mundo Aquático: navio afundado, pedrões e portal de bolhas
 (function () {
   const w = W_BY.aquatico;
-  const nav = new THREE.Group(); nav.position.set(w.cx - 16, 0, w.cz - 32); nav.rotation.y = 0.5; nav.rotation.z = 0.12; scene.add(nav);
+  if (!hasB(w, -16, -32)) { const nav = new THREE.Group(); nav.position.set(w.cx - 16, 0, w.cz - 32); nav.rotation.y = 0.5; nav.rotation.z = 0.12; scene.add(nav);
   put(nav, mesh(new THREE.SphereGeometry(6, 18, 12, 0, TAU, 0, Math.PI / 2), mat('#8a5a3a')), 0, 2.4, 0).scale.set(1, 0.9, 2.2);
   put(nav, box(1, 9, 0.6, '#c99a5b'), 0, 7, 0);
   put(nav, mesh(new THREE.PlaneGeometry(6, 5), new THREE.MeshLambertMaterial({color: '#ffe8cc', side: THREE.DoubleSide})), 0.2, 7.5, 0).rotation.y = 0.3;
   put(nav, label('🚢 Navio Adormecido', {scale: 0.8}), 0, 12, 0);
-  addCircle(w.cx - 16, w.cz - 32, 6, 5); reserve(w.cx - 16, w.cz - 32, 9); wPoi(w, -16, -32, '🚢', 'Navio Adormecido');
+  addCircle(w.cx - 16, w.cz - 32, 6, 5); reserve(w.cx - 16, w.cz - 32, 9); wPoi(w, -16, -32, '🚢', 'Navio Adormecido'); }
   for (let i = 0; i < 12; i++) { const a = rnd() * TAU, d = 18 + rnd() * 36, x = Math.cos(a) * d, z = Math.sin(a) * d;
     if (!isFree(w.cx + x, w.cz + z, 3)) continue;
     const r = 2 + rnd() * 2.4; const p = wAt(w, mesh(new THREE.DodecahedronGeometry(r, 0), mat(['#9aa7b5', '#8d9bb0', '#b0bcc9'][i % 3])), x, r * 0.5, z);
@@ -3906,6 +4648,93 @@ const LK = [
   }
 })();
 
+// ---------- MINHA CASINHA: cenário dos cômodos ----------
+// Cada cômodo é um espaço próprio, com paredes que somem na frente da câmera.
+const HOME_WALLS = {};
+HOME_ROOMS.forEach((r, i) => {
+  const X = r.cx, Z = r.cz;
+  // chão
+  const ft = canvasTex(64, 64, g => { g.fillStyle = r.floor; g.fillRect(0, 0, 64, 64); g.fillStyle = 'rgba(255,255,255,.3)'; g.fillRect(0, 0, 32, 32); g.fillRect(32, 32, 32, 32); }, [9, 9]);
+  at(mesh(new THREE.BoxGeometry(26, 2, 26), new THREE.MeshToonMaterial({map: ft, gradientMap: TOON}), false), X, -1, Z);
+  mapRect(r.area, X, Z, 26, 26, r.floor);
+  // paredes (no quintal viram cerca baixinha)
+  const walls = [];
+  const papel = {sala: 'flowers', cozinha: 'dots', quarto: 'hearts', jardim: 'stripes'}[r.id];
+  const wt = canvasTex(64, 64, g => { g.fillStyle = new THREE.Color(r.wall).offsetHSL(0, 0.15, -0.06).getStyle(); g.fillRect(0, 0, 64, 64);
+    g.fillStyle = '#ffffff';
+    if (papel === 'stripes') for (let i = 0; i < 4; i++) g.fillRect(i * 16, 0, 6, 44);
+    else for (let rr = 0; rr < 3; rr++) for (let c = 0; c < 4; c++) { const x = c * 16 + (rr % 2 ? 8 : 0) + 6, y = rr * 14 + 7; if (papel === 'hearts') { g.font = '12px sans-serif'; g.fillText('♥', x - 4, y + 4); } else { g.beginPath(); g.arc(x, y, papel === 'dots' ? 2.6 : 3.2, 0, Math.PI * 2); g.fill(); } }
+    g.fillStyle = r.wall2; g.fillRect(0, 46, 64, 18); g.fillStyle = '#ffffff'; g.fillRect(0, 44, 64, 3); g.fillRect(0, 63, 64, 1); }, [6, 2]);
+  const hgt = r.outdoor ? 1.6 : 7;
+  [[X, Z - 13, 26, 0.4, 'n'], [X, Z + 13, 26, 0.4, 's'], [X - 13, Z, 0.4, 26, 'w'], [X + 13, Z, 0.4, 26, 'e']].forEach(([x, z, w, d, side]) => {
+    const wm = at(mesh(new THREE.BoxGeometry(w, hgt, d), new THREE.MeshToonMaterial({map: wt, gradientMap: TOON, transparent: true}), false), x, hgt / 2, z);
+    wm.userData.side = side; walls.push(wm); addRect(x, z, w, d); mapRect(r.area, x, z, w, d, r.wall2);
+  });
+  HOME_WALLS[r.area] = [walls, X, Z, 12.5];
+  // luzinhas no teto
+  if (!r.outdoor) for (let k = -1; k <= 1; k++) at(mesh(new THREE.SphereGeometry(0.5, 12, 10), new THREE.MeshBasicMaterial({color: '#fff3bf'}), false), X + k * 7, 6.2, Z - 2);
+  // tapete de boas-vindas e placa
+  const sg = label(r.e + ' ' + r.n, {scale: 0.9}); sg.position.set(X, r.outdoor ? 4.2 : 5.6, Z - 12.4); scene.add(sg);
+});
+// portas entre os cômodos: sala no centro, ligando os outros três
+(function () {
+  const sala = HOME_BY.sala;
+  const liga = (de, para, dx, dz, txt) => {
+    const a = HOME_BY[de], b = HOME_BY[para];
+    const x = a.cx + dx, z = a.cz + dz;
+    const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+    put(g, box(3, 4.4, 0.4, '#ffffff'), 0, 2.2, 0);
+    put(g, box(2.4, 3.9, 0.3, b.outdoor ? '#8ce99a' : '#ff8cc6'), 0, 1.95, 0.1);
+    put(g, sph(0.13, shiny('#ffd43b', .5)), 0.85, 1.9, 0.3);
+    put(g, label(b.e + ' ' + txt, {scale: 0.72}), 0, 5.2, 0);
+    interact({x, z: z + (dz > 0 ? -2.2 : 2.2), r: 2.8, area: a.area, text: () => '🚪 Ir para: ' + b.n, act: () => goRoom(para)});
+  };
+  liga('sala', 'cozinha', -9, -12.4, 'Cozinha');
+  liga('sala', 'quarto', 9, -12.4, 'Quarto');
+  liga('sala', 'jardim', 0, 12.4, 'Quintal');
+  // nos outros cômodos, a porta de volta para a sala
+  [['cozinha', 0, -12.4], ['quarto', 0, -12.4], ['jardim', 0, -12.4]].forEach(([id, dx, dz]) => {
+    const a = HOME_BY[id];
+    const g = new THREE.Group(); g.position.set(a.cx + dx, 0, a.cz + dz); scene.add(g);
+    put(g, box(3, 4.4, 0.4, '#ffffff'), 0, 2.2, 0);
+    put(g, box(2.4, 3.9, 0.3, '#ffd6ea'), 0, 1.95, 0.1);
+    put(g, label('🛋️ Sala', {scale: 0.72}), 0, 5.2, 0);
+    interact({x: a.cx + dx, z: a.cz + dz + 2.2, r: 2.8, area: a.area, text: () => '🚪 Voltar para a Sala', act: () => goRoom('sala')});
+  });
+  // porta da rua, na sala
+  const sx = sala.cx, sz = sala.cz + 12.4;
+  const g = new THREE.Group(); g.position.set(sx, 0, sz); scene.add(g);
+  put(g, box(3.4, 4.6, 0.4, '#ffffff'), 0, 2.3, 0);
+  put(g, box(2.6, 4, 0.3, '#9a5530'), 0, 2, -0.12);
+  put(g, label('🚪 Sair de casa', {scale: 0.72}), 0, 5.4, 0);
+  interact({x: sx, z: sz - 2.4, r: 2.8, area: sala.area, text: () => '🚪 Sair de casa', act: () => leaveHome()});
+})();
+// ---------- a casinha no Meu Castelo ----------
+const HOME_DOOR = {x: HX - 20, z: HZ - 16};
+(function () {
+  const g = new THREE.Group(); g.position.set(HOME_DOOR.x, 0, HOME_DOOR.z + 6); g.rotation.y = Math.PI; scene.add(g);
+  fancyHouse(g, {w: 14, h: 7, d: 12, wall: '#ffd6ea', roof: '#e64980', door: '#9a5530'});
+  put(g, mesh(new THREE.BoxGeometry(3, 0.08, 5), mat('#ffe8cc'), false), 0, 0.05, 9);
+  put(g, label('🏡 Minha Casinha', {scale: 1}), 0, 12.4, 0);
+  addRect(HOME_DOOR.x, HOME_DOOR.z + 6, 14, 12); reserve(HOME_DOOR.x, HOME_DOOR.z + 6, 11);
+  poi(HOME_DOOR.x, HOME_DOOR.z, '🏡', 'Minha Casinha', 'main');
+  // caixa de correio e flores na entrada
+  at(cyl(0.12, 0.12, 1.5, 6, '#adb5bd'), HOME_DOOR.x + 3.6, 0.75, HOME_DOOR.z + 1);
+  at(box(0.7, 0.55, 0.45, '#ff8cc6'), HOME_DOOR.x + 3.6, 1.7, HOME_DOOR.z + 1);
+  for (let i = 0; i < 6; i++) at(sph(0.28, mat(['#ff5fa8', '#ffd43b', '#b197fc', '#69db7c'][i % 4])), HOME_DOOR.x - 4 + i * 1.6, 0.3, HOME_DOOR.z + 1.4);
+  interact({x: HOME_DOOR.x, z: HOME_DOOR.z, r: 3.2, area: 'main', text: () => '🏡 Entrar na Minha Casinha', act: () => goRoom('sala', true)});
+})();
+// ---------- navegação ----------
+function goRoom(id, deFora) {
+  const r = HOME_BY[id]; if (!r) return;
+  if (typeof doorFade === 'function') doorFade((deFora ? 'Entrando em casa' : r.e + ' ' + r.n), () => { teleport(r.cx, r.cz + 9, Math.PI); camYaw = 0; showRegion('🏡 ' + r.n, 'Use 🛠️ Decorar para arrumar do seu jeito'); });
+  else { teleport(r.cx, r.cz + 9, Math.PI); }
+  P.home = P.home || {}; P.home.room = id; saveSoon();
+}
+function leaveHome() { if (typeof doorFade === 'function') doorFade('Saindo de casa', () => teleport(HOME_DOOR.x, HOME_DOOR.z - 1, 0)); else teleport(HOME_DOOR.x, HOME_DOOR.z - 1, 0); }
+const inHome = () => curArea.slice(0, 3) === 'hm_';
+
+
 // ---------- moedas (instanciadas) ----------
 const coins = [];
 const coinAt = (x, y, z) => coins.push({x, y, z, bx: x, bz: z, taken: false, back: 0});
@@ -4237,7 +5066,8 @@ addEventListener('keydown', e => {
 });
 addEventListener('keyup', e => { keys[e.code] = false; if (e.code === 'Space') jumpHeld = false; });
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
-let camYaw = 0, camPitch = 0.38, camDist = 11;
+let camYaw = 0, camPitch = 0.27, camDist = 10;
+let CAM_DIST = 13; // distância da câmera (ajustável pelo controle de zoom)
 let dragId = null, lastX = 0, lastY = 0, pinch = null;
 const cvs = renderer.domElement;
 const pointers = new Map();
@@ -4251,7 +5081,7 @@ cvs.addEventListener('pointermove', e => {
   if (pointers.has(e.pointerId)) pointers.set(e.pointerId, [e.clientX, e.clientY]);
   if (pinch && pointers.size === 2) { const [a, b] = [...pointers.values()]; camDist = clamp(pinch.dist * pinch.d / Math.max(30, Math.hypot(a[0] - b[0], a[1] - b[1])), 5, 24); return; }
   if (e.pointerId !== dragId) return;
-  if (closeupMode) player.yaw += (e.clientX - lastX) * 0.012; else { camYaw -= (e.clientX - lastX) * 0.006; camPitch = clamp(camPitch + (e.clientY - lastY) * 0.004, 0.06, 1.3); }
+  if (closeupMode) player.yaw += (e.clientX - lastX) * 0.012; else if (false) { camYaw -= (e.clientX - lastX) * 0.006; camPitch = clamp(camPitch + (e.clientY - lastY) * 0.004, 0.06, 1.3); }
   lastX = e.clientX; lastY = e.clientY;
 });
 const endDrag = e => { pointers.delete(e.pointerId); if (pointers.size < 2) pinch = null; if (e.pointerId === dragId) dragId = null; };
@@ -4283,7 +5113,7 @@ function baseGround(x, z) {
   if (a === 'main') return Math.abs(x) <= 170 && Math.abs(z) <= 170 ? 0 : -Infinity;
   if (a === 'gelado') return Math.abs(x + 400) <= 70 && Math.abs(z) <= 70 ? 0 : -Infinity;
   if (a === 'quarto') return 0;
-  if (a.slice(0, 2) === 'w_' || a.slice(0, 3) === 'in_') { const A = AREAS[a]; return Math.abs(x - A.cx) <= A.half + 2 && Math.abs(z - A.cz) <= A.half + 2 ? 0 : -Infinity; }
+  if (a.slice(0, 2) === 'w_' || a.slice(0, 3) === 'in_' || a.slice(0, 3) === 'hm_') { const A = AREAS[a]; return Math.abs(x - A.cx) <= A.half + 2 && Math.abs(z - A.cz) <= A.half + 2 ? 0 : -Infinity; }
   if (a === 'castelo') return Math.abs(x - 0) <= 21 && Math.abs(z + 600) <= 21 ? 0 : -Infinity;
   return -Infinity;
 }
@@ -4321,7 +5151,7 @@ function setArea(a) {
   curArea = a;
   const sky = new THREE.Color(AREAS[a].sky);
   scene.background = sky; scene.fog.color.copy(sky);
-  const inside = a === 'quarto' || a === 'castelo' || a.slice(0, 3) === 'in_';
+  const inside = a === 'quarto' || a === 'castelo' || a.slice(0, 3) === 'in_' || (a.slice(0, 3) === 'hm_' && a !== 'hm_jardim');
   scene.fog.near = a === 'w_aquatico' ? 34 : inside ? 40 : 80; scene.fog.far = a === 'w_aquatico' ? 150 : inside ? 100 : 190;
   const nw = NEW_WORLDS.find(w => w.area === a);
   setSong(nw ? nw.song : a === 'gelado' ? 'gelo' : a === 'nuvens' ? 'nuvem' : a === 'castelo' ? 'castelo' : 'main');
@@ -4555,7 +5385,7 @@ function openDiary() {
     [['cid', '🏙️ Cidade e pets'], ['edu', '🎓 Aprendizado'], ['ach', '🏅 Conquistas'], ['col', '🍓 Coleções'], ['mis', '📜 Missões'], ['reg', '🗺️ Regiões']].forEach(([k, n]) => { const b = h(`<button class="tab ${k === tab ? 'on' : ''}">${n}</button>`); b.onclick = () => { tab = k; rerender(); }; tabs.appendChild(b); });
     body.appendChild(tabs);
     const list = h('<div class="list"></div>');
-    if (tab === 'cid') { const cp = cityProgress(); [['🐾', 'Pets descobertos', cp.pets + ' de ' + PET_IDS.length], ['🏠', 'Lugares visitados', cp.shops + ' de ' + BUILDINGS.length], ['🎁', 'Baús de tesouro abertos', cp.chests + ' de ' + TREASURES.length], ['💎', 'Peças raras, épicas e lendárias', cp.rare + ' no guarda-roupa'], ['🌍', 'Mundos 100% explorados', cp.full + ' de ' + UNIVERSE.length], ['💬', 'Moradores que você conheceu', cityState().talked.length + '']].forEach(([e, n, v]) => list.appendChild(h(`<div class="li"><div class="e">${e}</div><div class="tx"><b>${esc(v)}</b><small>${esc(n)}</small></div></div>`))); }
+    if (tab === 'cid') { const cp = cityProgress(); [['🐾', 'Pets descobertos', cp.pets + ' de ' + PET_IDS.length], ['🏠', 'Lugares visitados', cp.shops + ' de ' + BUILDINGS.length], ['🎁', 'Baús de tesouro abertos', cp.chests + ' de ' + TREASURES.length], ['💎', 'Peças raras, épicas e lendárias', cp.rare + ' no guarda-roupa'], ['🌍', 'Mundos 100% explorados', cp.full + ' de ' + UNIVERSE.length], ['💬', 'Moradores que você conheceu', cityState().talked.length + ''], ['🔍', 'Achadinhos encontrados', (P.achados || []).length + ' de ' + ACHADOS.length + ' (' + ACHADOS.filter(x => (P.achados || []).includes(x.id) && x.rar === 'lendario').length + ' lendários)']].forEach(([e, n, v]) => list.appendChild(h(`<div class="li"><div class="e">${e}</div><div class="tx"><b>${esc(v)}</b><small>${esc(n)}</small></div></div>`))); }
     if (tab === 'edu') { ensureEdu(); const E = P.edu; list.appendChild(h(`<div class="li"><div class="e">⭐</div><div class="tx"><b>${E.stars} Estrelas do Saber</b><small>${totalCorrect()} desafios certos no total</small></div></div>`)); SUBJ_KEYS.forEach(k => { const S = SUBJ[k], pct = E.tot[k] ? Math.round(100 * E.ok[k] / E.tot[k]) : 0; list.appendChild(h(`<div class="li"><div class="e">${S.e}</div><div class="tx"><b>${S.n} · Nível ${E.lv[k]} de 5</b><small>${E.ok[k]} acertos${E.tot[k] ? ' · ' + pct + '% de primeira ou depois de tentar' : ''}</small></div></div>`)); }); const ag = h('<div class="li"><div class="e">🎂</div><div class="tx"><b>Idade da princesa</b><small>Ajusta o nível inicial dos desafios</small></div></div>'); const row = h('<div class="tabs" style="flex-wrap:wrap;margin-top:4px"></div>'); [4, 5, 6, 7, 8, 9].forEach(a => { const b = h(`<button class="tab ${P.age === a ? 'on' : ''}">${a} anos</button>`); b.onclick = () => { setAge(a); rerender(); }; row.appendChild(b); }); list.appendChild(ag); list.appendChild(row); }
     if (tab === 'ach') ACHIEVEMENTS.forEach(a => list.appendChild(h(`<div class="li ${P.ach.includes(a.id) ? '' : 'off'}"><div class="e">${a.e}</div><div class="tx"><b>${esc(a.n)}</b><small>${esc(a.d)}</small></div>${P.ach.includes(a.id) ? '✓' : ''}</div>`)));
     if (tab === 'col') {
@@ -4874,7 +5704,8 @@ function rotateGhost() { buildMode.rot += Math.PI / 4; sfx('click'); }
 function ghostSpot() {
   const d = 3.2, x = Math.round((player.pos.x + Math.sin(player.yaw) * d) * 2) / 2, z = Math.round((player.pos.z + Math.cos(player.yaw) * d) * 2) / 2;
   let ok;
-  if (curArea === 'quarto') ok = Math.abs(x - RX) < 8.8 && Math.abs(z - RZ) < 8.8 && !(Math.abs(x - RX) < 2 && z > RZ + 7);
+  if (curArea.slice(0, 3) === 'hm_') { const R = AREAS[curArea]; ok = Math.abs(x - R.cx) < 11.5 && Math.abs(z - R.cz) < 11.5 && !(Math.abs(x - R.cx) < 2.4 && Math.abs(z - (R.cz + 12.4)) < 3) && !(Math.abs(z - (R.cz - 12.4)) < 3 && (Math.abs(x - R.cx) < 2.4 || Math.abs(x - (R.cx - 9)) < 2.4 || Math.abs(x - (R.cx + 9)) < 2.4)); }
+  else if (curArea === 'quarto') ok = Math.abs(x - RX) < 8.8 && Math.abs(z - RZ) < 8.8 && !(Math.abs(x - RX) < 2 && z > RZ + 7);
   else ok = Math.abs(x - HX) < 16.5 && Math.abs(z - HZ) < 16.5 && !(houseRect && x > houseRect.x0 - 1 && x < houseRect.x1 + 1 && z > houseRect.z0 - 1 && z < houseRect.z1 + 1) && !(Math.abs(x - HX) < 3 && z < HZ - 14);
   return {x, z, ok};
 }
@@ -4965,7 +5796,7 @@ function rebuildMaps(full) {
     } else f.drawImage(areaExplored(area) ? M.color : M.gray, 0, 0);
   });
 }
-const areaExplored = area => area === 'main' || area.slice(0, 3) === 'in_' || P.visited.includes(AREA_REGION[area]) || (area.slice(0, 2) === 'w_' && REGIONS.some(r => r.area === area && P.visited.includes(r.id)));
+const areaExplored = area => area === 'main' || area.slice(0, 3) === 'in_' || area.slice(0, 3) === 'hm_' || P.visited.includes(AREA_REGION[area]) || (area.slice(0, 2) === 'w_' && REGIONS.some(r => r.area === area && P.visited.includes(r.id)));
 const FOG_N = 34, FOG_CELL = 10;
 function fogGet(i, j) { return P.fog.charCodeAt(j * FOG_N + i) === 49; }
 function revealCells(test) {
@@ -4982,7 +5813,7 @@ function revealFog() { if (curArea !== 'main') return; const px = player.pos.x, 
 function revealRegion(r) { if (r.area === 'main') revealCells((x, z) => (x - r.x) ** 2 + (z - r.z) ** 2 < (r.r + 4) ** 2); fogDirty = true; }
 let fogDirty = true;
 const fogAt = (wx, wz) => { const i = Math.floor((wx + 170) / FOG_CELL), j = Math.floor((wz + 170) / FOG_CELL); return i < 0 || j < 0 || i >= FOG_N || j >= FOG_N || fogGet(i, j); };
-const exploredAt = (area, x, z) => area.slice(0, 3) === 'in_' ? true : area === 'main' ? fogAt(x, z) : area.slice(0, 2) === 'w_' ? REGIONS.some(r => r.area === area && P.visited.includes(r.id) && Math.hypot(r.x - x, r.z - z) < r.r + 6) : areaExplored(area);
+const exploredAt = (area, x, z) => area.slice(0, 3) === 'in_' || area.slice(0, 3) === 'hm_' ? true : area === 'main' ? fogAt(x, z) : area.slice(0, 2) === 'w_' ? REGIONS.some(r => r.area === area && P.visited.includes(r.id) && Math.hypot(r.x - x, r.z - z) < r.r + 6) : areaExplored(area);
 // percentual de descoberta: 75% o reino principal, 25% os outros lugares
 function explorePct() {
   let n = 0; for (let k = 0; k < P.fog.length; k++) if (P.fog.charCodeAt(k) === 49) n++;
@@ -5041,7 +5872,7 @@ function drawMinimap() {
   const W = mmCanvas.clientWidth * Math.min(devicePixelRatio, 2);
   if (mmCanvas.width !== W) { mmCanvas.width = mmCanvas.height = W; }
   const A = AREAS[curArea], s = AREA_SCALE[curArea], base = maps[curArea].final;
-  const view = curArea === 'quarto' || curArea.slice(0, 3) === 'in_' ? 12 : curArea === 'castelo' ? 22 : curArea === 'w_cidade' ? 50 : curArea.slice(0, 2) === 'w_' ? 40 : 58;
+  const view = curArea === 'quarto' || curArea.slice(0, 3) === 'in_' || curArea.slice(0, 3) === 'hm_' ? 12 : curArea === 'castelo' ? 22 : curArea === 'w_cidade' ? 50 : curArea.slice(0, 2) === 'w_' ? 40 : 58;
   const k = W / (view * 2);
   const x = mmCtx; x.save(); x.clearRect(0, 0, W, W);
   x.fillStyle = AREA_BG[curArea]; x.fillRect(0, 0, W, W);
@@ -6063,7 +6894,7 @@ const WALKERS = [
 WALKERS.forEach((w, i) => {
   const o = buildAvatar(Object.assign(defaultLook(), {head: null, dress: null}, w.look)); scene.add(o.group);
   const name = label(w.n, {scale: 0.65}); scene.add(name);
-  w.o = o; w.name = name; w.seg = 0; w.x = CX + w.path[0][0]; w.z = CZC + w.path[0][1]; w.k = 0; w.ph = i;
+  w.o = o; w.name = name; w.seg = 0; w.x = CX + w.path[0][0]; w.z = CZC + w.path[0][1]; w.k = 0; w.ph = i; o.group.position.set(w.x, 0, w.z); name.position.set(w.x, 4.6, w.z);
   NPCS['wk_' + i] = {n: w.n};
   const it = interact({x: w.x, z: w.z, r: 3, area: 'w_cidade', text: () => 'Conversar com ' + w.n, act: () => { talkedTo('wk_' + i); w.pause = gameTime + 6; dialog(w.n, w.lines[w.k++ % w.lines.length], [{t: 'Que legal!'}, {t: 'Até logo!'}]); }});
   Object.defineProperty(it, 'x', {get: () => w.x}); Object.defineProperty(it, 'z', {get: () => w.z});
@@ -6495,6 +7326,7 @@ function openQuickMenu() {
     if (MOB && !standalone()) items.push(['📱', 'Tela cheia', () => { closeModal(); openFsHelp(); }]);
     items.push(['💌', 'Recadinhos', () => openInbox()]);
     items.push(['🛴', 'Veículos', () => openRides()]);
+    items.push(['🏡', 'Minha Casinha', () => openHomeMenu()]);
     items.push([musicOn ? '🔊' : '🔇', musicOn ? 'Som ligado' : 'Som desligado', () => { $('bSound').click(); openQuickMenu(); }], ['👤', 'Trocar princesa', () => $('bProfile').click()]);
     items.forEach(([e, n, fn]) => { const b = h(`<button class="qi"><span>${e}</span><b>${n}</b></button>`); b.onclick = () => { sfx('click'); fn(); }; g.appendChild(b); });
     body.appendChild(g);
@@ -6713,6 +7545,103 @@ WORLD_BUILDINGS.forEach(b => {
   if (s.job) interact({x: s.job[0], z: s.job[1], r: 2.6, text: () => s.job[2], act: () => { talkedTo('st_' + b.id); shopTalk(b); }});
 });
 
+// ---------- QUEM ATENDE NOS LUGARES NOVOS ----------
+const MB_NAMES = ['Dona Lili', 'Seu Bento', 'Tia Clara', 'Moça Nina', 'Seu Juca', 'Dona Mimi', 'Tio Léo', 'Moça Bia', 'Seu Tonho', 'Dona Lalá', 'Tia Rosa', 'Moço Davi', 'Dona Cacá', 'Seu Pipo'];
+const MB_LOOKS = [
+  {skin: 0, hairColor: 4, hairStyle: 2, dress: 'd_flores', clip: 'cl_lacinhos', expr: 1},
+  {skin: 2, hairColor: 2, hairStyle: 4, dress: null, top: 't_azul', bottom: 'b_calca', head: 'a_bone', expr: 1},
+  {skin: 4, hairColor: 11, hairStyle: 12, dress: 'd_alcinha', expr: 2},
+  {skin: 1, hairColor: 6, hairStyle: 3, dress: 'd_listras', bag: 'bg_cesta', expr: 1},
+  {skin: 5, hairColor: 13, hairStyle: 7, dress: null, top: 't_moletom', bottom: 'b_saia_xadrez', expr: 1},
+  {skin: 3, hairColor: 8, hairStyle: 4, dress: null, top: 't_listrada', bottom: 'b_calca', head: 'a_chapeu', expr: 4},
+  {skin: 0, hairColor: 15, hairStyle: 14, dress: 'd_balone_neon', expr: 1}];
+const MB_HELLO = {
+  'shop:boutique': 'Temos roupas lindas aqui! Quer dar uma olhadinha?', 'shop:joalheria': 'Cada joia brilha de um jeito. Escolha a sua!',
+  'shop:salao': 'Que tal mudar o visual hoje?', 'shop:doceria': 'Tudo fresquinho e docinho! Hummm!', 'shop:petshop': 'Os bichinhos adoram vir aqui!',
+  'shop:moveis': 'Móveis fofos para deixar a casa linda!', 'shop:pacotes': 'Festa boa tem balão, bolo e presente!',
+  rides: 'Quer andar mais rápido pelo reino? Escolha seu veículo!', wardrobe: 'Faça pose! Vamos escolher o look da foto?',
+  edu: 'Vamos brincar de aprender? Tenho um desafio para você!', casa: 'Que bom que você veio me visitar!'};
+function mbTalk(b, nome) {
+  const C = cityState();
+  const bonus = () => { if (!C.done[b.id]) { C.done[b.id] = 1; addCoins(12); banner('🎉 Primeira visita: ' + b.n, '+12 moedas'); saveSoon(); if (C.visited.length >= 50) achieve('visitante50'); } };
+  const desafio = {t: b.e + ' ' + b.tema, fn: () => challenge({subj: ['mat', 'lei', 'ing', 'log'].includes(b.theme) ? b.theme : 'log', count: 3, title: b.e + ' ' + b.n, coinsEach: 4, onDone: bonus})};
+  if (b.act === 'casa') { const pri = !C.done[b.id]; bonus(); return dialog(nome, MB_HELLO.casa + (pri ? ' Tome 12 moedinhas! 🍪' : ' Volte sempre!')); }
+  const btns = [];
+  if (b.act.startsWith('shop:')) btns.push({t: '🛍️ Ver produtos', fn: () => { bonus(); openShop(b.act.slice(5)); }});
+  if (b.act === 'rides') btns.push({t: '🛴 Ver veículos', fn: () => { bonus(); openRides(); }});
+  if (b.act === 'wardrobe') btns.push({t: '📸 Escolher o look', fn: () => { bonus(); openWardrobe(); }});
+  btns.push(desafio, {t: 'Tchau!'});
+  dialog(nome, MB_HELLO[b.act] || MB_HELLO.edu, btns);
+}
+BUILDINGS.filter(b => b.auto).forEach((b, i) => {
+  const s = INT[b.id]; if (!s) return;
+  const nome = b.act === 'casa' ? b.n.replace(/^(Casa|Casinha|Iglu)( da| do| de)? /, '') : MB_NAMES[i % MB_NAMES.length];
+  npcAdd('mb_' + b.id, {n: nome, look: MB_LOOKS[i % MB_LOOKS.length]}, s.npc[0], s.npc[1], 0);
+  interact({x: s.npc[0], z: s.npc[1], r: 3.2, text: () => 'Conversar com ' + nome, act: () => { talkedTo('mb_' + b.id); mbTalk(b, nome); }});
+  if (s.job) interact({x: s.job[0], z: s.job[1], r: 2.6, text: () => s.job[2], act: () => { talkedTo('mb_' + b.id); mbTalk(b, nome); }});
+});
+// ---------- ACHADINHOS ESCONDIDOS ----------
+function achModel(a) {
+  const g = new THREE.Group();
+  if (a.rar === 'comum') { put(g, mesh(new THREE.IcosahedronGeometry(0.42, 0), shiny(a.c, .4)), 0, 0, 0); }
+  else if (a.rar === 'raro') { put(g, mesh(new THREE.OctahedronGeometry(0.55, 0), shiny(a.c, .7)), 0, 0, 0); put(g, mesh(new THREE.TorusGeometry(0.8, 0.06, 6, 20), shiny('#ffffff', .6)), 0, 0, 0).rotation.x = Math.PI / 2; }
+  else if (a.rar === 'superraro') { const e = put(g, mesh(new THREE.SphereGeometry(0.5, 16, 12), shiny(a.c, .9)), 0, 0, 0); e.scale.set(0.85, 1.15, 0.85); [0, 1, 2].forEach(i => put(g, mesh(new THREE.TorusGeometry(0.9 + i * 0.18, 0.04, 6, 20), shiny(['#ff8cc6', '#74c0fc', '#ffe066'][i], .6)), 0, 0, 0).rotation.set(i, i * 0.7, 0)); }
+  else { put(g, mesh(starGeo(0.8, 0.36, 0.22), shiny('#ffd43b', 1)), 0, 0, 0); ['#ff6b6b', '#ffd43b', '#69db7c', '#4dabf7', '#b197fc'].forEach((c, i) => put(g, mesh(new THREE.TorusGeometry(1.1 + i * 0.12, 0.05, 6, 24), new THREE.MeshBasicMaterial({color: c})), 0, 0, 0).rotation.x = Math.PI / 2); }
+  const lb = label(a.e, {bg: false, size: 60, scale: 0.55}); lb.position.y = 1.3; g.add(lb);
+  return g;
+}
+function achSpot(a, k) {
+  const R = MB_REALM[a.realm];
+  if (a.rar === 'lendario') {
+    const casas = BUILDINGS.filter(b => b.realm === a.realm);
+    const b = casas[(k + a.realm.length) % casas.length];
+    return {x: b.ix + 7, z: b.iz + 7, y: 0, area: b.area};
+  }
+  if (a.realm === 'nuvens') {
+    const ord = CLOUDS.slice().sort((p, q) => p[3] - q[3]);
+    const c = a.rar === 'comum' ? ord[k % 3] : a.rar === 'raro' ? ord[Math.min(ord.length - 1, 4 + k)] : ord[ord.length - 1];
+    return {x: c[0] + 2, z: c[1] - 2, y: c[3], area: 'nuvens'};
+  }
+  const faixa = a.rar === 'comum' ? [0.12, 0.45] : a.rar === 'raro' ? [0.5, 0.78] : [0.82, 0.96];
+  for (let t = 0; t < 120; t++) {
+    const ang = (k * 2.39 + t * 0.71 + a.realm.length) % TAU, rr = R.half * (faixa[0] + (faixa[1] - faixa[0]) * ((t * 0.37) % 1));
+    const x = R.cx + Math.cos(ang) * rr, z = R.cz + Math.sin(ang) * rr;
+    if (isFree(x, z, 1.6) && !circles.some(c => Math.hypot(c.x - x, c.z - z) < c.r + 1)) return {x, z, y: 0, area: R.area};
+  }
+  return {x: R.cx + 5, z: R.cz + 5, y: 0, area: R.area};
+}
+const achObjs = {};
+ACHADOS.forEach((a, k) => {
+  const p = achSpot(a, k % 7); a.pos = p;
+  const g = achModel(a); g.position.set(p.x, p.y + 1, p.z); scene.add(g);
+  const glow = new THREE.Mesh(new THREE.CircleGeometry(a.rar === 'comum' ? 0.9 : 1.4, 20), new THREE.MeshBasicMaterial({color: ACH_RAR[a.rar].c, transparent: true, opacity: .35}));
+  glow.rotation.x = -Math.PI / 2; glow.position.set(p.x, p.y + 0.05, p.z); scene.add(glow);
+  achObjs[a.id] = {g, glow};
+  interact({x: p.x, z: p.z, r: 2.2, area: p.area, show: () => !(P.achados || []).includes(a.id), text: () => ACH_RAR[a.rar].e + ' Pegar: ' + a.n, act: () => pickAchado(a)});
+});
+onFrame((dt, t) => Object.entries(achObjs).forEach(([id, o]) => { if (!o.g.visible) return; o.g.rotation.y = t * 1.4; o.g.position.y = ACHADOS_BY[id].pos.y + 1 + Math.sin(t * 2 + o.g.position.x) * 0.18; }));
+const ACHADOS_BY = {}; ACHADOS.forEach(a => ACHADOS_BY[a.id] = a);
+function refreshAchados() { P.achados = P.achados || []; ACHADOS.forEach(a => { const v = !P.achados.includes(a.id); achObjs[a.id].g.visible = v; achObjs[a.id].glow.visible = v; }); }
+function pickAchado(a) {
+  P.achados = P.achados || []; if (P.achados.includes(a.id)) return;
+  P.achados.push(a.id); refreshAchados();
+  const R = ACH_RAR[a.rar]; addCoins(R.moedas); sfx('win');
+  burst(new THREE.Vector3(a.pos.x, a.pos.y + 1.5, a.pos.z), [R.c, '#ffffff', '#ffd43b'], a.rar === 'comum' ? 14 : 30);
+  let premio = null;
+  if (a.rar === 'superraro' || a.rar === 'lendario') {
+    const alvo = a.rar === 'lendario' ? ['lendario', 'epico'] : ['epico', 'raro'];
+    const pool = WARD_ITEMS().filter(it => !owns(it.id) && alvo.includes(it.rar));
+    if (pool.length) { premio = pool[Math.floor(Math.random() * pool.length)]; claimItem(premio.id, true); }
+  }
+  if (P.achados.length >= 10) achieve('achadinhos10');
+  if (a.rar === 'lendario') achieve('achado_lendario');
+  saveSoon();
+  const fake = {n: a.n, rar: R.rr, slot: 'decor', e: a.e};
+  reveal(premio ? premio : fake, R.e + ' Achadinho ' + R.n + ': ' + a.n + ' · +' + R.moedas + ' moedas');
+  if (!premio) toast(R.e + ' ' + a.n + ' · +' + R.moedas + ' moedas');
+}
+(function () { const old = startGame; startGame = function (p, create) { old(p, create); refreshAchados(); }; })();
+
 // ---------- laço principal ----------
 let lastRegion = null, slowT = 0, mmT = 0, lastCoinT = -10, combo = 0;
 const clock = new THREE.Clock();
@@ -6729,9 +7658,13 @@ function updatePlayer(dt) {
     if (keys.KeyA || keys.ArrowLeft) side -= 1;
     fwd -= joyY; side += joyX;
   }
-  const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
-  let mx = fx * fwd + rx * side, mz = fz * fwd + rz * side;
-  const mag = Math.min(1, Math.hypot(mx, mz));
+  // câmera sempre atrás: frente anda para onde a princesa olha, os lados viram ela
+  if (FRONT.on && (Math.abs(fwd) > 0.1 || Math.abs(side) > 0.1)) frontOff();
+  if (!cinema && Math.abs(side) > 0.05) player.yaw -= side * dt * (Math.abs(fwd) > 0.1 ? 2.4 : 2.9);
+  const fx = Math.sin(player.yaw), fz = Math.cos(player.yaw);
+  const back = fwd < 0;
+  let mx = fx * fwd * (back ? 0.6 : 1), mz = fz * fwd * (back ? 0.6 : 1);
+  const mag = Math.min(1, Math.abs(fwd));
   const run = keys.ShiftLeft || keys.ShiftRight || Math.hypot(joyX, joyY) > 0.95;
   let speed = (run ? 11 : 7) * mag;
   if (hasPower('speed')) speed *= 1.5;
@@ -6740,10 +7673,9 @@ function updatePlayer(dt) {
   if (curArea === 'main' && player.pos.z > 149 && player.pos.y < 0.3) speed *= 0.65;
   player.speed = cinema ? player.speed : speed;
   if (!cinema && mag > 0.05) {
-    const l = Math.hypot(mx, mz); mx /= l; mz /= l;
-    player.pos.x += mx * speed * dt; player.pos.z += mz * speed * dt;
-    let diff = Math.atan2(mx, mz) - player.yaw; diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-    player.yaw += diff * Math.min(1, dt * 12);
+    const l = Math.hypot(mx, mz) || 1; mx /= l; mz /= l;
+    const sp2 = speed * (back ? 0.6 : 1);
+    player.pos.x += mx * sp2 * dt; player.pos.z += mz * sp2 * dt;
   }
   if (!cinema) collide(player.pos);
   player.vy -= 26 * dt;
@@ -6842,13 +7774,18 @@ function updateCamera(dt) {
   if (cinema) {
     camera.position.lerp(tmpV.set(113.5, 4.6, -17.5), 1 - Math.exp(-dt * 3)); look3.lerp(tmpV.set(109.5, 1.8, -5), 1 - Math.exp(-dt * 5)); camera.lookAt(look3); return;
   }
-  let dist = camDist;
+  // câmera fixa atrás da princesa, altura média, olhando para o horizonte
+  { let dy2 = (player.yaw + (FRONT.on ? 0 : Math.PI)) - camYaw; dy2 = Math.atan2(Math.sin(dy2), Math.cos(dy2)); camYaw += dy2 * Math.min(1, dt * (FRONT.on ? 3.2 : 4.5)); }
+  camPitch = FRONT.on ? 0.1 : 0.27;
+  let dist = FRONT.on ? 6.4 : CAM_DIST;
   if (curArea === 'quarto') dist = Math.min(dist, 10);
   if (curArea === 'castelo') dist = Math.min(dist, 13);
   if (curArea.slice(0, 3) === 'in_') dist = Math.min(dist, 10);
+  if (curArea.slice(0, 3) === 'hm_') dist = Math.min(dist, 11);
   if (dancing) dist = 9;
-  const ly = p.y + 2.2;
-  look3.lerp(tmpV.set(p.x, ly, p.z), 1 - Math.exp(-dt * 18));
+  const ly = p.y + 2.5;
+  if (FRONT.on) look3.lerp(tmpV.set(p.x, p.y + 2.3, p.z), 1 - Math.exp(-dt * 6));
+  else look3.lerp(tmpV.set(p.x + Math.sin(player.yaw) * 2.2, ly, p.z + Math.cos(player.yaw) * 2.2), 1 - Math.exp(-dt * 10));
   const dx = Math.sin(camYaw) * Math.cos(camPitch), dy = Math.sin(camPitch), dz = Math.cos(camYaw) * Math.cos(camPitch);
   let free = dist;
   for (let k = 1.2; k <= dist; k += 0.6) {
@@ -6856,14 +7793,14 @@ function updateCamera(dt) {
     let hit = false;
     for (const r of rects) if (y < r.h && x > r.x0 - 0.3 && x < r.x1 + 0.3 && z > r.z0 - 0.3 && z < r.z1 + 0.3) { hit = true; break; }
     if (!hit) for (const pl of platforms) if (y < pl.top - 0.2 && y > pl.bottom && x > pl.x0 && x < pl.x1 && z > pl.z0 && z < pl.z1) { hit = true; break; }
-    if (hit && curArea !== 'quarto' && curArea !== 'castelo' && curArea.slice(0, 3) !== 'in_') { free = Math.max(1.5, k - 0.6); break; }
+    if (hit && curArea !== 'quarto' && curArea !== 'castelo' && curArea.slice(0, 3) !== 'in_' && curArea.slice(0, 3) !== 'hm_') { free = Math.max(1.5, k - 0.6); break; }
   }
   camFree = free < camFree ? lerp(camFree, free, 1 - Math.exp(-dt * 25)) : lerp(camFree, free, 1 - Math.exp(-dt * 3));
   const wantC = tmpV.set(look3.x + dx * camFree, look3.y + dy * camFree, look3.z + dz * camFree);
   if (camBlend > 0) { camBlend = Math.max(0, camBlend - dt * 1.4); camera.position.lerp(wantC, 1 - Math.exp(-dt * 7)); } else camera.position.copy(wantC);
   if (curArea !== 'nuvens' && camera.position.y < 0.6) camera.position.y = 0.6;
   camera.lookAt(look3);
-  const fadeSet = curArea === 'quarto' ? [roomWalls, RX, RZ, 9] : curArea === 'castelo' ? [castleWalls, KX, KZ, 19.5] : INT_WALLS[curArea] || null;
+  const fadeSet = curArea === 'quarto' ? [roomWalls, RX, RZ, 9] : curArea === 'castelo' ? [castleWalls, KX, KZ, 19.5] : INT_WALLS[curArea] || HOME_WALLS[curArea] || null;
   if (fadeSet) fadeSet[0].forEach(w => {
     const [, wx, wz, lim] = fadeSet; const s = w.userData.side; const hide = (s === 's' && camera.position.z > wz + lim) || (s === 'n' && camera.position.z < wz - lim) || (s === 'w' && camera.position.x < wx - lim) || (s === 'e' && camera.position.x > wx + lim);
     w.material.opacity = hide ? 0.18 : 1; w.material.depthWrite = !hide;
@@ -7060,7 +7997,7 @@ frame();
 // ---------- TRAVA POR CÓDIGO E CONFIGURAÇÕES DOS PAIS ----------
 const CODE_DEFAULT = '021100', CODE_KEY = 'mundo-destrava', UNLOCK_H = 4;
 // carimbo do build: o valor é trocado pelo build.py na hora de gerar o index.html
-const BUILD_VER = '3.4', BUILD_AT = '2026-10-20T09:49:11';
+const BUILD_VER = '3.4', BUILD_AT = '2026-10-21T13:58:09';
 function buildLabel() {
   const iso = /^\d{4}-\d{2}-\d{2}T/.test(BUILD_AT) ? BUILD_AT : null;
   if (!iso) return 'versão ' + BUILD_VER;
@@ -7925,6 +8862,375 @@ const KENNEL = {x: HX - 22, z: HZ + 10};
   b.onclick = () => { audioInit(); sfx('click'); openRides(); };
   const mail = $('bMail'); if (mail) mail.after(b);
 })();
+
+// ---------- MINHA CASINHA: mapa, atalhos e ajuda ----------
+HOME_ROOMS.forEach(r => { AREA_SCALE[r.area] = 9; AREA_BG[r.area] = r.floor; AREA_NAME[r.area] = 'Minha Casinha · ' + r.n; });
+// atalho para ir de um cômodo a outro sem andar
+function openHomeMenu() {
+  openModal('🏡 Minha Casinha', body => {
+    body.innerHTML = '<p class="hello">Vá para qualquer cômodo e arrume do seu jeito com o botão 🛠️ Decorar.</p>';
+    const list = h('<div class="list"></div>');
+    HOME_ROOMS.forEach(r => {
+      const aqui = curArea === r.area;
+      const n = (P.home.items || []).filter(i => areaOf(i.x, i.z) === r.area).length;
+      const li = h(`<button class="li" style="text-align:left"><div class="e">${r.e}</div><div class="tx"><b>${esc(r.n)}</b><small>${n} ${n === 1 ? 'móvel colocado' : 'móveis colocados'}</small></div>${aqui ? '<span class="ok2">✓</span>' : ''}</button>`);
+      li.onclick = () => { closeModal(); if (!aqui) goRoom(r.id, !inHome()); };
+      list.appendChild(li);
+    });
+    body.appendChild(list);
+    const comprar = h('<button class="pill gold" style="margin-top:12px">🪑 Comprar móveis</button>');
+    comprar.onclick = () => { closeModal(); openShop('moveis'); };
+    body.appendChild(comprar);
+    if (inHome()) { const dec = h('<button class="pill main" style="margin-top:12px">🛠️ Decorar este cômodo</button>'); dec.onclick = () => { closeModal(); enterBuild(); }; body.appendChild(dec); }
+    const sair = h('<button class="pill" style="margin-top:12px">🚪 Sair de casa</button>');
+    sair.onclick = () => { closeModal(); if (inHome()) leaveHome(); else teleport(HOME_DOOR.x, HOME_DOOR.z - 1, 0); };
+    body.appendChild(sair);
+  });
+}
+(function () {
+  const b = h('<button class="hb" id="bHome" aria-label="Minha Casinha">🏡</button>');
+  b.onclick = () => { audioInit(); sfx('click'); openHomeMenu(); };
+  const ride = $('bRide'); if (ride) ride.after(b);
+  // no menu do celular também
+  if (typeof MOB !== 'undefined') { /* o menu ☰ é montado em 07e_mobile */ }
+})();
+
+// ---------- MAPA DO UNIVERSO EM DOIS NÍVEIS ----------
+// Nível 1: os reinos (o Reino Principal é um só, com seus lugares dentro).
+// Nível 2: ao escolher um reino com vários lugares, abre a lista deles.
+const REALMS = [
+  {id: 'reino', n: 'Reino Principal', e: '👑', col: '#ff8cc6', x: 50, y: 74,
+   d: 'Onde tudo começa: jardim, vila, praia, floresta, montanha e o seu castelo.',
+   membros: ['jardim', 'vila', 'praia', 'floresta', 'montanha', 'casa', 'quarto', 'castelo']},
+  {id: 'cidade', n: 'Cidade Alegre', e: '🏙️', x: 26, y: 86},
+  {id: 'nuvens', n: 'Ilhas das Nuvens', e: '☁️', x: 64, y: 44},
+  {id: 'gelado', n: 'Reino Gelado', e: '❄️', x: 86, y: 34},
+  {id: 'borboletas', n: 'Jardim das Borboletas', e: '🦋', x: 12, y: 52},
+  {id: 'feira', n: 'Feira Mágica', e: '🎡', x: 70, y: 66},
+  {id: 'fashion', n: 'Cidade Fashion', e: '👠', x: 84, y: 54},
+  {id: 'escola', n: 'Escola Encantada', e: '🏫', x: 52, y: 52},
+  {id: 'cores', n: 'Parque das Cores', e: '🎨', x: 30, y: 42},
+  {id: 'bosque', n: 'Bosque dos Animais', e: '🐾', x: 10, y: 30},
+  {id: 'aquatico', n: 'Mundo Aquático da Sereia', e: '🧜‍♀️', x: 26, y: 20},
+  {id: 'estrelas', n: 'Parque das Estrelas', e: '🌠', x: 46, y: 14},
+  {id: 'unicornios', n: 'Reino dos Unicórnios', e: '🦄', x: 74, y: 12},
+  {id: 'arcoiris', n: 'Terra do Arco-Íris', e: '🌈', x: 58, y: 4}];
+const REALM_BY = {}; REALMS.forEach(r => { REALM_BY[r.id] = r; if (!r.membros) { const u = U_BY[r.id]; if (u) { r.col = r.col || u.col; r.d = r.d || u.d; r.single = r.id; } } });
+const REALM_LINKS = [['reino', 'cidade'], ['reino', 'nuvens'], ['reino', 'escola'], ['reino', 'feira'],
+  ['nuvens', 'gelado'], ['nuvens', 'fashion'], ['nuvens', 'estrelas'], ['escola', 'cores'], ['cores', 'borboletas'],
+  ['borboletas', 'bosque'], ['bosque', 'aquatico'], ['aquatico', 'estrelas'], ['estrelas', 'unicornios'],
+  ['unicornios', 'arcoiris'], ['feira', 'fashion'], ['cidade', 'borboletas']];
+// progresso de um reino: média dos lugares dele
+function realmWorlds(r) { return (r.membros || [r.id]).map(id => U_BY[id]).filter(Boolean); }
+function realmPct(r) { const ws = realmWorlds(r); return ws.length ? Math.round(ws.reduce((a, u) => a + uPct(u), 0) / ws.length) : 0; }
+function realmOpen(r) { return realmWorlds(r).some(u => uLock(u).open); }
+function realmVisited(r) { return realmWorlds(r).some(u => uVisited(u)); }
+function realmHere(r) { const h2 = uHere(); return h2 && realmWorlds(r).some(u => u.id === h2.id); }
+function realmLock(r) {
+  if (realmOpen(r)) return {open: true};
+  const ws = realmWorlds(r).map(u => uLock(u));
+  return ws[0] || {open: false, how: 'Continue explorando', e: '🔒'};
+}
+// ---------- mapa novo ----------
+let realmSel = null, realmZoom = null;
+openMap = function (tab, sel) {
+  if (tab) { mapTab = tab; realmZoom = null; }
+  if (sel !== undefined) { const r = REALMS.find(x => x.id === sel || (x.membros || []).includes(sel)); if (r) realmSel = r.id; }
+  if (!realmSel) { const h2 = uHere(); const r = h2 && REALMS.find(x => x.id === h2.id || (x.membros || []).includes(h2.id)); realmSel = r ? r.id : 'reino'; }
+  openModal('🗺️ Mapa do Universo', body => {
+    rebuildMaps(mapDirty); mapDirty = false; fogDirty = false;
+    const pct = explorePct(), seenR = REALMS.filter(realmVisited).length, openR = REALMS.filter(realmOpen).length;
+    body.innerHTML = `<div class="xp"><div class="xpbar"><i style="width:${pct}%"></i></div><b>${pct}% do universo descoberto</b><small>🌍 ${seenR} de ${REALMS.length} reinos visitados · 🔓 ${openR} abertos · 🏠 ${POIS.filter(p => !p.secret).length} lugares no mapa</small></div>`;
+    const tabs = h('<div class="tabs"></div>');
+    [['uni', '🌌 Universo'], ['here', '📍 Mapa daqui']].forEach(([k, n]) => { const b2 = h(`<button class="tab ${mapTab === k ? 'on' : ''}">${n}</button>`); b2.onclick = () => { mapTab = k; realmZoom = null; sfx('click'); rerender(); }; tabs.appendChild(b2); });
+    body.appendChild(tabs);
+    P.favWorlds = P.favWorlds || [];
+    if (mapTab === 'here') return renderHereMap(body);
+    if (realmZoom) return renderRealmInside(body, REALM_BY[realmZoom]);
+    if (P.favWorlds.length) {
+      const fv = h('<div class="ufav"><b>⭐ Favoritos:</b></div>');
+      P.favWorlds.forEach(id => { const u = U_BY[id]; if (!u) return; const b2 = h(`<button class="pill">${u.e} ${esc(u.n)}</button>`); b2.onclick = () => { if (uLock(u).open) travelTo(u.id); else toast(uLock(u).how); }; fv.appendChild(b2); });
+      body.appendChild(fv);
+    }
+    const uni = h('<div class="uni"><svg viewBox="0 0 100 100" preserveAspectRatio="none"></svg></div>');
+    const svg = uni.querySelector('svg');
+    REALM_LINKS.forEach(([a2, b3]) => {
+      const A2 = REALM_BY[a2], B2 = REALM_BY[b3]; if (!A2 || !B2) return;
+      const on = realmOpen(A2) && realmOpen(B2);
+      const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      ln.setAttribute('x1', A2.x); ln.setAttribute('y1', A2.y); ln.setAttribute('x2', B2.x); ln.setAttribute('y2', B2.y);
+      ln.setAttribute('class', on ? 'lk on' : 'lk'); svg.appendChild(ln);
+    });
+    REALMS.forEach(r => {
+      const open = realmOpen(r), vis = realmVisited(r), p2 = realmPct(r), aqui = realmHere(r);
+      const cls = !open ? 'lock' : vis ? 'vis' : 'new';
+      const n = (r.membros || []).length;
+      const b2 = h(`<button class="isl ${cls} ${realmSel === r.id ? 'sel' : ''} ${aqui ? 'here' : ''}" style="left:${r.x}%;top:${r.y}%;--ic:${r.col}"><span class="ie">${r.e}</span>${open ? (vis ? `<span class="ip">${p2}%</span>` : '<span class="ip">?</span>') : '<span class="il">🔒</span>'}${n ? `<span class="icount">${n}</span>` : ''}<span class="in">${esc(r.n)}</span></button>`);
+      b2.onclick = () => { realmSel = r.id; sfx('click'); if (r.membros && realmOpen(r)) realmZoom = r.id; rerender(); };
+      uni.appendChild(b2);
+    });
+    body.appendChild(uni);
+    body.appendChild(realmCard(REALM_BY[realmSel]));
+  }, {wide: true});
+};
+function realmCard(r) {
+  if (!r) return h('<div></div>');
+  if (!r.membros) return worldCard(U_BY[r.id]);
+  const p2 = realmPct(r), vis = realmVisited(r), aqui = realmHere(r);
+  const el = h(`<div class="wcard" style="--ic:${r.col}"><div class="wch"><span class="ie">${r.e}</span><div><b>${esc(r.n)}</b><small>${esc(r.d || '')}</small></div></div>
+    <div class="wcb"><div class="xpbar"><i style="width:${p2}%"></i></div><small>${(r.membros || []).length} lugares · ${p2}% explorado${aqui ? ' · 📍 você está aqui' : ''}</small>
+    <p class="how">🗺️ Toque para ver os lugares deste reino</p><div class="row"></div></div></div>`);
+  const b = h('<button class="pill main">🗺️ Ver os lugares</button>');
+  b.onclick = () => { realmZoom = r.id; sfx('click'); rerender(); };
+  el.querySelector('.row').appendChild(b);
+  return el;
+}
+// ---------- dentro de um reino ----------
+function renderRealmInside(body, r) {
+  const volta = h('<button class="pill" style="margin:0 0 8px">⬅️ Voltar ao universo</button>');
+  volta.onclick = () => { realmZoom = null; sfx('click'); rerender(); };
+  body.appendChild(volta);
+  const ws = realmWorlds(r);
+  const head = h(`<p class="hello" style="margin:0 0 8px"><b>${r.e} ${esc(r.n)}</b> · ${ws.length} lugares para explorar</p>`);
+  body.appendChild(head);
+  const list = h('<div class="list"></div>');
+  const here = uHere();
+  ws.forEach(u => {
+    const lk = uLock(u), vis = uVisited(u), p2 = uPct(u), aqui = here && here.id === u.id;
+    const li = h(`<button class="li" style="text-align:left"><div class="e">${u.e}</div><div class="tx"><b>${esc(u.n)}</b><small>${lk.open ? (vis ? p2 + '% explorado' : 'ainda não visitado') : lk.e + ' ' + esc(lk.how)}</small></div>${aqui ? '<span class="ok2">📍</span>' : lk.open ? '<span class="ok2">✨</span>' : '<span class="lk">🔒</span>'}</button>`);
+    li.onclick = () => {
+      if (!lk.open) { if (lk.buy) return openWorldLock(u, () => rerender()); if (lk.energize) return openWorldLock(u); sfx('bad'); return toast(lk.how); }
+      if (aqui) return toast('Você já está aqui! 📍');
+      realmZoom = null; closeModal(); travelTo(u.id);
+    };
+    list.appendChild(li);
+  });
+  body.appendChild(list);
+}
+
+// ao viajar por qualquer caminho, o mapa volta para a visão geral
+(function () { const old = travelTo; travelTo = function (id) { realmZoom = null; const r = REALMS.find(x => x.id === id || (x.membros || []).includes(id)); if (r) realmSel = r.id; return old(id); }; })();
+
+// ---------- DESEMPENHO: só o mundo atual fica na cena ----------
+// Os objetos fixos de cada mundo e de cada interior ficam guardados em "gavetas".
+// Ao trocar de lugar, a gaveta antiga sai da cena e a nova entra.
+const AREA_BUCKETS = {};
+(function () {
+  const fixos = new Set([avatarRoot, starField, moon, rainDrops, puddles, skyBow, houseGroup, roomFrames, decorGroup, cartGroup, duck]);
+  if (typeof snow !== 'undefined') fixos.add(snow);
+  scene.children.slice().forEach(o => {
+    if (fixos.has(o) || o.isLight || o.isPoints || o.isLineSegments || o.isCamera || o.isInstancedMesh || o.isSprite && Math.abs(o.position.x) < 1) return;
+    if (o === camera) return;
+    // grupos que nasceram na origem mas têm o conteúdo em outro lugar: usa o centro do conteúdo
+    let px = o.position.x, pz = o.position.z;
+    if (Math.abs(px) < 0.01 && Math.abs(pz) < 0.01 && o.children && o.children.length) {
+      const bb = new THREE.Box3().setFromObject(o); if (!bb.isEmpty()) { const c = bb.getCenter(new THREE.Vector3()); px = c.x; pz = c.z; }
+      if (Math.abs(px) < 1 && Math.abs(pz) < 1) return;
+    }
+    const a = areaOf(px, pz);
+    (AREA_BUCKETS[a] = AREA_BUCKETS[a] || []).push(o);
+  });
+})();
+let areaOnScene = null;
+function areaCull(a) {
+  if (a === areaOnScene) return;
+  Object.entries(AREA_BUCKETS).forEach(([k, lista]) => {
+    const dentro = k === a;
+    lista.forEach(o => { if (dentro) { if (!o.parent) scene.add(o); } else if (o.parent === scene) scene.remove(o); });
+  });
+  areaOnScene = a;
+}
+(function () { const old = setArea; setArea = function (a) { old(a); areaCull(a); }; })();
+areaCull(curArea || 'main');
+
+// ---------- PALCO DO GUARDA-ROUPA ----------
+// Ao abrir o guarda-roupa, a princesa sobe num palco só dela, com luz, cortina e câmera
+// que se aproxima da parte do corpo que está sendo vestida.
+const STAGE = {open: false, yaw: 0.35, tYaw: 0.35, zoom: 1, frame: 'corpo', spin: 0, auto: true, drag: null};
+const stageEl = h('<div id="stage" class="hidden"><canvas></canvas><div class="st-bar st-frames"></div><div class="st-bar st-tools"></div><div class="st-hint">👆 Arraste para girar</div></div>');
+document.body.appendChild(stageEl);
+const stageCvs = stageEl.querySelector('canvas');
+const stageR = new THREE.WebGLRenderer({canvas: stageCvs, antialias: true, alpha: true});
+stageR.setPixelRatio(Math.min(2, devicePixelRatio || 1));
+const stageScene = new THREE.Scene();
+const stageCam = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+stageScene.add(new THREE.HemisphereLight(0xffffff, 0xd8b8ff, 0.95));
+const stKey = new THREE.DirectionalLight(0xfff3e0, 0.7); stKey.position.set(3, 8, 6); stageScene.add(stKey);
+const stRim = new THREE.DirectionalLight(0xffc2e8, 0.45); stRim.position.set(-4, 5, -5); stageScene.add(stRim);
+// cenário do palco
+(function () {
+  const g = stageScene;
+  // tablado redondo em dois níveis
+  put(g, cyl(2.6, 2.8, 0.5, 40, '#ffffff'), 0, -0.25, 0);
+  put(g, cyl(2.2, 2.2, 0.08, 40, new THREE.MeshToonMaterial({map: patternTex('stripes', '#ff8cc6', '#ffd6ea'), gradientMap: TOON})), 0, 0.04, 0);
+  put(g, mesh(new THREE.TorusGeometry(2.7, 0.08, 8, 48), shiny('#ffd43b', .6)), 0, 0.0, 0).rotation.x = Math.PI / 2;
+  // luzinhas na borda
+  for (let i = 0; i < 18; i++) { const a = i / 18 * TAU; put(g, mesh(new THREE.SphereGeometry(0.07, 8, 6), new THREE.MeshBasicMaterial({color: i % 2 ? '#fff3bf' : '#ffd6ea'})), Math.cos(a) * 2.7, 0.05, Math.sin(a) * 2.7); }
+  // cortinas de veludo
+  [-1, 1].forEach(k => {
+    for (let i = 0; i < 4; i++) { const c = put(g, cyl(0.45, 0.55, 9, 10, i % 2 ? '#c2255c' : '#e64980'), k * (3.4 + i * 0.6), 4, -2.2 - i * 0.2); }
+    put(g, cyl(0.07, 0.07, 1.2, 6, '#ffd43b'), k * 3.6, 2.2, -1.9).rotation.z = Math.PI / 2;
+  });
+  put(g, box(10, 1, 0.6, '#c2255c'), 0, 8.4, -2.4);
+  for (let i = -6; i <= 6; i++) put(g, sph(0.35, mat(i % 2 ? '#e64980' : '#ffd43b')), i * 0.75, 7.8, -2.1).scale.y = 0.7;
+  // fundo com estrelas
+  const bg = canvasTex(256, 256, x => { const gr = x.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, '#ffd6ea'); gr.addColorStop(1, '#c8b6ff'); x.fillStyle = gr; x.fillRect(0, 0, 256, 256);
+    x.fillStyle = 'rgba(255,255,255,.8)'; for (let i = 0; i < 40; i++) { x.beginPath(); x.arc((i * 73) % 256, (i * 131) % 256, 2 + (i % 3), 0, Math.PI * 2); x.fill(); } });
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(16, 12), new THREE.MeshBasicMaterial({map: bg})); wall.position.set(0, 4, -3); g.add(wall);
+  // holofote no chão
+  const spot = new THREE.Mesh(new THREE.CircleGeometry(1.4, 32), new THREE.MeshBasicMaterial({color: '#fff9db', transparent: true, opacity: .45})); spot.rotation.x = -Math.PI / 2; spot.position.y = 0.1; g.add(spot);
+  STAGE.spot = spot;
+})();
+let stageAv = null, stagePet = null;
+function stageBuild() {
+  if (stageAv) stageScene.remove(stageAv.group);
+  stageAv = buildAvatar(currentLook()); stageScene.add(stageAv.group);
+  if (stagePet) { stageScene.remove(stagePet.group); stagePet = null; }
+  if (P.pet && ITEMS[P.pet]) { try { stagePet = buildPet(P.pet); stagePet.group.position.set(1.5, stagePet.parts.fly ? 1.4 : 0.1, 0.6); stagePet.group.rotation.y = -0.6; stagePet.group.scale.setScalar(0.8); stageScene.add(stagePet.group); } catch (e) { stagePet = null; } }
+}
+// enquadramentos: corpo inteiro, rosto e cabelo, mãos e acessórios, pés
+const FRAMES = {corpo: {y: 2.6, d: 14, ly: 2.05}, rosto: {y: 3.5, d: 6.2, ly: 3.15}, maos: {y: 2.4, d: 8.4, ly: 1.9}, pes: {y: 0.8, d: 6.4, ly: 0.55}};
+const TAB_FRAME = {vestidos: 'corpo', fantasias: 'corpo', blusas: 'maos', saias: 'corpo', sapatos: 'pes', cabelos: 'rosto', cabeca: 'rosto', enfeites: 'rosto', acessorios: 'maos', magicos: 'corpo', aparencia: 'rosto'};
+const SLOT_FRAME = {dress: 'corpo', top: 'maos', bottom: 'corpo', shoes: 'pes', hairStyle: 'rosto', hairColor: 'rosto', head: 'rosto', clip: 'rosto', face: 'rosto', ears: 'rosto', bag: 'maos', hand: 'maos', back: 'corpo'};
+function stageAutoFrame() {
+  const it = tryItemId && ITEMS[tryItemId];
+  const f = (it && SLOT_FRAME[it.slot]) || TAB_FRAME[wardTab] || 'corpo';
+  if (f !== STAGE.frame) { STAGE.frame = f; STAGE.zoom = 1; stageBarRender(); }
+}
+// botões do palco
+function stageBarRender() {
+  const bar = stageEl.querySelector('.st-frames'), tools = stageEl.querySelector('.st-tools'); bar.innerHTML = ''; tools.innerHTML = '';
+  [['corpo', '🧍', 'Corpo'], ['rosto', '🙂', 'Rosto'], ['maos', '👜', 'Mãos'], ['pes', '👟', 'Pés']].forEach(([k, e, n]) => {
+    const b = h(`<button class="st-b ${STAGE.frame === k ? 'on' : ''}" aria-label="${n}"><span>${e}</span><small>${n}</small></button>`);
+    b.onclick = () => { STAGE.frame = k; STAGE.zoom = 1; sfx('click'); stageBarRender(); }; bar.appendChild(b);
+  });
+  [['⟲', () => { STAGE.tYaw -= 0.8; STAGE.auto = false; }], ['⟳', () => { STAGE.tYaw += 0.8; STAGE.auto = false; }],
+   ['➕', () => { STAGE.zoom = clamp(STAGE.zoom - 0.15, 0.55, 1.5); }], ['➖', () => { STAGE.zoom = clamp(STAGE.zoom + 0.15, 0.55, 1.5); }]].forEach(([t, fn]) => {
+    const b = h(`<button class="st-b sm">${t}</button>`); b.onclick = () => { sfx('click'); fn(); }; tools.appendChild(b);
+  });
+}
+// gira com o dedo ou o mouse
+stageCvs.addEventListener('pointerdown', e => { STAGE.drag = {x: e.clientX, y0: STAGE.tYaw}; STAGE.auto = false; stageCvs.setPointerCapture(e.pointerId); stageEl.querySelector('.st-hint').classList.add('off'); });
+stageCvs.addEventListener('pointermove', e => { if (STAGE.drag) STAGE.tYaw = STAGE.drag.y0 + (e.clientX - STAGE.drag.x) * 0.012; });
+['pointerup', 'pointercancel'].forEach(ev => stageCvs.addEventListener(ev, () => { STAGE.drag = null; }));
+stageCvs.addEventListener('wheel', e => { e.preventDefault(); STAGE.zoom = clamp(STAGE.zoom + e.deltaY * 0.0012, 0.55, 1.5); }, {passive: false});
+// o palco ocupa a parte da tela que o painel não cobre
+function stageLayout() {
+  const sh = document.querySelector('#modal .sheet'); if (!sh) return;
+  const r = sh.getBoundingClientRect(), W = innerWidth, H = innerHeight;
+  let x = 0, y = 0, w = W, hh = H;
+  if (r.left > W * 0.25) { w = Math.max(160, r.left - 16); }
+  else if (r.top > H * 0.2) { hh = Math.max(160, r.top); }
+  else { hh = H * 0.45; }
+  Object.assign(stageEl.style, {left: x + 'px', top: y + 'px', width: w + 'px', height: hh + 'px'});
+  if (stageR.domElement.width !== Math.round(w * stageR.getPixelRatio()) || stageR.domElement.height !== Math.round(hh * stageR.getPixelRatio())) { stageR.setSize(w, hh, false); stageCvs.style.width = w + 'px'; stageCvs.style.height = hh + 'px'; }
+  stageCam.aspect = w / hh; stageCam.updateProjectionMatrix();
+}
+function stageOpen() {
+  STAGE.open = true; STAGE.auto = true; STAGE.yaw = STAGE.tYaw = 0.35; STAGE.zoom = 1; STAGE.frame = TAB_FRAME[wardTab] || 'corpo';
+  stageBuild(); stageBarRender(); stageEl.classList.remove('hidden'); document.body.classList.add('stage-open');
+  stageEl.querySelector('.st-hint').classList.remove('off');
+  stageLayout(); setTimeout(stageLayout, 60); setTimeout(stageLayout, 400);
+}
+function stageClose() { STAGE.open = false; stageEl.classList.add('hidden'); document.body.classList.remove('stage-open'); }
+addEventListener('resize', () => { if (STAGE.open) stageLayout(); });
+// laço do palco
+let stageT = 0, stageLast = performance.now();
+(function stageLoop() {
+  requestAnimationFrame(stageLoop);
+  if (!STAGE.open) return;
+  const now = performance.now(), dt = Math.min(0.05, (now - stageLast) / 1000); stageLast = now; stageT += dt;
+  if (stageT % 0.5 < dt) { stageLayout(); stageAutoFrame(); }
+  if (STAGE.auto && !STAGE.drag) STAGE.tYaw += dt * 0.35;
+  STAGE.yaw += (STAGE.tYaw - STAGE.yaw) * Math.min(1, dt * 6);
+  if (stageAv) {
+    const g = stageAv.group, p = stageAv.parts;
+    if (STAGE.spin > 0) { STAGE.spin = Math.max(0, STAGE.spin - dt * 1.6); }
+    g.rotation.y = STAGE.yaw + (1 - STAGE.spin) * 0 + STAGE.spin * TAU;
+    g.position.y = 0.08 + Math.abs(Math.sin(stageT * 1.5)) * 0.03;
+    if (p.armL) { p.armL.rotation.z = -0.15 - Math.sin(stageT * 1.4) * 0.08; p.armR.rotation.z = 0.15 + Math.sin(stageT * 1.4) * 0.08; }
+    blink(p, stageT);
+  }
+  if (stagePet) { stagePet.group.position.y = (stagePet.parts.fly ? 1.4 : 0.1) + Math.abs(Math.sin(stageT * 2)) * 0.12; if (stagePet.parts.tail) stagePet.parts.tail.rotation.z = Math.sin(stageT * 6) * 0.4; blink(stagePet.parts, stageT + 1); }
+  STAGE.spot.material.opacity = 0.38 + Math.sin(stageT * 2) * 0.07;
+  const F = FRAMES[STAGE.frame];
+  const d = F.d * STAGE.zoom;
+  const cx = 0, cz = d, cy = F.y + (STAGE.frame === 'corpo' ? (STAGE.zoom - 1) * 0.6 : 0);
+  stageCam.position.x += (cx - stageCam.position.x) * Math.min(1, dt * 5);
+  stageCam.position.y += (cy - stageCam.position.y) * Math.min(1, dt * 5);
+  stageCam.position.z += (cz - stageCam.position.z) * Math.min(1, dt * 5);
+  STAGE.look = STAGE.look || new THREE.Vector3(0, F.ly, 0);
+  STAGE.look.y += (F.ly - STAGE.look.y) * Math.min(1, dt * 5);
+  stageCam.lookAt(0, STAGE.look.y, 0);
+  stageR.render(stageScene, stageCam);
+})();
+// ligações com o guarda-roupa e o avatar
+(function () {
+  const oldRefresh = refreshAvatar;
+  refreshAvatar = function () { oldRefresh(); if (STAGE.open) { stageBuild(); STAGE.spin = 1; burst && 0; } };
+  const oldOpen = openWardrobe;
+  openWardrobe = function (tab) {
+    oldOpen(tab);
+    closeupMode = false; document.body.classList.remove('closeup-open');
+    $('wardTools').classList.add('hidden');
+    const prev = modalOnClose;
+    modalOnClose = () => { if (prev) prev(); stageClose(); };
+    stageOpen();
+  };
+})();
+
+// ---------- CONTROLE DE ZOOM DA CÂMERA ----------
+// A câmera continua fixa atrás da princesa; aqui só muda a distância.
+const ZOOM_MIN = 7, ZOOM_MAX = 22;
+const zoomEl = h(`<div id="camZoom" aria-label="Distância da câmera">
+  <button class="zb" data-d="-1" aria-label="Aproximar">🔍<b>+</b></button>
+  <input type="range" min="${ZOOM_MIN}" max="${ZOOM_MAX}" step="0.5" value="13" aria-label="Distância da câmera">
+  <button class="zb" data-d="1" aria-label="Afastar">🔍<b>−</b></button></div>`);
+document.body.appendChild(zoomEl);
+const zoomIn = zoomEl.querySelector('input');
+function setZoom(v, salvar) {
+  CAM_DIST = clamp(+v, ZOOM_MIN, ZOOM_MAX); zoomIn.value = CAM_DIST;
+  if (salvar && P) { P.camZoom = CAM_DIST; saveSoon(); }
+}
+zoomIn.addEventListener('input', () => setZoom(zoomIn.value, true));
+zoomEl.querySelectorAll('.zb').forEach(b => b.onclick = () => { audioInit(); sfx('click'); setZoom(CAM_DIST + (+b.dataset.d) * 1.5, true); });
+['pointerdown', 'touchstart', 'wheel'].forEach(ev => zoomEl.addEventListener(ev, e => e.stopPropagation(), {passive: true}));
+// a roda do mouse e o gesto de pinça também mudam a distância (sem girar a câmera)
+setInterval(() => { if (!P || closeupMode || STAGE.open) return; if (Math.abs(camDist - 10) > 0.01) { setZoom(CAM_DIST * (camDist / 10), true); camDist = 10; } }, 120);
+(function () { const old = startGame; startGame = function (p, create) { old(p, create); setZoom(P.camZoom || 13, false); camDist = 10; }; })();
+
+// ---------- VER A PRINCESA DE FRENTE ----------
+// Toque na princesa: a câmera dá a volta e mostra ela de frente.
+// Toque de novo, ou comece a andar, e a câmera volta para trás dela.
+const FRONT = {on: false, t: 0};
+const frontRay = new THREE.Raycaster(), frontPt = new THREE.Vector2();
+function frontOn() { if (FRONT.on || closeupMode || STAGE.open || cinema) return; FRONT.on = true; FRONT.t = 0; sfx('sweet'); burst(player.pos.clone().add(new THREE.Vector3(0, 3.2, 0)), ['#ff9ccc', '#ffffff', '#ffd43b'], 12); $('frontHint').classList.remove('hidden'); }
+function frontOff() { if (!FRONT.on) return; FRONT.on = false; $('frontHint').classList.add('hidden'); }
+document.body.appendChild(h('<div id="frontHint" class="hidden">✨ Olha que linda! Toque de novo ou ande para voltar</div>'));
+let frontDown = null;
+cvs.addEventListener('pointerdown', e => { frontDown = {x: e.clientX, y: e.clientY, t: performance.now()}; });
+cvs.addEventListener('pointerup', e => {
+  if (!frontDown || !P || !avatarObj) return;
+  const moved = Math.hypot(e.clientX - frontDown.x, e.clientY - frontDown.y), quick = performance.now() - frontDown.t < 450;
+  frontDown = null;
+  if (moved > 12 || !quick || closeupMode || STAGE.open || inputLocked()) return;
+  const r = cvs.getBoundingClientRect();
+  frontPt.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  frontRay.setFromCamera(frontPt, camera);
+  const hit = frontRay.intersectObject(avatarRoot, true).length > 0;
+  if (hit) { if (FRONT.on) frontOff(); else frontOn(); }
+});
+// enquanto está de frente, a princesa acena e sorri
+onFrame((dt, t) => {
+  if (!FRONT.on || !avatarObj) return;
+  FRONT.t += dt;
+  const p = avatarObj.parts;
+  if (p.armR) { p.armR.rotation.z = 2.4 + Math.sin(t * 7) * 0.35; p.armR.rotation.x = 0; }
+});
+// ao trocar de lugar, volta a câmera normal
+(function () { const old = teleport; teleport = function (...a) { frontOff(); return old(...a); }; })();
+// dica de primeira vez
+setTimeout(() => { try { if (P && !localStorage.getItem('mundo-dica-frente')) { localStorage.setItem('mundo-dica-frente', '1'); toast('💡 Toque na princesa para ver ela de frente!', 3500); } } catch (e) {} }, 15000);
 
 })();
 </script>
