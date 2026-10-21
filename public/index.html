@@ -620,6 +620,15 @@ body.mob #camZoom input{height:96px}
 body.mob #camZoom .zb{width:30px;height:30px;font-size:12px}
 #frontHint{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);z-index:7;background:rgba(255,255,255,.92);border-radius:999px;padding:8px 16px;font-weight:800;font-size:14px;color:var(--pink);box-shadow:0 0 0 2px var(--line),0 4px 0 rgba(90,42,122,.15);pointer-events:none;white-space:nowrap}
 body.mob #frontHint{bottom:calc(env(safe-area-inset-bottom,0px) + 120px);font-size:12px;white-space:normal;text-align:center;max-width:80%}
+.peerbar{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px}
+.peerbar span{background:#fff3bf;border-radius:999px;padding:3px 10px;font-weight:700;font-size:13px;color:var(--ink);box-shadow:0 0 0 2px #ffd43b}
+.isl .ifr{position:absolute;left:50%;top:-16px;transform:translateX(-50%);white-space:nowrap;background:#ffd43b;color:#5f3a1e;border-radius:999px;padding:1px 7px;font-size:11px;font-weight:800;box-shadow:0 0 0 2px #fff;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translate(-50%,-3px)}}
+#kicked{position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:rgba(40,20,70,.6);padding:16px}
+#kicked .kb{width:min(380px,100%);background:var(--card-solid);border:5px solid #fff;border-radius:26px;padding:18px;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.2)}
+#kicked .kc{font-size:46px}
+#kicked h3{margin:4px 0;color:var(--pink);font-family:'Fredoka','Baloo 2',system-ui}
+#kicked p{font-weight:700;color:var(--soft);margin:6px 0 14px}
 </style>
 </head>
 <body>
@@ -7997,7 +8006,7 @@ frame();
 // ---------- TRAVA POR CÓDIGO E CONFIGURAÇÕES DOS PAIS ----------
 const CODE_DEFAULT = '021100', CODE_KEY = 'mundo-destrava', UNLOCK_H = 4;
 // carimbo do build: o valor é trocado pelo build.py na hora de gerar o index.html
-const BUILD_VER = '3.4', BUILD_AT = '2026-10-21T13:58:09';
+const BUILD_VER = '3.4', BUILD_AT = '2026-10-21T15:08:45';
 function buildLabel() {
   const iso = /^\d{4}-\d{2}-\d{2}T/.test(BUILD_AT) ? BUILD_AT : null;
   if (!iso) return 'versão ' + BUILD_VER;
@@ -8393,8 +8402,8 @@ function liveConnect() {
   try { ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/live'); } catch (e) { return; }
   LIVE.ws = ws;
   ws.onopen = () => { LIVE.tries = 0; liveSend({t: 'entrar', sala: liveRoom(), nome: P.name, look: P.look, area: curArea, x: player.pos.x, z: player.pos.z, yaw: player.yaw}); };
-  ws.onmessage = e => { let m; try { m = JSON.parse(e.data); } catch (err) { return; } liveMsg(m); };
-  ws.onclose = () => { LIVE.ws = null; LIVE.on = false; liveClearAll(); if (P && LIVE.tries < 60) { LIVE.tries++; setTimeout(liveConnect, Math.min(20000, 1500 * LIVE.tries)); } };
+  ws.onmessage = e => { let m; try { m = JSON.parse(e.data); } catch (err) { return; } (window.__liveMsg || liveMsg)(m); };
+  ws.onclose = () => { LIVE.ws = null; LIVE.on = false; liveClearAll(); if (P && !LIVE.kicked && LIVE.tries < 60) { LIVE.tries++; setTimeout(liveConnect, Math.min(20000, 1500 * LIVE.tries)); } };
   ws.onerror = () => {};
 }
 function liveSend(o) { const ws = LIVE.ws; if (ws && ws.readyState === 1) { try { ws.send(JSON.stringify(o)); } catch (e) {} } }
@@ -9231,6 +9240,78 @@ onFrame((dt, t) => {
 (function () { const old = teleport; teleport = function (...a) { frontOff(); return old(...a); }; })();
 // dica de primeira vez
 setTimeout(() => { try { if (P && !localStorage.getItem('mundo-dica-frente')) { localStorage.setItem('mundo-dica-frente', '1'); toast('💡 Toque na princesa para ver ela de frente!', 3500); } } catch (e) {} }, 15000);
+
+// ---------- PRINCESAS AO VIVO NO MAPA ----------
+// Onde está cada princesa conectada: no mapa daqui, no minimapa e nas ilhas do universo.
+function peerRealm(area) {
+  if (!area) return null;
+  if (area === 'main' || area === 'quarto' || area === 'castelo' || area.slice(0, 3) === 'hm_') return 'reino';
+  if (area.slice(0, 3) === 'in_') { const b = BUILDINGS.find(x => x.area === area); if (!b) return null; if (b.realm) return b.realm === 'main' ? 'reino' : b.realm; if (b.world) return b.world; if (b.noFacade) return 'reino'; return 'cidade'; }
+  if (area === 'w_cidade') return 'cidade';
+  if (area === 'nuvens' || area === 'gelado') return area;
+  const w = NEW_WORLDS.find(x => x.area === area); return w ? w.id : null;
+}
+function peerPlaceName(area) {
+  if (area && area.slice(0, 3) === 'in_') { const b = BUILDINGS.find(x => x.area === area); if (b) return 'dentro da loja ' + b.e + ' ' + b.n; }
+  if (area && area.slice(0, 3) === 'hm_') return 'na Minha Casinha';
+  const r = REALM_BY[peerRealm(area)]; return r ? 'em ' + r.e + ' ' + r.n : 'passeando por aí';
+}
+const livePeerList = () => Object.values(LIVE.peers || {});
+// marcadores nos mapas do lugar atual
+(function () {
+  const old = drawMarkers;
+  drawMarkers = function (x, tx, tz, area, big) {
+    old(x, tx, tz, area, big);
+    livePeerList().forEach(pr => {
+      if (pr.area !== area) return;
+      const px = tx(pr.x), pz = tz(pr.z), r = big ? 15 : 10, bob = Math.sin(gameTime * 4 + pr.x) * 2;
+      x.save();
+      x.fillStyle = 'rgba(255,212,59,.35)'; x.beginPath(); x.arc(px, pz, r + 5 + Math.sin(gameTime * 5) * 2, 0, TAU); x.fill();
+      x.fillStyle = '#ffffff'; x.strokeStyle = '#ff5fa8'; x.lineWidth = 3; x.beginPath(); x.arc(px, pz + bob, r, 0, TAU); x.fill(); x.stroke();
+      x.font = (big ? 18 : 12) + 'px ' + EMOJI_FONT; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('👑', px, pz + bob);
+      x.font = '800 ' + (big ? 15 : 10) + 'px "Baloo 2", system-ui'; x.lineWidth = 4; x.strokeStyle = '#ffffff'; x.fillStyle = '#c2255c';
+      x.strokeText(pr.nome, px, pz + bob - r - (big ? 10 : 7)); x.fillText(pr.nome, px, pz + bob - r - (big ? 10 : 7));
+      x.restore();
+    });
+  };
+})();
+// faixa no topo do mapa dizendo onde cada princesa está
+function livePeersBanner() {
+  const L = livePeerList(); if (!L.length) return null;
+  const el = h('<div class="peerbar"></div>');
+  L.forEach(pr => el.appendChild(h(`<span>👑 <b>${esc(pr.nome)}</b> está ${pr.area === curArea ? 'aqui pertinho!' : esc(peerPlaceName(pr.area))}</span>`)));
+  return el;
+}
+(function () {
+  const old = openMap;
+  openMap = function (tab, sel) {
+    old(tab, sel);
+    const decorate = () => {
+      const body = $('mBody'); if (!body || $('modal').classList.contains('hidden')) return;
+      const bar = livePeersBanner(); if (bar && !body.querySelector('.peerbar')) { const tabs = body.querySelector('.tabs'); if (tabs) tabs.after(bar); }
+      // ilhas do universo com quem está lá
+      body.querySelectorAll('.uni .isl').forEach(b => {
+        const nome = b.querySelector('.in') ? b.querySelector('.in').textContent : '';
+        const r = REALMS.find(x => x.n === nome); if (!r) return;
+        const aqui = livePeerList().filter(pr => peerRealm(pr.area) === r.id);
+        if (aqui.length && !b.querySelector('.ifr')) b.appendChild(h(`<span class="ifr">👑 ${esc(aqui.map(p => p.nome).join(', '))}</span>`));
+      });
+    };
+    decorate();
+    const mo = new MutationObserver(decorate); mo.observe($('mBody'), {childList: true});
+    const prev = modalOnClose; modalOnClose = () => { mo.disconnect(); if (prev) prev(); };
+  };
+})();
+// ---------- uma princesa por vez: se ela entrar em outro aparelho, este sai ----------
+function liveKicked(m) {
+  LIVE.kicked = true; LIVE.tries = 999;
+  try { saveNow(); } catch (e) {}
+  liveClearAll && liveClearAll();
+  const el = h(`<div id="kicked"><div class="kb"><div class="kc">👑</div><h3>A ${esc(m.nome || 'princesa')} entrou em outro aparelho</h3><p>Só dá para jogar com a mesma princesa em um lugar de cada vez. Para continuar aqui, escolha a princesa de novo.</p><button class="pill main">Entendi</button></div></div>`);
+  document.body.appendChild(el);
+  el.querySelector('.pill').onclick = () => { location.reload(); };
+}
+window.__liveMsg = m => { if (m && m.t === 'expulso') return liveKicked(m); return liveMsg(m); };
 
 })();
 </script>
