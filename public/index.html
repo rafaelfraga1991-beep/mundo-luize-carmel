@@ -629,6 +629,26 @@ body.mob #frontHint{bottom:calc(env(safe-area-inset-bottom,0px) + 120px);font-si
 #kicked .kc{font-size:46px}
 #kicked h3{margin:4px 0;color:var(--pink);font-family:'Fredoka','Baloo 2',system-ui}
 #kicked p{font-weight:700;color:var(--soft);margin:6px 0 14px}
+#wetBadge{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 62px);transform:translateX(-50%);z-index:6;background:rgba(208,235,255,.95);color:#1864ab;font-weight:800;font-size:14px;border-radius:999px;padding:4px 12px 6px;box-shadow:0 0 0 2px #74c0fc;text-align:center;pointer-events:none}
+#wetBadge i{display:block;height:5px;border-radius:9px;background:#e7f5ff;margin-top:3px;overflow:hidden}
+#wetBadge b{display:block;height:100%;background:#4dabf7;transition:width .3s}
+#seaBtn{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);z-index:7}
+body.mob #seaBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 130px)}
+body.modal-open #seaBtn,body.modal-open #wetBadge{display:none}
+.famprize{text-align:center}
+.famprize .fpe{font-size:48px;animation:bob 1.2s ease-in-out infinite}
+.famprize h3{color:var(--pink);margin:4px 0;font-family:'Fredoka','Baloo 2',system-ui}
+.fpl{display:grid;gap:8px;margin:10px 0}
+.fpi{background:linear-gradient(90deg,#fff3bf,#ffe3ef);border-radius:16px;padding:10px 12px;font-weight:800;color:var(--ink);box-shadow:0 0 0 2px #ffd43b}
+.famgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.famc{background:var(--chip);border-radius:18px;padding:12px;text-align:center;box-shadow:0 0 0 2px var(--line)}
+.famc.ok{background:linear-gradient(180deg,#ffe3ef,#fff);box-shadow:0 0 0 3px var(--pink)}
+.famc .fe{font-size:36px}
+.famc b{display:block;color:var(--ink)}
+.famc small{display:block;color:var(--soft);font-weight:700;margin-top:4px}
+#runChip{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 70px);transform:translateX(-50%);z-index:7;background:#ff922b;color:#fff;font-weight:800;font-size:15px;border-radius:999px;padding:5px 14px;box-shadow:0 0 0 3px #fff,0 4px 0 rgba(90,42,122,.2);pointer-events:none;animation:pop .25s ease-out}
+body.mob #runChip{bottom:calc(env(safe-area-inset-bottom,0px) + 200px)}
+@keyframes pop{from{transform:translateX(-50%) scale(.6);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
 </style>
 </head>
 <body>
@@ -668,6 +688,7 @@ body.mob #frontHint{bottom:calc(env(safe-area-inset-bottom,0px) + 120px);font-si
 <div id="dance" class="card hidden"></div>
 <div id="edu" class="hidden"></div>
 <div id="wardTools" class="hidden"></div>
+<div id="runChip" class="hidden">🏃‍♀️ Correndo!</div>
 <div id="travel" class="hidden"></div>
 <div id="fsHelp" class="hidden"></div>
 <div id="reveal" class="hidden"></div>
@@ -675,6 +696,8 @@ body.mob #frontHint{bottom:calc(env(safe-area-inset-bottom,0px) + 120px);font-si
 <div id="lock" class="hidden"></div>
 <div id="start"><div class="box card"><h1>👑 Mundo da Luize e da Carmel</h1><p class="sub">Escolha sua princesa</p><p class="build" id="buildStart"></p><div class="profiles" id="profiles"></div><button class="pill gold" id="newProfile">✨ Criar nova princesa</button><p class="note">O progresso fica salvo e cada princesa tem suas moedas, roupas e castelo.</p></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@0.6.4/lib/three-vrm.min.js"></script>
 <script>
 window.addEventListener('error', e => { const t = document.getElementById('toast'); if (t) { t.textContent = 'Erro: ' + e.message; t.style.fontSize = '15px'; t.classList.add('show'); } });
 (function () {
@@ -979,6 +1002,30 @@ const FESTA_THEMES = [
   {n:'Tudo rosa', h:[300, 350], e:'💗'}, {n:'Azul do céu', h:[190, 235], e:'💙'},
   {n:'Dourado real', h:[38, 55], e:'💛'}, {n:'Lilás encantado', h:[255, 295], e:'💜'},
   {n:'Verde floresta', h:[95, 175], e:'💚'}];
+
+// ---------- VISUAL DA LUIZE ----------
+// Cabelo longo, liso, repartido no meio e sem franja; castanho-claro com pontas mais claras;
+// pele clarinha e olhos castanhos. Tudo isso vira opção para qualquer princesa também.
+SKINS.push('#e2aa83');
+EYES.push('#5b3a24');
+HAIR_STYLES.push({id: 'liso_risca', n: 'Longo liso repartido'});
+HAIR_COLORS.push({n: 'Castanho Claro', c: '#6e4e37', c2: '#8e6e52'});
+const LUIZE_LOOK = () => ({skin: SKINS.length - 1, eyes: EYES.length - 1, hairStyle: HAIR_STYLES.findIndex(h => h.id === 'liso_risca'), hairColor: HAIR_COLORS.findIndex(h => h.n === 'Castanho Claro'),
+  dress: null, top: 't_margaridas', bottom: 'b_calca_menta', shoes: 's_branco', ears: 'e_pontinho', expr: 1, head: null, clip: null});
+I('t_margaridas', 'Camiseta das Margaridas', 'top', 0, {c: '#ffffff', c2: '#a9dcb0', pat: 'daisies', cat: 'blusas'});
+I('b_calca_menta', 'Calça Verdinha de Margaridas', 'bottom', 0, {st: 'calca', c: '#93c983', cat: 'saias'});
+I('e_pontinho', 'Brinquinhos de Pontinho', 'ears', 0, {c: '#e9ecef', cat: 'acessorios'});
+
+// ---------- VISUAL DA CARMEL ----------
+// Cabelo comprido, liso e castanho-escuro, repartido de lado; olhos castanho-escuros;
+// pele clarinha; blusinha branca com casaquinho preto por cima.
+SKINS.push('#e8b796');
+EYES.push('#45291c');
+HAIR_STYLES.push({id: 'liso_lado', n: 'Longo liso de lado'});
+HAIR_COLORS.push({n: 'Castanho Escuro', c: '#33241e', c2: '#4a372d'});
+const CARMEL_LOOK = () => ({skin: SKINS.indexOf('#e8b796'), eyes: EYES.indexOf('#45291c'), hairStyle: HAIR_STYLES.findIndex(h => h.id === 'liso_lado'), hairColor: HAIR_COLORS.findIndex(h => h.n === 'Castanho Escuro'),
+  dress: null, top: 't_casaquinho', bottom: 'b_calca', shoes: 's_branco', ears: null, expr: 6, head: null, clip: null});
+I('t_casaquinho', 'Blusinha com Casaquinho Preto', 'top', 0, {c: '#2b2530', c2: '#f4f4f6', pat: 'cardigan', cat: 'blusas'});
 
 // ---------- CATÁLOGO DO GUARDA-ROUPA ----------
 // Cada item: id, n (nome), slot, cat (categoria na tela), col (coleção), rar (comum|raro|lendario),
@@ -1835,6 +1882,32 @@ function addOutlines(root) {
   });
   return list.map(o => { const ol = new THREE.Mesh(o.geometry, OUTLINE_MAT); ol.userData.ol = true; ol.castShadow = false; ol.receiveShadow = false; o.add(ol); return ol; });
 }
+// luz suave (sem degraus marcados) só para pele, rosto e cabelo das personagens
+const SOFT = (() => { const d = new Uint8Array([150, 150, 150, 182, 182, 182, 210, 210, 210, 232, 232, 232, 246, 246, 246, 255, 255, 255]); const t = new THREE.DataTexture(d, 6, 1, THREE.RGBFormat); t.minFilter = t.magFilter = THREE.LinearFilter; t.needsUpdate = true; return t; })();
+const SOFTM = {};
+const softMat = c => SOFTM[c] || (SOFTM[c] = new THREE.MeshToonMaterial({color: c, gradientMap: SOFT}));
+// cabelo pintado: mechas finas, fios mais claros e o brilho em faixa ("anel de luz")
+const HAIRM = {};
+function hairStrandMat(c, lighter) {
+  const key = c + (lighter ? 'L' : '');
+  if (HAIRM[key]) return HAIRM[key];
+  const base = new THREE.Color(c); if (lighter) base.offsetHSL(0, 0, 0.07);
+  const dark = base.clone().offsetHSL(0, 0.05, -0.1).getStyle(), light = base.clone().offsetHSL(0, -0.05, 0.12).getStyle(), shine = base.clone().offsetHSL(0, -0.15, 0.3).getStyle();
+  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 256; const x = cv.getContext('2d');
+  x.fillStyle = base.getStyle(); x.fillRect(0, 0, 256, 256);
+  // mechas: faixas verticais escuras e claras com larguras variadas
+  let sd = 7; const rr = () => (sd = (sd * 9301 + 49297) % 233280) / 233280;
+  for (let i = 0; i < 70; i++) { const px = rr() * 256, w = 1 + rr() * 3; x.strokeStyle = rr() < 0.55 ? dark : light; x.globalAlpha = 0.35 + rr() * 0.4; x.lineWidth = w;
+    x.beginPath(); x.moveTo(px, 0); x.bezierCurveTo(px + (rr() - .5) * 12, 90, px + (rr() - .5) * 12, 170, px + (rr() - .5) * 10, 256); x.stroke(); }
+  x.globalAlpha = 1;
+  // anel de luz no alto da cabeça
+  const g2 = x.createLinearGradient(0, 40, 0, 110); g2.addColorStop(0, 'rgba(255,255,255,0)'); g2.addColorStop(0.5, shine); g2.addColorStop(1, 'rgba(255,255,255,0)');
+  x.globalAlpha = 0.55; x.fillStyle = g2;
+  for (let i = 0; i < 26; i++) { const px = i * 10 + rr() * 6; x.fillRect(px, 52 + rr() * 14, 5 + rr() * 4, 40 + rr() * 16); }
+  x.globalAlpha = 1;
+  const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 1); t.anisotropy = 4;
+  return (HAIRM[key] = new THREE.MeshToonMaterial({map: t, gradientMap: SOFT}));
+}
 const MATS = {};
 function mat(c, extra) {
   const key = c + (extra ? JSON.stringify(extra) : '');
@@ -1873,6 +1946,17 @@ function patternTex(kind, c1, c2) {
   if (kind === 'rainbow') {
     const cols = ['#ff6b6b', '#ffa94d', '#ffe066', '#69db7c', '#4dabf7', '#b197fc'];
     cols.forEach((c, i) => { x.fillStyle = c; x.fillRect(0, i * 128 / 6, 128, 128 / 6 + 1); });
+  } else if (kind === 'cardigan') {
+    x.fillStyle = c2; x.fillRect(42, 0, 44, 128);
+    x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(42, 0, 2, 128); x.fillRect(84, 0, 2, 128);
+    x.fillStyle = 'rgba(255,255,255,.08)'; for (let r = 0; r < 128; r += 6) { x.fillRect(0, r, 42, 1); x.fillRect(86, r, 42, 1); }
+  } else if (kind === 'daisies') {
+    // margaridinhas brancas com miolo amarelo e folhinhas verdes
+    for (let i = 0; i < 9; i++) { const px = (i % 3) * 43 + 22 + (Math.floor(i / 3) % 2) * 12, py = Math.floor(i / 3) * 43 + 22;
+      x.fillStyle = c2; x.beginPath(); x.ellipse(px - 9, py + 9, 6, 3, -0.6, 0, Math.PI * 2); x.fill();
+      x.fillStyle = '#ffffff'; x.strokeStyle = 'rgba(0,0,0,.18)'; x.lineWidth = 1;
+      for (let p = 0; p < 6; p++) { const a = p / 6 * Math.PI * 2; x.beginPath(); x.ellipse(px + Math.cos(a) * 6, py + Math.sin(a) * 6, 5, 3, a, 0, Math.PI * 2); x.fill(); x.stroke(); }
+      x.fillStyle = '#ffd43b'; x.beginPath(); x.arc(px, py, 3.6, 0, Math.PI * 2); x.fill(); }
   } else if (kind === 'stripes') {
     x.fillStyle = c2; for (let i = 0; i < 8; i += 2) x.fillRect(0, i * 16, 128, 16);
   } else if (kind === 'stars') {
@@ -1914,42 +1998,130 @@ function colorMat(c, c2) {
   if (c2 === 'stars') return new THREE.MeshLambertMaterial({map: patternTex('stars', c, '#ffe066')});
   return mat(c);
 }
-function faceTex(skin, eye, expr = 0) {
-  const key = 'face4' + skin + eye + expr;
+// cabeça com queixinho fino, no estilo anime (a esfera é afinada embaixo)
+let ANIME_HEAD = null;
+function animeHeadGeo() {
+  if (ANIME_HEAD) return ANIME_HEAD;
+  const g = new THREE.SphereGeometry(0.62, 40, 30), p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    let x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    if (y < 0) {
+      const t = Math.min(1, -y / 0.62);
+      const front = Math.max(0, z / 0.62);
+      // afina as bochechas em direção ao queixo, mais na frente do rosto
+      x *= 1 - 0.42 * Math.pow(t, 1.6) * (0.55 + 0.45 * front);
+      y *= 1 - 0.15 * t;
+      z *= 1 - 0.1 * t * (1 - front);
+    }
+    // testa um pouco mais larga e o rosto um pouco mais achatado na frente
+    if (y > 0) x *= 1 + 0.03 * (y / 0.62);
+    p.setXYZ(i, x, y, z);
+  }
+  g.computeVertexNormals();
+  return (ANIME_HEAD = g);
+}
+function faceTex(skin, eye, expr = 0, brow) {
+  brow = brow || 'rgba(80,45,40,.75)';
+  const key = 'face8' + skin + eye + expr + brow;
   if (TEX[key]) return TEX[key];
   const cv = document.createElement('canvas'); cv.width = 512; cv.height = 256;
   const x = cv.getContext('2d');
+  const sk = new THREE.Color(skin);
+  const skShade = sk.clone().offsetHSL(0.01, 0.06, -0.09).getStyle(), skLight = sk.clone().offsetHSL(0, -0.02, 0.06).getStyle();
   x.fillStyle = skin; x.fillRect(0, 0, 512, 256);
-  const cx = 128, ey = 122, dark = '#3a2242';
-  // bochechas redondas e macias
-  [-1, 1].forEach(k => { const gx = cx + k * 47, gy = ey + 30; const gr = x.createRadialGradient(gx, gy, 2, gx, gy, 19); gr.addColorStop(0, 'rgba(255,110,150,.55)'); gr.addColorStop(1, 'rgba(255,110,150,0)'); x.fillStyle = gr; x.beginPath(); x.arc(gx, gy, 19, 0, TAU); x.fill(); });
-  const closed = (ex, up) => { x.strokeStyle = dark; x.lineWidth = 5; x.lineCap = 'round'; x.beginPath(); if (up) x.arc(ex, ey + 8, 12, Math.PI * 1.15, Math.PI * 1.85); else x.arc(ex, ey - 4, 12, Math.PI * 0.15, Math.PI * 0.85); x.stroke(); };
+  const cx = 128, ey = 133, ink = '#24131d';
+  const ec = new THREE.Color(eye);
+  // sombreado suave do rosto: laterais, órbitas e embaixo do lábio; luz na testa, nariz e queixo
+  const rg = (px, py, r, col) => { const g = x.createRadialGradient(px, py, 1, px, py, r); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, TAU); x.fill(); };
+  [-1, 1].forEach(k => { const g = x.createLinearGradient(cx + k * 78, 0, cx + k * 44, 0); g.addColorStop(0, skShade); g.addColorStop(1, 'rgba(0,0,0,0)'); x.globalAlpha = 0.38; x.fillStyle = g; x.fillRect(Math.min(cx + k * 78, cx + k * 44), 40, 34, 170); x.globalAlpha = 1; });
+  [-1, 1].forEach(k => rg(cx + k * 29, ey - 8, 24, 'rgba(150,80,90,.13)'));
+  rg(cx, ey - 50, 40, 'rgba(255,255,255,.16)');
+  rg(cx, ey + 46, 16, 'rgba(255,255,255,.12)');
+  // blush difuso e largo
+  [-1, 1].forEach(k => { const g = x.createRadialGradient(cx + k * 40, ey + 18, 1, cx + k * 40, ey + 18, 20); g.addColorStop(0, 'rgba(255,110,130,.34)'); g.addColorStop(1, 'rgba(255,110,130,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(cx + k * 40, ey + 18, 21, 13, 0, 0, TAU); x.fill(); });
+  const closed = (ex, k, happy) => {
+    x.strokeStyle = ink; x.lineWidth = 3.6; x.lineCap = 'round'; x.beginPath();
+    if (happy) { x.moveTo(ex - 13, ey + 1); x.quadraticCurveTo(ex, ey - 11, ex + 13, ey + 1); }
+    else { x.moveTo(ex - 13, ey - 1); x.quadraticCurveTo(ex, ey + 6, ex + 13, ey - 1); x.moveTo(ex + k * 13, ey - 1); x.lineTo(ex + k * 18, ey - 5); }
+    x.stroke();
+    [-1, 0, 1].forEach(j => { x.lineWidth = 1.4; x.beginPath(); x.moveTo(ex + j * 6, ey + (happy ? -4 : 3)); x.lineTo(ex + j * 7, ey + (happy ? -8 : 7)); x.stroke(); });
+  };
   [-1, 1].forEach(k => {
-    const ex = cx + k * 29;
-    if (expr === 5) return closed(ex, false);
-    if (expr === 4 || (expr === 2 && k === 1)) return closed(ex, true);
-    const sz = expr === 3 ? 1.12 : 1;
-    x.save(); x.translate(ex, ey); x.scale(sz, sz);
-    x.fillStyle = dark; x.beginPath(); x.ellipse(0, 0, 17, 22, 0, 0, TAU); x.fill();
-    x.fillStyle = eye; x.beginPath(); x.ellipse(0, 3, 13, 17, 0, 0, TAU); x.fill();
-    const gr = x.createLinearGradient(0, -14, 0, 20); gr.addColorStop(0, 'rgba(0,0,0,.35)'); gr.addColorStop(.6, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(255,255,255,.35)'); x.fillStyle = gr; x.beginPath(); x.ellipse(0, 3, 13, 17, 0, 0, TAU); x.fill();
-    x.fillStyle = dark; x.beginPath(); x.ellipse(0, 4, 6.5, 8.5, 0, 0, TAU); x.fill();
-    x.fillStyle = '#ffffff'; x.beginPath(); x.ellipse(6, -8, 6.5, 7.5, 0.3, 0, TAU); x.fill(); x.beginPath(); x.arc(-6, 10, 3, 0, TAU); x.fill();
-    x.strokeStyle = dark; x.lineWidth = 4; x.lineCap = 'round';
-    x.beginPath(); x.moveTo(k * 13, -17); x.lineTo(k * 21, -22); x.stroke(); x.beginPath(); x.moveTo(k * 16, -12); x.lineTo(k * 24, -14); x.stroke();
+    const ex = cx + k * 31;
+    if (expr === 5) return closed(ex, k, false);
+    if (expr === 4 || (expr === 2 && k === 1)) return closed(ex, k, true);
+    const big = (expr === 3 ? 1.08 : 1) * 1.28;
+    x.save(); x.translate(ex, ey); x.scale(k * big, big);
+    // olho amendoado: canto de fora levemente para cima
+    const shape = () => { x.beginPath(); x.moveTo(-15, 3); x.bezierCurveTo(-12, -11, 9, -15, 17, -6); x.bezierCurveTo(14, 7, 4, 12, -4, 11.5); x.bezierCurveTo(-10, 11, -14, 8, -15, 3); x.closePath(); };
+    x.fillStyle = '#fbf8ff'; shape(); x.fill();
+    x.save(); shape(); x.clip();
+    // íris clara: anel escuro, meio da cor e luz embaixo
+    const ix = 1, iy = 0.5;
+    const ir = x.createRadialGradient(ix, iy + 4, 1, ix, iy, 11);
+    ir.addColorStop(0, ec.clone().offsetHSL(0, 0.12, 0.28).getStyle()); ir.addColorStop(0.55, ec.clone().offsetHSL(0, 0.05, 0.08).getStyle()); ir.addColorStop(0.85, eye); ir.addColorStop(1, ec.clone().offsetHSL(0, 0, -0.25).getStyle());
+    x.fillStyle = ir; x.beginPath(); x.arc(ix, iy, 11, 0, TAU); x.fill();
+    // fibras da íris
+    x.strokeStyle = 'rgba(255,255,255,.2)'; x.lineWidth = 0.8;
+    for (let r = 0; r < 16; r++) { const a = r / 16 * TAU; x.beginPath(); x.moveTo(ix + Math.cos(a) * 4.5, iy + Math.sin(a) * 4.5); x.lineTo(ix + Math.cos(a) * 10, iy + Math.sin(a) * 10); x.stroke(); }
+    x.fillStyle = ink; x.beginPath(); x.arc(ix, iy, 4.4, 0, TAU); x.fill();
+    // sombra da pálpebra de cima sobre o olho
+    const lid = x.createLinearGradient(0, -14, 0, 0); lid.addColorStop(0, 'rgba(50,20,40,.5)'); lid.addColorStop(1, 'rgba(50,20,40,0)'); x.fillStyle = lid; x.fillRect(-18, -16, 36, 16);
+    x.restore();
+    // brilhos: um grande oval e dois pontinhos
+    x.fillStyle = '#ffffff'; x.beginPath(); x.ellipse(-3, -4, 3.6, 4.4, -0.4, 0, TAU); x.fill();
+    x.globalAlpha = 0.9; x.beginPath(); x.arc(5.5, 4.5, 1.8, 0, TAU); x.fill(); x.beginPath(); x.arc(-5.5, 6, 1, 0, TAU); x.fill(); x.globalAlpha = 1;
+    // delineado grosso em cima, puxado para fora
+    x.fillStyle = ink;
+    x.beginPath(); x.moveTo(-15.5, 3); x.bezierCurveTo(-12.5, -12.5, 9, -16.5, 17.5, -6.5); x.lineTo(23, -10.5); x.lineTo(17, -3.5); x.bezierCurveTo(9, -12.2, -11, -9.5, -13.5, 3.5); x.closePath(); x.fill();
+    // cílios marcados
+    x.strokeStyle = ink; x.lineCap = 'round';
+    [[6, -12.5, 9, -18, 1.8], [11, -10.5, 15, -15.5, 1.8], [15.5, -8, 20.5, -12, 1.6], [1, -13.5, 2.5, -18.5, 1.4]].forEach(([a1, b1, a2, b2, w]) => { x.lineWidth = w; x.beginPath(); x.moveTo(a1, b1); x.quadraticCurveTo(a2 - 1, b1 - 2, a2, b2); x.stroke(); });
+    // dobra da pálpebra (olho duplo)
+    x.strokeStyle = 'rgba(110,55,65,.55)'; x.lineWidth = 1.3; x.beginPath(); x.moveTo(-11, -9); x.bezierCurveTo(-5, -17, 8, -19, 15, -12); x.stroke();
+    // linha de baixo suave, mais forte no canto de fora
+    const lw = x.createLinearGradient(-14, 0, 15, 0); lw.addColorStop(0, 'rgba(90,45,60,.05)'); lw.addColorStop(1, 'rgba(90,45,60,.6)');
+    x.strokeStyle = lw; x.lineWidth = 1.4; x.beginPath(); x.moveTo(-11, 9.5); x.bezierCurveTo(-3, 12.5, 9, 10, 15.5, -1); x.stroke();
     x.restore();
   });
-  // sobrancelhas
-  x.strokeStyle = 'rgba(80,45,40,.7)'; x.lineWidth = 4; x.lineCap = 'round';
-  [-1, 1].forEach(k => { x.beginPath(); const bx = cx + k * 30, by = ey - (expr === 3 ? 36 : 31); x.moveTo(bx - 9, by + 2); x.quadraticCurveTo(bx, by - 4, bx + 9, by + 2); x.stroke(); });
-  // narizinho
-  x.strokeStyle = 'rgba(190,110,100,.6)'; x.lineWidth = 3; x.beginPath(); x.arc(cx, ey + 20, 3.5, 0.1 * Math.PI, 0.9 * Math.PI); x.stroke();
-  // boca
-  x.lineCap = 'round';
-  if (expr === 1) { x.fillStyle = '#a8324f'; x.beginPath(); x.moveTo(cx - 12, ey + 33); x.quadraticCurveTo(cx, ey + 52, cx + 12, ey + 33); x.closePath(); x.fill(); x.fillStyle = '#ff8fa3'; x.beginPath(); x.ellipse(cx, ey + 42, 6, 3.5, 0, 0, TAU); x.fill(); }
-  else if (expr === 3) { x.fillStyle = '#a8324f'; x.beginPath(); x.ellipse(cx, ey + 39, 6, 7.5, 0, 0, TAU); x.fill(); }
-  else { x.strokeStyle = '#a8324f'; x.lineWidth = 4; x.beginPath(); x.arc(cx, ey + 30, expr === 4 ? 6 : 8, 0.18 * Math.PI, 0.82 * Math.PI); x.stroke(); }
-  const t = new THREE.CanvasTexture(cv); TEX[key] = t; return t;
+  // sobrancelhas naturais: mais grossas no começo e afinando na ponta
+  [-1, 1].forEach(k => {
+    const bx = cx + k * 31, by = ey - (expr === 3 ? 31 : 27);
+    x.save(); x.translate(bx, by); x.scale(k, 1);
+    x.fillStyle = brow; x.globalAlpha = 0.92;
+    x.beginPath(); x.moveTo(-12, 3.5); x.quadraticCurveTo(-2, -5, 14, 0.5); x.quadraticCurveTo(0, -1.8, -11.5, 6); x.closePath(); x.fill();
+    x.globalAlpha = 1; x.restore();
+  });
+  // nariz: sombra lateral, brilho na ponta e narinas suaves
+  const nb = x.createLinearGradient(cx - 7, 0, cx + 3, 0); nb.addColorStop(0, 'rgba(160,85,80,.2)'); nb.addColorStop(1, 'rgba(160,85,80,0)');
+  x.fillStyle = nb; x.beginPath(); x.moveTo(cx - 5, ey - 2); x.lineTo(cx - 1, ey - 2); x.lineTo(cx + 1, ey + 13); x.lineTo(cx - 6, ey + 13); x.fill();
+  rg(cx, ey + 12, 5, 'rgba(255,255,255,.55)');
+  x.strokeStyle = 'rgba(170,90,85,.6)'; x.lineWidth = 1.6; x.lineCap = 'round';
+  x.beginPath(); x.moveTo(cx - 5, ey + 15); x.quadraticCurveTo(cx - 3, ey + 17, cx - 1, ey + 16); x.stroke();
+  x.beginPath(); x.moveTo(cx + 5, ey + 15); x.quadraticCurveTo(cx + 3, ey + 17, cx + 1, ey + 16); x.stroke();
+  // lábios com cor e brilho
+  const lipU = '#d9677b', lipL = '#e9808f', lipLine = '#9a3550', mouthIn = '#7d2340';
+  const bowY = ey + 25;
+  if (expr === 1 || expr === 6) {
+    const w = expr === 1 ? 13 : 9, dep = expr === 1 ? 13 : 7;
+    x.fillStyle = mouthIn; x.beginPath(); x.moveTo(cx - w, bowY); x.quadraticCurveTo(cx, bowY + 1.5, cx + w, bowY); x.quadraticCurveTo(cx + w * 0.6, bowY + dep, cx, bowY + dep + 1); x.quadraticCurveTo(cx - w * 0.6, bowY + dep, cx - w, bowY); x.fill();
+    x.fillStyle = '#ffffff'; x.beginPath(); x.moveTo(cx - w + 1.5, bowY + 0.8); x.quadraticCurveTo(cx, bowY + 2.4, cx + w - 1.5, bowY + 0.8); x.quadraticCurveTo(cx, bowY + 5.5, cx - w + 1.5, bowY + 0.8); x.fill();
+    if (expr === 1) { x.fillStyle = '#f2899a'; x.beginPath(); x.ellipse(cx, bowY + dep - 2.5, 5.5, 2.6, 0, 0, TAU); x.fill(); }
+    x.fillStyle = lipU; x.beginPath(); x.moveTo(cx - w - 1, bowY + 0.5); x.quadraticCurveTo(cx - w * 0.5, bowY - 3.2, cx - 1.5, bowY - 2); x.lineTo(cx, bowY - 0.8); x.lineTo(cx + 1.5, bowY - 2); x.quadraticCurveTo(cx + w * 0.5, bowY - 3.2, cx + w + 1, bowY + 0.5); x.quadraticCurveTo(cx, bowY + 0.6, cx - w - 1, bowY + 0.5); x.fill();
+    x.strokeStyle = lipL; x.lineWidth = 2.4; x.beginPath(); x.moveTo(cx - w * 0.7, bowY + dep - 0.5); x.quadraticCurveTo(cx, bowY + dep + 3.5, cx + w * 0.7, bowY + dep - 0.5); x.stroke();
+  } else if (expr === 3) {
+    x.fillStyle = mouthIn; x.beginPath(); x.ellipse(cx, bowY + 4, 4.5, 5.5, 0, 0, TAU); x.fill(); x.strokeStyle = lipU; x.lineWidth = 2.2; x.stroke();
+  } else {
+    // lábios fechados: arco do cupido em cima, lábio de baixo mais cheio
+    x.fillStyle = lipU; x.beginPath(); x.moveTo(cx - 10, bowY + 1); x.quadraticCurveTo(cx - 5, bowY - 3.5, cx - 1.5, bowY - 2.2); x.lineTo(cx, bowY - 1); x.lineTo(cx + 1.5, bowY - 2.2); x.quadraticCurveTo(cx + 5, bowY - 3.5, cx + 10, bowY + 1); x.quadraticCurveTo(cx, bowY + 2, cx - 10, bowY + 1); x.fill();
+    x.fillStyle = lipL; x.beginPath(); x.moveTo(cx - 8.5, bowY + 1.6); x.quadraticCurveTo(cx, bowY + 9.5, cx + 8.5, bowY + 1.6); x.quadraticCurveTo(cx, bowY + 2.6, cx - 8.5, bowY + 1.6); x.fill();
+    x.strokeStyle = lipLine; x.lineWidth = 1.3; x.beginPath(); x.moveTo(cx - 10, bowY + 1); x.quadraticCurveTo(cx, bowY + (expr === 4 ? 3.5 : 3), cx + 10, bowY + 1); x.stroke();
+    // brilho no lábio de baixo
+    rg(cx + 1.5, bowY + 4.5, 3.2, 'rgba(255,255,255,.75)');
+  }
+  // sombrinha embaixo da boca
+  rg(cx, bowY + 13, 7, 'rgba(150,80,80,.12)');
+  const t = new THREE.CanvasTexture(cv); t.anisotropy = 8; TEX[key] = t; return t;
 }
 function label(text, opts = {}) {
   const cv = document.createElement('canvas');
@@ -1974,10 +2146,10 @@ function label(text, opts = {}) {
 }
 
 // ---------- avatar (visual arredondado) ----------
-function hairMat2(look) { const hc = HAIR_COLORS[look.hairColor] || HAIR_COLORS[0]; return hc.c2 ? mat(hc.c2) : hairMat(look); }
+function hairMat2(look) { const hc = HAIR_COLORS[look.hairColor] || HAIR_COLORS[0]; return hc.c2 ? hairStrandMat(hc.c2, true) : hairMat(look); }
 function hairMat(look) {
   const hc = HAIR_COLORS[look.hairColor] || HAIR_COLORS[0];
-  return hc.c === 'rainbow' ? new THREE.MeshLambertMaterial({map: patternTex('rainbow', '#fff'), side: THREE.DoubleSide}) : mat(hc.c);
+  return hc.c === 'rainbow' ? new THREE.MeshLambertMaterial({map: patternTex('rainbow', '#fff'), side: THREE.DoubleSide}) : hairStrandMat(hc.c);
 }
 const sph = (r, m, ws = 20, hs = 16) => mesh(new THREE.SphereGeometry(r, ws, hs), m);
 const dmat = c => mat(c, {side: THREE.DoubleSide});
@@ -1994,6 +2166,32 @@ function itemMat(it, fallback) {
   if (it.pat) { const bg = it.pat === 'gradient' ? (it.c2 && it.c2[0] === '#' ? it.c2 : it.c) : (it.c2 && it.c2[0] === '#' ? it.c2 : it.c); return patMat(it.pat, bg, it.c3 || it.c2 || '#ffffff'); }
   return fallback;
 }
+// ---------- proporções de pessoa de desenho animado ----------
+// O boneco é montado no formato antigo (cabeção) e aqui ganha proporções de gente:
+// pernas e tronco mais compridos, pescoço e cabeça menor. Roupas e acessórios acompanham.
+const PROP = {leg: 1.38, tor: 1.3, head: 0.84, wide: 0.92};
+PROP.off = 1.36 * PROP.leg - 1.36 * PROP.tor;
+PROP.neck = PROP.off + 2.27 * PROP.tor;
+PROP.headY = PROP.neck + 0.2 + 0.62 * PROP.head * 0.96;
+function realProportions(g, parts, skinM) {
+  const torso = new THREE.Group(); torso.position.y = PROP.off; torso.scale.set(PROP.wide, PROP.tor, PROP.wide);
+  g.children.slice().forEach(o => {
+    if (o === parts.legL || o === parts.legR) { o.position.y *= PROP.leg; o.scale.y *= PROP.leg; o.scale.x *= 1.38; o.scale.z *= 1.38; return; }
+    if (o === parts.head) return;
+    if (o === parts.armL || o === parts.armR) { o.position.y = PROP.off + o.position.y * PROP.tor; o.position.x *= PROP.wide; o.scale.y *= 1.24; o.scale.x *= 1.2; o.scale.z *= 1.2; return; }
+    g.remove(o); torso.add(o);
+  });
+  g.add(torso); parts.torso = torso;
+  // pescoço
+  put(g, mesh(new THREE.CylinderGeometry(0.13, 0.16, 0.36, 14), skinM), 0, PROP.neck + 0.08, 0);
+  // cabeça menor, no lugar certo
+  parts.head.scale.setScalar(1.3 * PROP.head);
+  parts.head.position.y = PROP.headY;
+  // a altura final fica parecida com a de antes, para câmeras, nomes e veículos continuarem certos
+  const inner = new THREE.Group(); inner.scale.setScalar(0.9);
+  g.children.slice().forEach(o => { g.remove(o); inner.add(o); });
+  g.add(inner); parts.inner = inner;
+}
 function buildAvatar(look) {
   const g = new THREE.Group();
   const parts = {};
@@ -2003,7 +2201,7 @@ function buildAvatar(look) {
   const shoes = ITEMS[look.shoes] || ITEMS.s_rosa;
   const st = dress ? dress.st : null;
   const base = COSTUME_BASE[st] || st;
-  const skinM = mat(skin);
+  const skinM = softMat(skin);
   const legacySkirt = c => (c === 'rainbow' || c === 'stars') ? (() => { const m = colorMat(dress.c, c); m.side = THREE.DoubleSide; return m; })() : dmat(c);
   const extras = {};
   // pernas e sapatos
@@ -2077,18 +2275,40 @@ function buildAvatar(look) {
   // cabeça
   const hg = new THREE.Group(); hg.position.y = 3.06; hg.scale.setScalar(1.3); g.add(hg); parts.head = hg;
   const eyeC = EYES[look.eyes] || EYES[0];
-  const headM = new THREE.MeshToonMaterial({map: faceTex(skin, eyeC, look.expr || 0), gradientMap: TOON});
-  parts.faceMat = headM; parts.faceOpen = headM.map; parts.faceBlink = (look.expr === 4) ? headM.map : faceTex(skin, eyeC, 5);
-  const hd = put(hg, mesh(new THREE.SphereGeometry(0.62, 32, 24), headM), 0, 0, 0); hd.scale.y = 0.96;
-  [-1, 1].forEach(k => put(hg, sph(0.11, skinM, 10, 8), k * 0.6, -0.02, 0));
+  const hcB = HAIR_COLORS[look.hairColor] || HAIR_COLORS[0];
+  const browC = hcB.c === 'rainbow' ? '#7a4b5a' : new THREE.Color(hcB.c).offsetHSL(0, -0.05, hcB.c === '#e6e6f0' ? -0.25 : -0.12).getStyle();
+  const headM = new THREE.MeshToonMaterial({map: faceTex(skin, eyeC, look.expr || 0, browC), gradientMap: SOFT});
+  parts.faceMat = headM; parts.faceOpen = headM.map; parts.faceBlink = (look.expr === 4) ? headM.map : faceTex(skin, eyeC, 5, browC);
+  // rosto mais oval, menos bola
+  const hd = put(hg, mesh(animeHeadGeo(), headM), 0, -0.02, 0); hd.scale.set(0.92, 1.04, 0.94);
+  [-1, 1].forEach(k => put(hg, sph(0.1, skinM, 10, 8), k * 0.54, -0.02, 0).scale.set(0.6, 1, 0.9));
   const hm = hairMat(look), hm2 = hairMat2(look);
   const style = (HAIR_STYLES[look.hairStyle] || HAIR_STYLES[0]).id;
   const hs = (r, x, y, z, sx = 1, sy = 1, sz = 1) => { const o = put(hg, mesh(new THREE.SphereGeometry(r, 20, 16), hm), x, y, z); o.scale.set(sx, sy, sz); return o; };
   if (style === 'afro') { hs(0.8, 0, 0.18, -0.2, 1.08, 1, 0.95); for (let i = 0; i < 14; i++) { const a = i / 14 * TAU; hs(0.24, Math.cos(a) * 0.72, 0.2 + Math.sin(a) * 0.62, -0.18 - Math.abs(Math.sin(a)) * 0.08); } }
   else hs(0.665, 0, 0.05, -0.08, 1, 1, 0.95);
   if (style === 'franja_reta') { const fr = put(hg, box(1.0, 0.24, 0.4, hm), 0, 0.42, 0.36); fr.rotation.x = -0.3; }
+  else if (style === 'liso_lado') {
+    // risca de lado: uma mecha maior atravessa a testa e cai para o outro lado
+    const big = hs(0.34, 0.12, 0.36, 0.38, 1.35, 0.36, 0.42); big.rotation.z = -0.32; big.rotation.x = -0.35;
+    const sm = hs(0.22, -0.36, 0.32, 0.36, 0.9, 0.36, 0.42); sm.rotation.z = 0.5; sm.rotation.x = -0.35;
+    [-1, 1].forEach(k => { const m2 = hs(0.21, k * 0.56, 0.06, 0.3, 0.62, 1.3, 0.6); m2.rotation.z = k * 0.15; });
+  }
+  else if (style === 'liso_risca') {
+    // risca no meio: duas mechas descem da risca e emolduram o rosto
+    [-1, 1].forEach(k => { const m = hs(0.26, k * 0.24, 0.32, 0.42, 0.95, 0.3, 0.34); m.rotation.z = k * 0.25; m.rotation.x = -0.35;
+      const m2 = hs(0.2, k * 0.56, 0.08, 0.3, 0.6, 1.25, 0.6); m2.rotation.z = k * 0.15; });
+  }
   else if (style !== 'afro' && style !== 'solto_franja') { const bang = hs(0.34, 0, 0.42, 0.33, 1.65, 0.55, 0.8); bang.rotation.x = -0.45; bang.material = hm2; [-1, 1].forEach(k => { const t2 = hs(0.2, k * 0.33, 0.35, 0.42, 1, 0.7, 0.7); t2.material = hm2; }); }
-  if (style === 'longo' || style === 'meio_preso') { const lh = put(hg, mesh(bell(0.6, 0.05, 0.5, -0.95, 0.9, 0.02, Math.PI * 0.6, Math.PI * 0.8), hm), 0, 0, -0.08); if (hm.side !== undefined) hm.side = THREE.DoubleSide; [-1, 1].forEach(k => hs(0.18, k * 0.56, -0.42, 0.02, 0.8, 1.5, 0.8)); [-0.25, 0, 0.25].forEach((x, i) => { const tip = hs(0.17, x, -0.95, -0.42 + Math.abs(x) * 0.4, 1, 0.8, 0.8); tip.material = hm2; }); if (style === 'meio_preso') { hs(0.2, 0, 0.55, -0.5); const bw = put(hg, sph(0.1, mat('#ff8cc6')), 0, 0.62, -0.62); bw.scale.set(1.8, 0.8, 0.6); } }
+  if (style === 'liso_risca' || style === 'liso_lado') {
+    // cabelo comprido e liso nas costas, abaixo dos ombros, com pontas mais claras
+    put(hg, mesh(bell(0.62, 0.05, 0.6, -1.5, 0.9, 0.02, Math.PI * 0.58, Math.PI * 0.84), hm), 0, 0, -0.07);
+    if (hm.side !== undefined) hm.side = THREE.DoubleSide;
+    // mechas da frente: lisas e compridas, caindo na frente dos ombros
+    [-1, 1].forEach(k => { [[-0.32, 0.17, 2.0], [-0.78, 0.16, 2.0], [-1.18, 0.14, 1.7]].forEach(([y, r, sy], i) => { const b2 = hs(r, k * (0.6 + i * 0.015), y, 0.08 + i * 0.05, 0.7, sy, 0.55); if (i === 2) b2.material = hm2; }); });
+    [-0.36, -0.12, 0.12, 0.36].forEach(x2 => { const tip = hs(0.16, x2, -1.48, -0.5 + Math.abs(x2) * 0.35, 1, 0.7, 0.75); tip.material = hm2; });
+  }
+  else if (style === 'longo' || style === 'meio_preso') { const lh = put(hg, mesh(bell(0.6, 0.05, 0.5, -0.95, 0.9, 0.02, Math.PI * 0.6, Math.PI * 0.8), hm), 0, 0, -0.08); if (hm.side !== undefined) hm.side = THREE.DoubleSide; [-1, 1].forEach(k => hs(0.18, k * 0.56, -0.42, 0.02, 0.8, 1.5, 0.8)); [-0.25, 0, 0.25].forEach((x, i) => { const tip = hs(0.17, x, -0.95, -0.42 + Math.abs(x) * 0.4, 1, 0.8, 0.8); tip.material = hm2; }); if (style === 'meio_preso') { hs(0.2, 0, 0.55, -0.5); const bw = put(hg, sph(0.1, mat('#ff8cc6')), 0, 0.62, -0.62); bw.scale.set(1.8, 0.8, 0.6); } }
   else if (style === 'trancas') { [-1, 1].forEach(k => { for (let i = 0; i < 5; i++) { const b2 = hs(0.15 - i * 0.01, k * (0.55 + i * 0.01), -0.3 - i * 0.24, 0.02 - i * 0.03); if (i >= 3) b2.material = hm2; } put(hg, sph(0.08, mat('#ff5fa8')), k * 0.6, -1.5, -0.1); }); }
   else if (style === 'coque') { hs(0.32, 0, 0.62, -0.32).material = hm2; }
   else if (style === 'duplo_coque') { [-1, 1].forEach(k => { hs(0.25, k * 0.42, 0.55, -0.18).material = hm2; const sc2 = put(hg, mesh(new THREE.TorusGeometry(0.17, 0.04, 6, 16), mat('#ff5fa8')), k * 0.4, 0.42, -0.14); sc2.rotation.x = Math.PI / 2; }); }
@@ -2115,6 +2335,7 @@ function buildAvatar(look) {
   if (look.bag && ITEMS[look.bag]) bagAcc(g, ITEMS[look.bag]);
   if (look.back && ITEMS[look.back]) backAcc(g, ITEMS[look.back], parts);
   if (look.hand && ITEMS[look.hand]) handAcc(parts.armR, ITEMS[look.hand]);
+  realProportions(g, parts, skinM);
   parts.outlines = addOutlines(g);
   return {group: g, parts};
 }
@@ -3177,7 +3398,7 @@ function cloudPlat(x, z, r, top) {
   const g = new THREE.Group(); g.position.set(x, top, z); scene.add(g);
   put(g, mesh(new THREE.CylinderGeometry(r, r * 0.8, 1, 18), cloudMat), 0, -0.5, 0);
   for (let i = 0; i < 7; i++) { const a = i / 7 * TAU; put(g, mesh(new THREE.SphereGeometry(r * 0.35, 10, 8), cloudMat), Math.cos(a) * r * 0.85, -0.5, Math.sin(a) * r * 0.85); }
-  addPlat(x, z, r * 1.6, r * 1.6, top, top - 1.2);
+  addPlat(x, z, r * 1.9, r * 1.9, top, top - 1.2); // do tamanho da nuvem que aparece
   mapCircle('nuvens', x, z, r, '#ffffff');
   return g;
 }
@@ -4010,7 +4231,7 @@ const wLook = i => LOOKS[i % LOOKS.length];
   });
   // bandeirinhas entre postes
   for (let i = -5; i <= 5; i++) { wLamp(w, i * 9, 36); }
-  for (let i = -40; i < 40; i += 2.5) { const f = wAt(w, mesh(new THREE.ConeGeometry(0.5, 0.9, 3), mat(['#ff6b6b', '#ffd43b', '#4dabf7', '#69db7c', '#b197fc'][Math.abs(i) % 5]), false), i, 5 + Math.sin(i * 0.3) * 0.4, 36); f.rotation.x = Math.PI; }
+  for (let i = -40; i < 40; i += 2.5) { const f = wAt(w, mesh(new THREE.ConeGeometry(0.5, 0.9, 3), mat(['#ff6b6b', '#ffd43b', '#4dabf7', '#69db7c', '#b197fc'][Math.round(Math.abs(i) / 2.5) % 5]), false), i, 5 + Math.sin(i * 0.3) * 0.4, 36); f.rotation.x = Math.PI; }
   // tenda da sorte e caixa de brinquedos
   if (!hasB(w, -2, -34)) { const tent = new THREE.Group(); tent.position.set(w.cx - 2, 0, w.cz - 34); scene.add(tent);
   put(tent, mesh(new THREE.ConeGeometry(5, 6, 12), new THREE.MeshToonMaterial({map: patternTex('stripes', '#9c36b5', '#ffd6ea'), gradientMap: TOON})), 0, 3, 0);
@@ -7336,6 +7557,7 @@ function openQuickMenu() {
     items.push(['💌', 'Recadinhos', () => openInbox()]);
     items.push(['🛴', 'Veículos', () => openRides()]);
     items.push(['🏡', 'Minha Casinha', () => openHomeMenu()]);
+    items.push(['💞', 'Minha Família', () => openFamily()]);
     items.push([musicOn ? '🔊' : '🔇', musicOn ? 'Som ligado' : 'Som desligado', () => { $('bSound').click(); openQuickMenu(); }], ['👤', 'Trocar princesa', () => $('bProfile').click()]);
     items.forEach(([e, n, fn]) => { const b = h(`<button class="qi"><span>${e}</span><b>${n}</b></button>`); b.onclick = () => { sfx('click'); fn(); }; g.appendChild(b); });
     body.appendChild(g);
@@ -7651,6 +7873,20 @@ function pickAchado(a) {
 }
 (function () { const old = startGame; startGame = function (p, create) { old(p, create); refreshAchados(); }; })();
 
+// ---------- corrida automática ----------
+const RUN = {hold: 0, off: 0, k: 0, was: false, dust: 0};
+const RUN_DELAY = 1.6; // segundos segurando para frente até começar a correr
+function runStart() {
+  const el = $('runChip'); if (!el) return;
+  el.classList.remove('hidden'); clearTimeout(runStart.t); runStart.t = setTimeout(() => el.classList.add('hidden'), 1400);
+}
+onFrame(dt => {
+  // poeirinha nos pés enquanto corre
+  if (RUN.k < 0.7 || !player.onGround || (player.speed || 0) < 6 || !avatarObj) return;
+  RUN.dust += dt * 14;
+  while (RUN.dust > 1) { RUN.dust--; const bx = player.pos.x - Math.sin(player.yaw) * 0.6 + (Math.random() - .5) * 0.6, bz = player.pos.z - Math.cos(player.yaw) * 0.6 + (Math.random() - .5) * 0.6;
+    burst(new THREE.Vector3(bx, player.pos.y + 0.15, bz), curArea === 'gelado' ? ['#ffffff', '#e7f5ff'] : ['#ffffff', '#f2e6d8'], 1); }
+});
 // ---------- laço principal ----------
 let lastRegion = null, slowT = 0, mmT = 0, lastCoinT = -10, combo = 0;
 const clock = new THREE.Clock();
@@ -7674,8 +7910,13 @@ function updatePlayer(dt) {
   const back = fwd < 0;
   let mx = fx * fwd * (back ? 0.6 : 1), mz = fz * fwd * (back ? 0.6 : 1);
   const mag = Math.min(1, Math.abs(fwd));
-  const run = keys.ShiftLeft || keys.ShiftRight || Math.hypot(joyX, joyY) > 0.95;
-  let speed = (run ? 11 : 7) * mag;
+  // corrida automática: segurando para frente por um tempinho, a princesa começa a correr
+  if (fwd > 0.3 && !cinema) { RUN.hold += dt; RUN.off = 0; } else { RUN.off += dt; if (RUN.off > 0.35) RUN.hold = 0; }
+  const run = keys.ShiftLeft || keys.ShiftRight || RUN.hold > RUN_DELAY;
+  RUN.k += ((run ? 1 : 0) - RUN.k) * Math.min(1, dt * (run ? 2.2 : 5));
+  if (run && !RUN.was) runStart();
+  RUN.was = run;
+  let speed = (7 + 4.5 * RUN.k) * mag;
   if (hasPower('speed')) speed *= 1.5;
   if (player.riding) speed *= 1.6;
   if (typeof rideSpeed === 'function') speed *= rideSpeed();
@@ -8006,7 +8247,7 @@ frame();
 // ---------- TRAVA POR CÓDIGO E CONFIGURAÇÕES DOS PAIS ----------
 const CODE_DEFAULT = '021100', CODE_KEY = 'mundo-destrava', UNLOCK_H = 4;
 // carimbo do build: o valor é trocado pelo build.py na hora de gerar o index.html
-const BUILD_VER = '3.4', BUILD_AT = '2026-10-21T15:08:45';
+const BUILD_VER = '3.4', BUILD_AT = '2026-10-23T16:03:23';
 function buildLabel() {
   const iso = /^\d{4}-\d{2}-\d{2}T/.test(BUILD_AT) ? BUILD_AT : null;
   if (!iso) return 'versão ' + BUILD_VER;
@@ -8561,9 +8802,10 @@ const skyBase = new THREE.Color(), tintCol = new THREE.Color();
 function weatherSetting() { P.weather = P.weather || 'auto'; return P.weather; }
 function tintNow() {
   const t = WEATHER.t;
-  let a = SKY_TINT[0], b = SKY_TINT[1];
+  // o último trecho (fim da noite até a meia-noite) emenda no começo do dia seguinte
+  let a = SKY_TINT[SKY_TINT.length - 1], b = Object.assign({}, SKY_TINT[0], {t: 1});
   for (let i = 0; i < SKY_TINT.length - 1; i++) if (t >= SKY_TINT[i].t && t < SKY_TINT[i + 1].t) { a = SKY_TINT[i]; b = SKY_TINT[i + 1]; }
-  const k = (t - a.t) / Math.max(0.0001, b.t - a.t);
+  const k = Math.max(0, Math.min(1, (t - a.t) / Math.max(0.0001, b.t - a.t)));
   return {c: new THREE.Color(a.c).lerp(new THREE.Color(b.c), k), l: a.l + (b.l - a.l) * k, s: a.s + (b.s - a.s) * k,
     warm: new THREE.Color(a.warm).lerp(new THREE.Color(b.warm), k), nome: k < 0.5 ? a.n : b.n, e: k < 0.5 ? a.e : b.e};
 }
@@ -8740,7 +8982,7 @@ function rideModel(id) {
 // veículo em uso, embaixo da princesa
 let rideObj = null, rideId = null;
 function setRide(id) {
-  if (rideObj) { scene.remove(rideObj); rideObj = null; if (avatarObj && avatarObj.group) avatarObj.group.position.y = player.pos.y; }
+  if (rideObj) { scene.remove(rideObj); rideObj = null; if (avatarObj && avatarObj.group) avatarObj.group.position.y = 0; }
   rideId = id || null;
   P.ride = rideId; saveSoon();
   if (!rideId) return;
@@ -8758,7 +9000,7 @@ onFrame((dt, t) => {
   rideObj.position.set(player.pos.x + Math.sin(player.yaw) * fwd, player.pos.y, player.pos.z + Math.cos(player.yaw) * fwd);
   rideObj.rotation.y = player.yaw;
   // na carruagem a princesa vai sentada lá dentro
-  if (avatarObj && avatarObj.group) avatarObj.group.position.y = player.pos.y + (rideId === 'carruagem' ? 1.15 : rideId === 'patinete' ? 0.5 : rideId === 'patins' ? 0.2 : 0.6);
+  if (avatarObj && avatarObj.group) avatarObj.group.position.y = (rideId === 'carruagem' ? 1.15 : rideId === 'patinete' ? 0.5 : rideId === 'patins' ? 0.2 : 0.6);
   const v = (player.speed || 0);
   (rideObj.userData.wheels || []).forEach(w => { w.rotation.x -= v * dt * 2.4; });
   if (rideId === 'patins' || rideId === 'patinete') rideObj.position.y += Math.sin(t * 12) * 0.02 * (v > 0.5 ? 1 : 0);
@@ -9020,38 +9262,6 @@ function renderRealmInside(body, r) {
 // ao viajar por qualquer caminho, o mapa volta para a visão geral
 (function () { const old = travelTo; travelTo = function (id) { realmZoom = null; const r = REALMS.find(x => x.id === id || (x.membros || []).includes(id)); if (r) realmSel = r.id; return old(id); }; })();
 
-// ---------- DESEMPENHO: só o mundo atual fica na cena ----------
-// Os objetos fixos de cada mundo e de cada interior ficam guardados em "gavetas".
-// Ao trocar de lugar, a gaveta antiga sai da cena e a nova entra.
-const AREA_BUCKETS = {};
-(function () {
-  const fixos = new Set([avatarRoot, starField, moon, rainDrops, puddles, skyBow, houseGroup, roomFrames, decorGroup, cartGroup, duck]);
-  if (typeof snow !== 'undefined') fixos.add(snow);
-  scene.children.slice().forEach(o => {
-    if (fixos.has(o) || o.isLight || o.isPoints || o.isLineSegments || o.isCamera || o.isInstancedMesh || o.isSprite && Math.abs(o.position.x) < 1) return;
-    if (o === camera) return;
-    // grupos que nasceram na origem mas têm o conteúdo em outro lugar: usa o centro do conteúdo
-    let px = o.position.x, pz = o.position.z;
-    if (Math.abs(px) < 0.01 && Math.abs(pz) < 0.01 && o.children && o.children.length) {
-      const bb = new THREE.Box3().setFromObject(o); if (!bb.isEmpty()) { const c = bb.getCenter(new THREE.Vector3()); px = c.x; pz = c.z; }
-      if (Math.abs(px) < 1 && Math.abs(pz) < 1) return;
-    }
-    const a = areaOf(px, pz);
-    (AREA_BUCKETS[a] = AREA_BUCKETS[a] || []).push(o);
-  });
-})();
-let areaOnScene = null;
-function areaCull(a) {
-  if (a === areaOnScene) return;
-  Object.entries(AREA_BUCKETS).forEach(([k, lista]) => {
-    const dentro = k === a;
-    lista.forEach(o => { if (dentro) { if (!o.parent) scene.add(o); } else if (o.parent === scene) scene.remove(o); });
-  });
-  areaOnScene = a;
-}
-(function () { const old = setArea; setArea = function (a) { old(a); areaCull(a); }; })();
-areaCull(curArea || 'main');
-
 // ---------- PALCO DO GUARDA-ROUPA ----------
 // Ao abrir o guarda-roupa, a princesa sobe num palco só dela, com luz, cortina e câmera
 // que se aproxima da parte do corpo que está sendo vestida.
@@ -9063,8 +9273,8 @@ const stageR = new THREE.WebGLRenderer({canvas: stageCvs, antialias: true, alpha
 stageR.setPixelRatio(Math.min(2, devicePixelRatio || 1));
 const stageScene = new THREE.Scene();
 const stageCam = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-stageScene.add(new THREE.HemisphereLight(0xffffff, 0xd8b8ff, 0.95));
-const stKey = new THREE.DirectionalLight(0xfff3e0, 0.7); stKey.position.set(3, 8, 6); stageScene.add(stKey);
+stageScene.add(new THREE.HemisphereLight(0xffffff, 0xd8b8ff, 0.78));
+const stKey = new THREE.DirectionalLight(0xfff3e0, 0.55); stKey.position.set(3, 8, 6); stageScene.add(stKey);
 const stRim = new THREE.DirectionalLight(0xffc2e8, 0.45); stRim.position.set(-4, 5, -5); stageScene.add(stRim);
 // cenário do palco
 (function () {
@@ -9098,7 +9308,7 @@ function stageBuild() {
   if (P.pet && ITEMS[P.pet]) { try { stagePet = buildPet(P.pet); stagePet.group.position.set(1.5, stagePet.parts.fly ? 1.4 : 0.1, 0.6); stagePet.group.rotation.y = -0.6; stagePet.group.scale.setScalar(0.8); stageScene.add(stagePet.group); } catch (e) { stagePet = null; } }
 }
 // enquadramentos: corpo inteiro, rosto e cabelo, mãos e acessórios, pés
-const FRAMES = {corpo: {y: 2.6, d: 14, ly: 2.05}, rosto: {y: 3.5, d: 6.2, ly: 3.15}, maos: {y: 2.4, d: 8.4, ly: 1.9}, pes: {y: 0.8, d: 6.4, ly: 0.55}};
+const FRAMES = {corpo: {y: 2.6, d: 14, ly: 2.1}, rosto: {y: 3.55, d: 7.6, ly: 3.3}, maos: {y: 2.4, d: 8.4, ly: 2.0}, pes: {y: 0.8, d: 6.4, ly: 0.55}};
 const TAB_FRAME = {vestidos: 'corpo', fantasias: 'corpo', blusas: 'maos', saias: 'corpo', sapatos: 'pes', cabelos: 'rosto', cabeca: 'rosto', enfeites: 'rosto', acessorios: 'maos', magicos: 'corpo', aparencia: 'rosto'};
 const SLOT_FRAME = {dress: 'corpo', top: 'maos', bottom: 'corpo', shoes: 'pes', hairStyle: 'rosto', hairColor: 'rosto', head: 'rosto', clip: 'rosto', face: 'rosto', ears: 'rosto', bag: 'maos', hand: 'maos', back: 'corpo'};
 function stageAutoFrame() {
@@ -9312,6 +9522,615 @@ function liveKicked(m) {
   el.querySelector('.pill').onclick = () => { location.reload(); };
 }
 window.__liveMsg = m => { if (m && m.t === 'expulso') return liveKicked(m); return liveMsg(m); };
+
+// ---------- ÁGUA: MOLHADINHA E PASSEIO NO MAR ----------
+// Lugares com água rasa: a beira da praia e os lagos do Reino Principal.
+const WATER_ZONES = [
+  {area: 'main', rect: [-170, 149, 170, 170], n: 'mar'},
+  {area: 'main', circ: [34, -14, 6.6], n: 'Lago do Patinho'},
+  {area: 'main', circ: [-40, -30, 17.4], n: 'Lago dos Patinhos'}];
+function inWater(x, z, y) {
+  if (y > 0.35) return null;
+  return WATER_ZONES.find(w => w.area === curArea && (w.rect ? x > w.rect[0] && x < w.rect[2] && z > w.rect[1] && z < w.rect[3] : Math.hypot(x - w.circ[0], z - w.circ[1]) < w.circ[2])) || null;
+}
+// água da beira-mar: faixa turquesa com ondinhas que se mexem
+const shoreTex = canvasTex(128, 64, g => {
+  const gr = g.createLinearGradient(0, 0, 0, 64); gr.addColorStop(0, 'rgba(120,225,255,.55)'); gr.addColorStop(1, 'rgba(40,170,230,.85)');
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 64);
+  g.strokeStyle = 'rgba(255,255,255,.75)'; g.lineWidth = 3;
+  for (let r = 0; r < 4; r++) { g.beginPath(); for (let x = 0; x <= 128; x += 4) g.lineTo(x, r * 16 + 6 + Math.sin(x / 10 + r) * 3); g.stroke(); }
+}, [12, 2]);
+const shore = at(mesh(new THREE.PlaneGeometry(340, 21), new THREE.MeshLambertMaterial({map: shoreTex, transparent: true, opacity: .9, depthWrite: false}), false), 0, 0.07, 159.5);
+shore.rotation.x = -Math.PI / 2;
+const foam = at(mesh(new THREE.PlaneGeometry(340, 1.4), new THREE.MeshBasicMaterial({color: '#ffffff', transparent: true, opacity: .7, depthWrite: false}), false), 0, 0.09, 149.6);
+foam.rotation.x = -Math.PI / 2;
+onFrame((dt, t) => { if (curArea !== 'main') return; shoreTex.offset.x = t * 0.02; shoreTex.offset.y = Math.sin(t * 0.6) * 0.06; foam.position.z = 149.6 + Math.sin(t * 0.9) * 0.6; foam.material.opacity = 0.45 + Math.sin(t * 0.9) * 0.25; });
+mapRect('main', 0, 159.5, 340, 21, '#74d4ff');
+// no Lago dos Patinhos dá para entrar: tira o bloqueio da beira
+(function () { const i = circles.findIndex(c => Math.abs(c.x + 40) < 0.1 && Math.abs(c.z + 30) < 0.1 && c.r === 18); if (i >= 0) circles.splice(i, 1); })();
+// ---------- MOLHADINHA ----------
+const WET = {v: 0, drip: 0, was: false};
+function wetApply() {
+  if (!avatarObj) return;
+  const g = avatarObj.group;
+  if (!g.userData.wetMats) {
+    if (WET.v <= 0.01) return;
+    // cada material ganha uma cópia só da princesa, para não molhar o mundo junto
+    g.userData.wetMats = [];
+    g.traverse(m => { if (!m.isMesh || !m.material || m.userData.outline) return; const ms = Array.isArray(m.material) ? m.material : [m.material];
+      const cl = ms.map(x => { const c = x.clone(); c.userData.base = c.color ? c.color.clone() : null; return c; });
+      m.material = Array.isArray(m.material) ? cl : cl[0]; cl.forEach(c => g.userData.wetMats.push(c)); });
+  }
+  const k = WET.v;
+  const tint = new THREE.Color('#5c7fa8');
+  g.userData.wetMats.forEach(c => { if (!c.userData.base) return; c.color.copy(c.userData.base).multiplyScalar(1 - 0.32 * k).lerp(tint, 0.12 * k); });
+  // cabelo "pesado" de molhado: escorre um pouco para baixo
+  const hair = avatarObj.parts && (avatarObj.parts.hair || avatarObj.parts.hairGroup);
+  if (hair) hair.scale.y = 1 - 0.06 * k;
+}
+const dropGeo = new THREE.SphereGeometry(0.07, 8, 6), dropMat = new THREE.MeshBasicMaterial({color: '#bfe8ff', transparent: true, opacity: .85});
+const drops = [];
+function spawnDrop() {
+  const m = new THREE.Mesh(dropGeo, dropMat); scene.add(m);
+  const a = rnd() * TAU, r = 0.35 + rnd() * 0.5;
+  m.position.set(player.pos.x + Math.cos(a) * r, player.pos.y + 1.2 + rnd() * 2.6, player.pos.z + Math.sin(a) * r);
+  m.scale.set(0.8, 1.4, 0.8); drops.push({m, vy: -1 - rnd()});
+}
+function splash(x, y, z, n) { burst(new THREE.Vector3(x, y + 0.3, z), ['#bfe8ff', '#ffffff', '#74c0fc'], n || 16); }
+const ringGeo = new THREE.RingGeometry(0.5, 0.65, 24), ringMat = new THREE.MeshBasicMaterial({color: '#ffffff', transparent: true, opacity: .7, side: THREE.DoubleSide});
+const rings = [];
+function spawnRing(x, z, y) { const m = new THREE.Mesh(ringGeo, ringMat.clone()); m.rotation.x = -Math.PI / 2; m.position.set(x, (y || 0) + 0.12, z); scene.add(m); rings.push({m, t: 0}); }
+const wetBadge = h('<div id="wetBadge" class="hidden">💧 Secando...<i><b></b></i></div>'); document.body.appendChild(wetBadge);
+onFrame((dt, t) => {
+  if (!P || !avatarObj) return;
+  const zone = SEA.on ? null : inWater(player.pos.x, player.pos.z, player.pos.y);
+  const moving = (player.speed || 0) > 0.5;
+  if (zone) {
+    if (!WET.was) { splash(player.pos.x, 0, player.pos.z, 20); sfx('pad'); toast('💦 Splash! A ' + P.name + ' entrou no ' + zone.n + '!'); }
+    WET.v = 1;
+    if (moving && rnd() < dt * 6) spawnRing(player.pos.x, player.pos.z);
+    // dentro da água rasa, a princesa afunda um pouquinho, como quem está com água na canela
+    avatarObj.group.position.y = -0.45; WET.sunk = true;
+  } else if (WET.v > 0 && !SEA.on) {
+    // seca mais rápido andando e debaixo de sol; parada seca devagar
+    const sol = typeof WEATHER !== 'undefined' && WEATHER.rain > 0 ? 0.2 : 1;
+    WET.v = Math.max(0, WET.v - dt * (moving ? 0.045 : 0.018) * sol);
+    if (WET.v === 0) { burst(player.pos.clone().add(new THREE.Vector3(0, 2.2, 0)), ['#ffffff', '#fff3bf'], 10); toast('☀️ Sequinha de novo!'); }
+  }
+  if (!zone && WET.sunk && !SEA.on) { WET.sunk = false; if (!(typeof rideObj !== 'undefined' && rideObj)) avatarObj.group.position.y = 0; }
+  WET.was = !!zone;
+  wetApply();
+  // pinguinhos caindo da roupa e do cabelo
+  WET.drip += dt * (WET.v > 0.02 ? 4 + WET.v * 18 : 0);
+  while (WET.drip > 1) { WET.drip--; spawnDrop(); }
+  for (let i = drops.length - 1; i >= 0; i--) { const d = drops[i]; d.vy -= 18 * dt; d.m.position.y += d.vy * dt; if (d.m.position.y < 0.05) { if (rnd() < 0.3) spawnRing(d.m.position.x, d.m.position.z); scene.remove(d.m); drops.splice(i, 1); } }
+  for (let i = rings.length - 1; i >= 0; i--) { const r = rings[i]; r.t += dt; r.m.scale.setScalar(1 + r.t * 2.2); r.m.material.opacity = Math.max(0, 0.7 - r.t * 0.9); if (r.t > 0.8) { scene.remove(r.m); rings.splice(i, 1); } }
+  // indicador
+  wetBadge.classList.toggle('hidden', WET.v <= 0.01);
+  wetBadge.querySelector('b').style.width = Math.round(WET.v * 100) + '%';
+});
+// ao trocar de roupa a princesa nasce de novo: refaz o efeito de molhado
+(function () { const old = refreshAvatar; refreshAvatar = function () { old(); }; })();
+// ---------- PASSEIO NO MAR: JET SKI E BARQUINHO ----------
+const SEA = {on: false, kind: null, y: -0.55, roll: 0, prevRide: null};
+const PIER_END = {x: 40, z: 167};
+function jetSkiModel() {
+  const g = new THREE.Group();
+  // casco em forma de gota
+  const sh = new THREE.Shape(); sh.moveTo(0, 1.9); sh.quadraticCurveTo(0.85, 1.2, 0.78, -0.2); sh.lineTo(0.7, -1.4); sh.quadraticCurveTo(0, -1.65, -0.7, -1.4); sh.lineTo(-0.78, -0.2); sh.quadraticCurveTo(-0.85, 1.2, 0, 1.9);
+  const hull = new THREE.ExtrudeGeometry(sh, {depth: 0.55, bevelEnabled: true, bevelSize: 0.12, bevelThickness: 0.12, bevelSegments: 3}); hull.rotateX(Math.PI / 2); hull.translate(0, 0.55, 0);
+  put(g, mesh(hull, mat('#ff5fa8')), 0, 0, 0);
+  const deck = new THREE.ExtrudeGeometry(sh, {depth: 0.08, bevelEnabled: false}); deck.rotateX(Math.PI / 2); deck.translate(0, 0.66, 0); deck.scale(0.86, 1, 0.86);
+  put(g, mesh(deck, mat('#ffffff')), 0, 0, 0);
+  // faixas laterais
+  [-1, 1].forEach(k => { const f = put(g, box(0.06, 0.14, 2.2, '#4dabf7'), k * 0.8, 0.42, 0.1); f.rotation.y = -k * 0.06; });
+  // banco
+  put(g, mesh(new THREE.CylinderGeometry(0.28, 0.32, 1.5, 12), mat('#3a2242')), 0, 0.92, -0.45).rotation.x = Math.PI / 2;
+  // console, guidão e parabrisa
+  put(g, box(0.9, 0.36, 0.6, '#ff5fa8'), 0, 0.92, 0.75);
+  const pb = put(g, mesh(new THREE.BoxGeometry(0.8, 0.5, 0.05), new THREE.MeshPhongMaterial({color: '#bfe8ff', transparent: true, opacity: .6, shininess: 120})), 0, 1.3, 0.95); pb.rotation.x = -0.5;
+  put(g, cyl(0.05, 0.05, 1.3, 8, '#adb5bd'), 0, 1.25, 0.72).rotation.z = Math.PI / 2;
+  [-1, 1].forEach(k => put(g, cyl(0.08, 0.08, 0.3, 10, '#3a2242'), k * 0.66, 1.25, 0.72).rotation.z = Math.PI / 2);
+  // motor e jato atrás
+  put(g, cyl(0.2, 0.26, 0.3, 12, '#495057'), 0, 0.3, -1.5).rotation.x = Math.PI / 2;
+  put(g, mesh(starGeo(0.18, 0.08, 0.04), shiny('#ffd43b', .6)), 0, 0.9, 1.08);
+  addOutlines(g);
+  g.scale.setScalar(1.6); g.userData.seat = 1.0 * 1.6; g.userData.speed = 2.2;
+  return g;
+}
+function boatModel() {
+  const g = new THREE.Group();
+  // casco arredondado com borda
+  const pts = []; for (let i = 0; i <= 10; i++) { const t = i / 10; pts.push(new THREE.Vector2(0.15 + Math.sin(t * Math.PI / 2) * 1.05, t * 0.8)); }
+  const hull = new THREE.LatheGeometry(pts, 28); hull.scale(1, 1, 1.6);
+  put(g, mesh(hull, new THREE.MeshToonMaterial({map: patternTex('stripes', '#4dabf7', '#ffffff'), gradientMap: TOON, side: THREE.DoubleSide})), 0, 0, 0);
+  const rim = put(g, mesh(new THREE.TorusGeometry(1.2, 0.12, 10, 30), mat('#ffd43b')), 0, 0.8, 0); rim.rotation.x = Math.PI / 2; rim.scale.y = 1.6;
+  put(g, cyl(1.05, 1.05, 0.06, 28, '#c99a5b'), 0, 0.45, 0).scale.z = 1.55;
+  // bancos de madeira
+  [-0.6, 0.5].forEach(z => put(g, box(1.8, 0.12, 0.42, '#a0673a'), 0, 0.7, z));
+  // mastro, vela e bandeirinha
+  put(g, cyl(0.05, 0.05, 3.4, 8, '#ffffff'), 0, 2.3, 0.9);
+  const sail = new THREE.Shape(); sail.moveTo(0, 0); sail.lineTo(0, 2.6); sail.lineTo(1.5, 0.2); sail.closePath();
+  const vela = put(g, mesh(new THREE.ShapeGeometry(sail), new THREE.MeshToonMaterial({color: '#ffffff', gradientMap: TOON, side: THREE.DoubleSide})), 0.04, 1, 0.9); vela.rotation.y = -Math.PI / 2;
+  const fl = put(g, mesh(new THREE.PlaneGeometry(0.6, 0.35), new THREE.MeshLambertMaterial({color: '#ff5fa8', side: THREE.DoubleSide})), 0.3, 3.9, 0.9);
+  g.userData.flag = fl;
+  // boia salva-vidas na lateral
+  const boia = put(g, mesh(new THREE.TorusGeometry(0.34, 0.11, 10, 20), new THREE.MeshToonMaterial({map: patternTex('stripes', '#ff6b6b', '#ffffff'), gradientMap: TOON})), 1.22, 0.55, -0.4); boia.rotation.y = Math.PI / 2;
+  // remos
+  [-1, 1].forEach(k => { const r = put(g, cyl(0.04, 0.04, 2.2, 6, '#c99a5b'), k * 1.3, 0.75, 0); r.rotation.z = k * 1.1; put(g, box(0.3, 0.06, 0.5, '#c99a5b'), k * 2.2, 0.3, 0); });
+  addOutlines(g);
+  g.scale.setScalar(1.5); g.userData.seat = 0.55 * 1.5; g.userData.speed = 1.45;
+  return g;
+}
+// os dois ficam estacionados na ponta do píer, boiando
+const parked = {jetski: jetSkiModel(), barco: boatModel()};
+parked.jetski.position.set(PIER_END.x - 4.4, SEA.y + 0.3, PIER_END.z + 6.5);
+parked.barco.position.set(PIER_END.x + 4.6, SEA.y + 0.3, PIER_END.z + 6.5);
+Object.values(parked).forEach(m => scene.add(m));
+onFrame((dt, t) => { if (curArea !== 'main') return; Object.values(parked).forEach((m, i) => { if (!m.visible) return; m.position.y = SEA.y + 0.3 + Math.sin(t * 1.6 + i) * 0.08; m.rotation.z = Math.sin(t * 1.2 + i) * 0.05; }); });
+const dockSign = label('🚤 Passeio no Mar', {scale: 0.9}); dockSign.position.set(PIER_END.x, 4.2, PIER_END.z); scene.add(dockSign);
+poi(PIER_END.x, PIER_END.z, '🚤', 'Jet ski e barquinho', 'main');
+interact({x: PIER_END.x, z: PIER_END.z, r: 3.4, area: 'main', show: () => !SEA.on, text: () => '🚤 Passear no mar', act: () => {
+  dialog('🚤 Passeio no Mar', 'Escolha como você quer passear pelo mar! Lembre: os barquinhos só andam na água.', [
+    {t: '🚤 Jet Ski (rapidinho!)', fn: () => seaBoard('jetski')},
+    {t: '⛵ Barquinho à vela', fn: () => seaBoard('barco')},
+    {t: 'Agora não'}]);
+}});
+let seaObj = null, seaWake = 0;
+const seaBtn = h('<button id="seaBtn" class="pill gold hidden">⚓ Voltar ao píer</button>'); document.body.appendChild(seaBtn);
+seaBtn.onclick = () => { audioInit(); seaLeave(); };
+function seaBoard(kind) {
+  if (SEA.on) return;
+  SEA.on = true; SEA.kind = kind;
+  SEA.prevRide = typeof rideId !== 'undefined' ? rideId : null; if (SEA.prevRide) setRide(null);
+  player.riding = false;
+  parked[kind].visible = false;
+  seaObj = kind === 'jetski' ? jetSkiModel() : boatModel(); scene.add(seaObj);
+  doorFade(kind === 'jetski' ? 'Subindo no jet ski...' : 'Subindo no barquinho...', () => {
+    teleport(PIER_END.x + (kind === 'jetski' ? -3.4 : 3.6), PIER_END.z + 7, 0);
+    player.pos.y = SEA.y;
+    seaBtn.classList.remove('hidden');
+    splash(player.pos.x, SEA.y, player.pos.z, 26); sfx('power');
+    toast(kind === 'jetski' ? '🚤 Segura firme! Use as setas para pilotar' : '⛵ Que brisa gostosa! Use as setas para navegar', 3200);
+  });
+}
+function seaLeave() {
+  if (!SEA.on) return;
+  doorFade('Voltando ao píer...', () => {
+    SEA.on = false; seaBtn.classList.add('hidden');
+    if (seaObj) { scene.remove(seaObj); seaObj = null; }
+    parked[SEA.kind].visible = true;
+    teleport(PIER_END.x, PIER_END.z - 6, Math.PI);
+    if (SEA.prevRide) setRide(SEA.prevRide);
+    if (petObj) petObj.group.visible = true;
+    if (avatarObj) { avatarObj.group.position.y = 0; avatarObj.group.rotation.z = 0; }
+  });
+}
+// no mar a princesa só anda na água: o chão vira a superfície do mar e há limites
+(function () {
+  const oldG = groundAt;
+  groundAt = function (x, z, y) { if (SEA.on && curArea === 'main') return SEA.y; return oldG(x, z, y); };
+  const oldC = collide;
+  collide = function (p) {
+    if (SEA.on && curArea === 'main') { p.x = clamp(p.x, -240, 240); p.z = clamp(p.z, 172, 330); return; }
+    return oldC(p);
+  };
+})();
+onFrame((dt, t) => {
+  if (!SEA.on || !seaObj || !avatarObj) return;
+  const v = player.speed || 0;
+  // velocidade extra no mar
+  if (v > 0.5) { const extra = (seaObj.userData.speed - 1) * v * dt; player.pos.x += Math.sin(player.yaw) * extra; player.pos.z += Math.cos(player.yaw) * extra; }
+  player.pos.x = clamp(player.pos.x, -240, 240); player.pos.z = clamp(player.pos.z, 172, 330);
+  player.pos.y = SEA.y; player.vy = 0; player.onGround = true;
+  // balanço das ondas e inclinação nas curvas
+  const turn = (keys.KeyA || keys.ArrowLeft ? 1 : 0) - (keys.KeyD || keys.ArrowRight ? 1 : 0) + (typeof joyX !== 'undefined' ? -joyX : 0);
+  SEA.roll += ((turn * (SEA.kind === 'jetski' ? 0.28 : 0.12) * (v > 0.5 ? 1 : 0.4)) - SEA.roll) * Math.min(1, dt * 4);
+  const bob = Math.sin(t * (SEA.kind === 'jetski' ? 3 : 1.6)) * (SEA.kind === 'jetski' ? 0.06 : 0.1);
+  seaObj.position.set(player.pos.x, SEA.y + 0.25 + bob, player.pos.z);
+  seaObj.rotation.set(Math.sin(t * 1.3) * 0.04 - (SEA.kind === 'jetski' && v > 4 ? 0.06 : 0), player.yaw, SEA.roll);
+  if (seaObj.userData.flag) seaObj.userData.flag.rotation.y = Math.sin(t * 6) * 0.4;
+  // a princesa sentadinha em cima
+  const g = avatarObj.group;
+  g.position.y = 0.25 + bob + seaObj.userData.seat - (SEA.kind === 'jetski' ? 0.95 : 0.75) - 0.33;
+  g.rotation.z = SEA.roll;
+  const p = avatarObj.parts;
+  if (p.legL) { p.legL.rotation.x = SEA.kind === 'jetski' ? -0.9 : -1.3; p.legR.rotation.x = SEA.kind === 'jetski' ? -0.9 : -1.3; p.legL.rotation.z = SEA.kind === 'jetski' ? 0.35 : 0; p.legR.rotation.z = SEA.kind === 'jetski' ? -0.35 : 0; }
+  if (p.armL && SEA.kind === 'jetski') { p.armL.rotation.x = -1.2; p.armR.rotation.x = -1.2; }
+  if (petObj) petObj.group.visible = false;
+  // esteira de espuma e respingos
+  seaWake += dt * (v > 0.5 ? (SEA.kind === 'jetski' ? 22 : 8) : 1.5);
+  while (seaWake > 1) { seaWake--; const bx = player.pos.x - Math.sin(player.yaw) * 1.8 + (rnd() - .5) * 0.8, bz = player.pos.z - Math.cos(player.yaw) * 1.8 + (rnd() - .5) * 0.8; spawnRing(bx, bz, SEA.y); }
+  if (SEA.kind === 'jetski' && v > 4 && rnd() < dt * 10) splash(player.pos.x - Math.sin(player.yaw) * 1.6, SEA.y, player.pos.z - Math.cos(player.yaw) * 1.6, 6);
+  // respingos do jet ski deixam a princesa um pouco molhada
+  if (SEA.kind === 'jetski' && v > 4) WET.v = Math.min(0.6, WET.v + dt * 0.04);
+});
+// se sair do Reino Principal de outro jeito, desce do barco
+(function () { const old = setArea; setArea = function (a) { if (SEA.on && a !== 'main') { SEA.on = false; seaBtn.classList.add('hidden'); if (seaObj) { scene.remove(seaObj); seaObj = null; } parked[SEA.kind].visible = true; if (petObj) petObj.group.visible = true; } return old(a); }; })();
+
+// ---------- A FAMÍLIA DAS PRINCESAS ----------
+// Oito pessoas muito queridas espalhadas pelo universo. Quando a princesa encontra
+// uma delas pela primeira vez, ganha um super abraço, um super beijo e prêmios especiais.
+const FAMILY = [
+  {id: 'papai_lucas', n: 'Papai Lucas', e: '👨', sc: 1.28, look: {skin: 1, hairColor: 1, hairStyle: 4, dress: null, top: 't_azul', bottom: 'b_calca', expr: 1},
+   where: () => ({area: 'main', x: HX - 6, z: HZ + 14}), dica: 'Está passeando no jardim do Meu Castelo.', fala: 'Minha princesa! Que saudade de você!'},
+  {id: 'mamae_raquel', n: 'Mamãe Raquel', e: '👩', sc: 1.25, look: {skin: 1, hairColor: 1, hairStyle: 0, dress: 'd_flores', ears: null, expr: 1},
+   where: () => { const r = HOME_ROOMS[0]; return {area: r.area, x: r.cx + 6, z: r.cz - 3}; }, dica: 'Está esperando dentro da Minha Casinha, na sala.', fala: 'Vem cá, meu amor! Mamãe estava te esperando!'},
+  {id: 'vovo_sitio', n: 'Vovô do Sítio', e: '👴', sc: 1.18, old: true, hat: true, cane: true, beard: true, look: {skin: 2, hairColor: 8, hairStyle: 4, dress: null, top: 't_listrada', bottom: 'b_calca', head: 'a_chapeu', expr: 1},
+   where: () => ({area: 'main', x: -36, z: 62}), dica: 'Cuida da horta na Fazendinha Feliz.', fala: 'Olha só quem veio visitar o vovô no sítio!'},
+  {id: 'vova_sitio', n: 'Vovó do Sítio', e: '👵', sc: 1.14, old: true, look: {skin: 2, hairColor: 8, hairStyle: 2, dress: 'd_listras', face: 'g_leitura', bag: 'bg_cesta', expr: 1},
+   where: () => ({area: 'main', x: -58, z: 52}), dica: 'Está perto do celeiro vermelho da Fazendinha.', fala: 'Fiz um bolo de fubá quentinho só para você!'},
+  {id: 'vovo_careca', n: 'Vovô Careca', e: '👴', sc: 1.18, old: true, bald: true, beard: true, look: {skin: 0, hairColor: 8, hairStyle: 4, dress: null, top: 't_moletom', bottom: 'b_calca', face: 'g_leitura', expr: 1},
+   where: () => ({area: 'w_cidade', x: CITY.cx + 26, z: CITY.cz + 30}), dica: 'Gosta de passear pelas ruas da Cidade Alegre.', fala: 'Ora, ora, se não é a princesa mais linda do mundo!'},
+  {id: 'vova_rosane', n: 'Vovó Rosane', e: '👵', sc: 1.14, old: true, look: {skin: 0, hairColor: 8, hairStyle: 5, dress: 'd_lilas', face: 'g_leitura', expr: 1},
+   where: () => { const b = BUILDINGS.find(x => x.id === 'casa_vovo'); return b ? {area: b.area, x: b.ix - 6, z: b.iz + 3} : {area: 'w_cidade', x: CITY.cx - 30, z: CITY.cz + 40}; }, dica: 'Está tomando um chazinho dentro de uma casinha amarela da Cidade Alegre.', fala: 'Minha netinha querida! Vem dar um abraço na vovó!'},
+  {id: 'dindo_rafa', n: 'Dindo Rafa', e: '🧔', sc: 1.3, look: {skin: 1, hairColor: 2, hairStyle: 4, dress: null, top: 't_principe', bottom: 'b_calca', expr: 4},
+   where: () => { const c = CLOUDS.slice().sort((a, b) => b[3] - a[3])[0]; return {area: 'nuvens', x: c[0] - 1.5, z: c[1] + 1.5, y: c[3]}; }, dica: 'Lá no alto, na nuvem mais alta das Ilhas das Nuvens.', fala: 'Minha afilhada chegou! Que alegria te ver aqui em cima!'},
+  {id: 'dindaline', n: 'Dindaline', e: '👩', sc: 1.25, look: {skin: 1, hairColor: 2, hairStyle: 3, dress: 'd_menta', head: 'a_flor', expr: 1},
+   where: () => ({area: 'gelado', x: -422, z: 26}), dica: 'Está patinando perto do Lago Congelado, no Reino Gelado.', fala: 'Que surpresa boa! Vem cá me dar um abração!'}];
+const FAM_BY = {}; FAMILY.forEach(f => FAM_BY[f.id] = f);
+ACHIEVEMENTS.push({id: 'familia_toda', n: 'Família reunida', d: 'Encontre todas as 8 pessoas da família', e: '💞'});
+function famState() { P.family = P.family || {found: [], last: {}}; P.family.found = P.family.found || []; P.family.last = P.family.last || {}; return P.family; }
+// monta cada pessoa: adultos mais altos, avós um pouco curvados, com detalhes próprios
+function buildFamily(f) {
+  const o = buildAvatar(Object.assign(defaultLook(), {head: null, dress: null}, f.look));
+  const g = o.group, p = o.parts;
+  g.scale.setScalar(f.sc);
+  if (f.bald) {
+    // tira o cabelo de cima e deixa só uma franjinha branca dos lados
+    // o cabelo usa os materiais do cabelo; esconde todas as peças que usam eles
+    const hm = hairMat(f.look), hm2 = hairMat2(f.look);
+    p.head.traverse(m => { if (m.isMesh && (m.material === hm || m.material === hm2)) m.visible = false; });
+    [-1, 1].forEach(k => { const t = put(p.head, sph(0.22, mat('#e6e6f0')), k * 0.6, 0.0, -0.12); t.scale.set(0.7, 1, 1.1); });
+    put(p.head, sph(0.14, new THREE.MeshPhongMaterial({color: '#ffffff', transparent: true, opacity: .35, shininess: 120})), -0.18, 0.6, 0.3);
+  }
+  if (f.beard) { const bg = put(p.head, mesh(new THREE.TorusGeometry(0.16, 0.06, 8, 16, Math.PI), mat('#e6e6f0')), 0, -0.2, 0.62); bg.rotation.z = Math.PI; }
+  if (f.id === 'dindo_rafa') put(p.head, mesh(new THREE.SphereGeometry(0.42, 16, 10, 0, TAU, Math.PI * 0.55, Math.PI * 0.45), mat('#2a1e2e')), 0, -0.08, 0.06);
+  if (f.cane && p.armR) { const c = put(p.armR, cyl(0.04, 0.04, 1.6, 8, '#8a5a3a'), 0, -0.9, 0.12); put(p.armR, mesh(new THREE.TorusGeometry(0.1, 0.035, 6, 12, Math.PI), mat('#8a5a3a')), 0.1, -0.12, 0.12); }
+  if (f.old) g.rotation.x = 0.05;
+  return o;
+}
+const famObjs = {};
+FAMILY.forEach(f => {
+  const w = f.where(); f.pos = w;
+  const o = buildFamily(f); o.group.position.set(w.x, w.y || 0, w.z); o.group.rotation.y = Math.PI; scene.add(o.group);
+  const lb = label(f.e + ' ' + f.n, {scale: 0.85}); lb.position.set(w.x, (w.y || 0) + 4.6 * f.sc + 0.4, w.z); scene.add(lb);
+  const sparkle = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.15, 28), new THREE.MeshBasicMaterial({color: '#ff8cc6', transparent: true, opacity: .55, side: THREE.DoubleSide}));
+  sparkle.rotation.x = -Math.PI / 2; sparkle.position.set(w.x, (w.y || 0) + 0.06, w.z); scene.add(sparkle);
+  famObjs[f.id] = {o, lb, sparkle};
+  addCircle(w.x, w.z, 0.9, (w.y || 0) + 4);
+  const ph = rnd() * 6;
+  onFrame((dt, t) => {
+    if (curArea !== w.area) return;
+    const pp = o.parts;
+    // olha para a princesa quando ela chega perto e acena chamando
+    const d = Math.hypot(player.pos.x - w.x, player.pos.z - w.z);
+    if (d < 14) { const want = Math.atan2(player.pos.x - w.x, player.pos.z - w.z); let df = want - o.group.rotation.y; df = Math.atan2(Math.sin(df), Math.cos(df)); o.group.rotation.y += df * Math.min(1, dt * 4); }
+    const achou = P && famState().found.includes(f.id);
+    if (pp.armR && !f.cane) pp.armR.rotation.z = d < 14 && !achou ? 2.3 + Math.sin(t * 6 + ph) * 0.4 : 0.15 + Math.sin(t * 1.5 + ph) * 0.1;
+    o.group.position.y = (w.y || 0) + Math.abs(Math.sin(t * 1.6 + ph)) * 0.04;
+    blink(pp, t + ph);
+    sparkle.visible = !achou; sparkle.scale.setScalar(1 + Math.sin(t * 3 + ph) * 0.12); sparkle.material.opacity = 0.35 + Math.sin(t * 3 + ph) * 0.2;
+    if (!achou && rnd() < dt * 1.5) burst(new THREE.Vector3(w.x, (w.y || 0) + 4.4 * f.sc, w.z), ['#ff8cc6', '#ffffff'], 2);
+  });
+  interact({x: w.x, z: w.z, r: 3.4, area: w.area, text: () => famState().found.includes(f.id) ? '💞 Abraçar ' + f.n : '💞 Dar um super abraço em ' + f.n + '!', act: () => familyMeet(f)});
+});
+// prêmios especiais sorteados
+function familyPrizes() {
+  const out = [];
+  const moedas = 250 + Math.floor(Math.random() * 6) * 50;
+  addCoins(moedas); out.push('🪙 ' + moedas + ' moedas');
+  const opcoes = [];
+  const roupas = WARD_ITEMS().filter(it => !owns(it.id) && ['lendario', 'epico'].includes(it.rar));
+  if (roupas.length) opcoes.push(() => { const it = roupas[Math.floor(Math.random() * roupas.length)]; claimItem(it.id, true); return {txt: itemEmoji(it) + ' ' + it.n + ' (' + RARITY[it.rar].n + ')', it}; });
+  const pets = Object.values(ITEMS).filter(it => it.slot === 'pet' && !P.pets.includes(it.id));
+  if (pets.length) opcoes.push(() => { const pt = pets[Math.floor(Math.random() * pets.length)]; give(pt.id); return {txt: '🐾 Um bichinho novo: ' + pt.n}; });
+  opcoes.push(() => { ensureEdu(); P.edu.stars = (P.edu.stars || 0) + 5; return {txt: '⭐ 5 Estrelas do Saber'}; });
+  const moveis = ['dc_carrossel', 'dc_piscininha', 'dc_lareira', 'dc_trono', 'dc_balanco', 'dc_beliche'].filter(id => ITEMS[id]);
+  opcoes.push(() => { const id = moveis[Math.floor(Math.random() * moveis.length)]; P.decor[id] = (P.decor[id] || 0) + 1; return {txt: '🪑 Móvel especial: ' + ITEMS[id].n}; });
+  // sorteia dois prêmios diferentes além das moedas
+  const sorteio = opcoes.sort(() => Math.random() - 0.5).slice(0, 2).map(fn => fn());
+  sorteio.forEach(s => out.push(s.txt));
+  return {lista: out, item: (sorteio.find(s => s.it) || {}).it};
+}
+let famBusy = false;
+function familyMeet(f) {
+  if (famBusy) return;
+  const F = famState(), primeira = !F.found.includes(f.id);
+  const hoje = new Date().toDateString();
+  famBusy = true; frontOff && frontOff();
+  const fo = famObjs[f.id], w = f.pos;
+  // os dois se olham e se aproximam para o abraço
+  const ang = Math.atan2(w.x - player.pos.x, w.z - player.pos.z);
+  player.yaw = ang;
+  const alvo = {x: w.x - Math.sin(ang) * 1.6, z: w.z - Math.cos(ang) * 1.6};
+  player.pos.x = alvo.x; player.pos.z = alvo.z;
+  fo.o.group.rotation.y = ang + Math.PI;
+  sfx('sweet');
+  const fala = (t, d, col) => popText(t, new THREE.Vector3(w.x, (w.y || 0) + 5.2 * f.sc + d, w.z), col || '#e64980');
+  let t0 = 0;
+  const pulso = onFrame((dt) => {
+    if (!famBusy) return;
+    t0 += dt;
+    const k = 1 + Math.sin(t0 * 10) * 0.04;
+    fo.o.group.scale.setScalar(f.sc * k);
+    if (avatarObj) avatarObj.group.scale.setScalar(k);
+    const pp = fo.o.parts; if (pp.armL) { pp.armL.rotation.z = -1.3; pp.armR.rotation.z = 1.3; pp.armL.rotation.x = pp.armR.rotation.x = -0.6; }
+    if (avatarObj && avatarObj.parts.armL) { avatarObj.parts.armL.rotation.z = -1.3; avatarObj.parts.armR.rotation.z = 1.3; avatarObj.parts.armL.rotation.x = avatarObj.parts.armR.rotation.x = -0.6; }
+  });
+  const coracoes = n => { for (let i = 0; i < n; i++) setTimeout(() => burst(new THREE.Vector3((player.pos.x + w.x) / 2, (w.y || 0) + 3 + Math.random(), (player.pos.z + w.z) / 2), ['#ff5fa8', '#ff8cc6', '#ffffff', '#e64980'], 10), i * 180); };
+  coracoes(primeira ? 10 : 4);
+  setTimeout(() => { fala('🤗 Super abraço!', 0); sfx('pad'); }, 200);
+  setTimeout(() => { fala('😘 Super beijo!', 0.9, '#c2255c'); sfx('sweet'); coracoes(primeira ? 6 : 2); }, 1300);
+  setTimeout(() => {
+    famBusy = false;
+    fo.o.group.scale.setScalar(f.sc); if (avatarObj) avatarObj.group.scale.setScalar(1);
+    if (primeira) {
+      F.found.push(f.id); F.last[f.id] = hoje;
+      const pr = familyPrizes();
+      sfx('win'); celebrate({rar: 'lendario'});
+      if (F.found.length >= FAMILY.length) achieve('familia_toda');
+      saveNow(); updateHUD();
+      const extra = F.found.length >= FAMILY.length ? '<p class="hello">💞 Você encontrou a família inteira! 💞</p>' : '<p class="hello">Família encontrada: ' + F.found.length + ' de ' + FAMILY.length + '</p>';
+      openModal(f.e + ' ' + f.n, body => {
+        body.innerHTML = `<div class="famprize"><div class="fpe">🤗😘</div><h3>${esc(f.fala)}</h3><p class="hello">${esc(f.n)} deu um super abraço, um super beijo e trouxe presentes especiais:</p>
+          <div class="fpl">${pr.lista.map(x => '<div class="fpi">🎁 ' + esc(x) + '</div>').join('')}</div>${extra}</div>`;
+        const ok = h('<button class="pill main" style="margin-top:12px">💞 Obrigada!</button>'); ok.onclick = () => { closeModal(); if (pr.item) reveal(pr.item, 'Presente de ' + f.n); };
+        body.appendChild(ok);
+      });
+    } else {
+      const ganhou = F.last[f.id] !== hoje;
+      if (ganhou) { F.last[f.id] = hoje; addCoins(20); saveSoon(); }
+      dialog(f.n, pickR([f.fala, 'Que bom te ver de novo, princesa!', 'Você está cada dia mais linda!', 'Amo você até a lua e de volta! 🌙']) + (ganhou ? ' Tome 20 moedinhas de carinho! 💗' : ''), [{t: '💞 Te amo!'}]);
+    }
+  }, 2400);
+}
+// painel "Minha Família": quem já foi encontrado e dicas de onde procurar os outros
+function openFamily() {
+  const F = famState();
+  openModal('💞 Minha Família', body => {
+    body.innerHTML = `<p class="hello">Encontre as 8 pessoas mais queridas! Cada uma dá um super abraço, um super beijo e presentes especiais. <b>${F.found.length} de ${FAMILY.length}</b></p>`;
+    const grid = h('<div class="famgrid"></div>');
+    FAMILY.forEach(f => {
+      const ok = F.found.includes(f.id);
+      grid.appendChild(h(`<div class="famc ${ok ? 'ok' : ''}"><div class="fe">${ok ? f.e : '❓'}</div><b>${ok ? esc(f.n) : '???'}</b><small>${ok ? '💞 Já recebeu o abraço!' : '🔎 ' + esc(f.dica)}</small></div>`));
+    });
+    body.appendChild(grid);
+  });
+}
+(function () {
+  const old = openDiary;
+  openDiary = function (...a) {
+    old(...a);
+    const body = $('mBody'); if (!body) return;
+    const b = h('<button class="pill gold" style="margin:4px 0 8px">💞 Minha Família (' + famState().found.length + '/' + FAMILY.length + ')</button>');
+    b.onclick = () => { closeModal(); openFamily(); };
+    body.prepend(b);
+  };
+})();
+
+// ---------- NUVENZINHAS-DEGRAU ----------
+// Nos vãos que eram longos demais, uma nuvenzinha no meio do caminho.
+// Assim toda a escadinha dá para subir correndo; o topo continua pedindo corrida.
+[[400, 29, 2.8, 0.5], [416, -4, 2.8, 3.0], [390, 15, 2.8, 1.4], [373, 4, 2.8, 2.5], [370, -13, 2.8, 3.9], [382, -30, 2.8, 5.3]].forEach(([x, z, r, top]) => {
+  const g = cloudPlat(x, z, r, top);
+  const st = put(g, mesh(starGeo(0.35, 0.15, 0.08), shiny('#ffd43b', .6)), 0, 0.5, 0);
+  onFrame((dt, t) => { if (curArea === 'nuvens') { st.rotation.y = t * 1.5; st.position.y = 0.5 + Math.sin(t * 2 + x) * 0.1; } });
+});
+
+// ---------- APLICA O VISUAL NOVO DA LUIZE ----------
+// Na primeira vez depois da atualização, a princesa Luize ganha o visual parecido com ela.
+// As peças vão para o guarda-roupa e ela pode trocar quando quiser.
+(function () {
+  const old = startGame;
+  startGame = function (p, create) {
+    old(p, create);
+    if (!P || !/^lui[sz][ae]$/i.test((P.name || '').trim()) || P.lookLuize2) return;
+    P.lookLuize2 = true;
+    ['t_margaridas', 'b_calca_menta', 'e_pontinho', 'hs_liso_risca', 'hc_' + HAIR_COLORS.findIndex(h => h.n === 'Castanho Claro')].forEach(id => { if (ITEMS[id] && !owns(id)) give(id); });
+    Object.assign(P.look, LUIZE_LOOK());
+    refreshAvatar(); saveNow();
+    setTimeout(() => banner('✨ Visual novinho!', 'A ' + P.name + ' ficou parecidinha com ela mesma'), 1200);
+  };
+})();
+
+// ---------- APLICA O VISUAL NOVO DA CARMEL ----------
+(function () {
+  const old = startGame;
+  startGame = function (p, create) {
+    old(p, create);
+    if (!P || !/^carmel$/i.test((P.name || '').trim()) || P.lookCarmel1) return;
+    P.lookCarmel1 = true;
+    ['t_casaquinho', 'b_calca', 's_branco', 'hs_liso_lado', 'hc_' + HAIR_COLORS.findIndex(h => h.n === 'Castanho Escuro')].forEach(id => { if (ITEMS[id] && !owns(id)) give(id); });
+    Object.assign(P.look, CARMEL_LOOK());
+    refreshAvatar(); saveNow();
+    setTimeout(() => banner('✨ Visual novinho!', 'A ' + P.name + ' ficou parecidinha com ela mesma'), 1200);
+  };
+})();
+
+// ---------- PRINCESAS DO VROID ----------
+// Quando existe um modelo .vrm para a princesa, ele aparece no lugar do boneco clássico.
+// O boneco clássico continua existindo, invisível, como "marionete": todas as animações
+// do jogo mexem nele, e o modelo do VRoid copia os movimentos a cada quadro.
+const VRM_MODELS = {luize: 'modelos/luize.vrm', luiza: 'modelos/luize.vrm'};
+const VRMP = {vrm: null, root: null, active: false, loading: false, name: null, blinkT: 2, blink: 0, inStage: false};
+const VRM_HEIGHT = 4.1; // altura igual à do boneco clássico
+function vrmAvailable() {
+  if (typeof THREE.GLTFLoader === 'undefined' || typeof THREE_VRM === 'undefined') return false;
+  // no link do Claude o arquivo do modelo não fica disponível
+  return !/claude\.ai|claudeusercontent|anthropic/.test(location.hostname);
+}
+function vrmFor(name) { return VRM_MODELS[(name || '').trim().toLowerCase()] || null; }
+function vrmLoad(url) {
+  if (VRMP.loading) return;
+  VRMP.loading = true;
+  toast('✨ Carregando a ' + P.name + ' do VRoid...', 2500);
+  new THREE.GLTFLoader().load(url, gltf => {
+    THREE_VRM.VRMUtils.removeUnnecessaryJoints(gltf.scene);
+    THREE_VRM.VRM.from(gltf).then(vrm => {
+      VRMP.loading = false;
+      if (!P || vrmFor(P.name) !== url) return;
+      vrm.scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+      // sem isso a pele e a roupa ficam escuras e amarronzadas no jogo
+      vrm.scene.traverse(o => { if (!o.isMesh) return; (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => {
+        Object.values(m).forEach(v => { if (v && v.isTexture) v.encoding = THREE.LinearEncoding; });
+        if (m.uniforms) Object.values(m.uniforms).forEach(u => { if (u && u.value && u.value.isTexture) u.value.encoding = THREE.LinearEncoding; });
+        // o material do VRoid passa a converter a cor final para o padrão de tela, como no próprio VRoid
+        if (m.fragmentShader && m.fragmentShader.includes('#include <encodings_fragment>')) {
+          m.fragmentShader = m.fragmentShader.replace('#include <encodings_fragment>', 'gl_FragColor.rgb = mix( gl_FragColor.rgb, LinearTosRGB( gl_FragColor ).rgb, 0.6 );');
+        }
+        m.needsUpdate = true; }); });
+      const bb = new THREE.Box3().setFromObject(vrm.scene);
+      const k = VRM_HEIGHT / Math.max(0.5, bb.max.y - bb.min.y);
+      const root = new THREE.Group();
+      vrm.scene.rotation.y = Math.PI; // o VRoid olha para o outro lado
+      vrm.scene.scale.setScalar(k);
+      root.add(vrm.scene);
+      VRMP.vrm = vrm; VRMP.root = root; VRMP.name = P.name;
+      VRMP.bones = {};
+      ['hips', 'spine', 'chest', 'neck', 'head', 'leftUpperArm', 'rightUpperArm', 'leftLowerArm', 'rightLowerArm', 'leftUpperLeg', 'rightUpperLeg', 'leftLowerLeg', 'rightLowerLeg']
+        .forEach(b => { VRMP.bones[b] = vrm.humanoid.getBoneNode(b); });
+      // altura do quadril do modelo, para sentar no lugar certo
+      vrm.update(0); root.updateMatrixWorld(true);
+      const hp = new THREE.Vector3(); if (VRMP.bones.hips) { VRMP.bones.hips.getWorldPosition(hp); VRMP.hipY = hp.y; }
+      vrmAttach();
+      banner('✨ A ' + P.name + ' chegou do VRoid!', 'Agora ela está no estilo anime');
+    }).catch(() => { VRMP.loading = false; });
+  }, undefined, () => { VRMP.loading = false; });
+}
+// mostra o modelo no lugar do boneco clássico (ou volta o clássico)
+function vrmAttach() {
+  const usar = VRMP.root && P && P.useVRM !== false && vrmFor(P.name) && VRMP.name === P.name;
+  VRMP.active = !!usar;
+  if (usar) { if (VRMP.root.parent !== avatarRoot && !VRMP.inStage) avatarRoot.add(VRMP.root); }
+  else if (VRMP.root && VRMP.root.parent) VRMP.root.parent.remove(VRMP.root);
+  if (avatarObj) avatarObj.group.visible = !usar;
+}
+(function () {
+  const oldRefresh = refreshAvatar;
+  refreshAvatar = function () { oldRefresh(); if (VRMP.active && avatarObj && !VRMP.inStage) avatarObj.group.visible = false; };
+  const oldStart = startGame;
+  startGame = function (p, create) {
+    oldStart(p, create);
+    if (VRMP.root && VRMP.name !== P.name) { if (VRMP.root.parent) VRMP.root.parent.remove(VRMP.root); VRMP.vrm = null; VRMP.root = null; VRMP.active = false; }
+    const url = vrmFor(P.name);
+    if (url && vrmAvailable() && P.useVRM !== false) { if (VRMP.root) vrmAttach(); else vrmLoad(url); }
+  };
+})();
+// ---------- os movimentos da marionete viram movimentos do modelo ----------
+const qA = new THREE.Quaternion(), qB = new THREE.Quaternion(), vX = new THREE.Vector3(1, 0, 0), vZ = new THREE.Vector3(0, 0, 1);
+function armPose(bone, down, swing, side) {
+  if (!bone) return;
+  qA.setFromAxisAngle(vZ, down); qB.setFromAxisAngle(vX, swing * side);
+  bone.quaternion.copy(qB).multiply(qA);
+}
+function vrmDrive(dt, t) {
+  if (!VRMP.vrm) return;
+  const B = VRMP.bones, pz = avatarObj && avatarObj.parts;
+  if (pz) {
+    // braços: no boneco, z perto de 0 é braço abaixado; no VRoid o braço nasce aberto em "T"
+    const aL = pz.armL ? pz.armL.rotation : {x: 0, z: -0.15}, aR = pz.armR ? pz.armR.rotation : {x: 0, z: 0.15};
+    armPose(B.leftUpperArm, 1.25 + aL.z, -aL.x, 1);
+    armPose(B.rightUpperArm, -1.25 + aR.z, -aR.x, 1);
+    if (B.leftLowerArm) B.leftLowerArm.rotation.set(0, 0.12, 0);
+    if (B.rightLowerArm) B.rightLowerArm.rotation.set(0, -0.12, 0);
+    // pernas
+    if (B.leftUpperLeg && pz.legL) B.leftUpperLeg.rotation.set(pz.legL.rotation.x, 0, -(pz.legL.rotation.z || 0));
+    if (B.rightUpperLeg && pz.legR) B.rightUpperLeg.rotation.set(pz.legR.rotation.x, 0, -(pz.legR.rotation.z || 0));
+    // joelhos dobram quando a perna vai para frente (andar e sentar)
+    if (B.leftLowerLeg && pz.legL) B.leftLowerLeg.rotation.set(Math.max(0, -pz.legL.rotation.x) * 1.15, 0, 0);
+    if (B.rightLowerLeg && pz.legR) B.rightLowerLeg.rotation.set(Math.max(0, -pz.legR.rotation.x) * 1.15, 0, 0);
+    // cabeça acompanha
+    if (B.head && pz.head) B.head.rotation.set(pz.head.rotation.x * 0.8, pz.head.rotation.y * 0.8, pz.head.rotation.z * 0.8);
+    // respiração bem de leve
+    if (B.chest) B.chest.rotation.x = Math.sin(t * 1.8) * 0.02;
+    // subir e descer igual à marionete (pulinhos, afundar na água, sentar no barco)
+    // sentada (barco, jet ski): o quadril do VRoid é mais alto que o do boneco, então desce a diferença
+    const sit = pz.legL && pz.legR ? Math.max(0, Math.min(1, -(pz.legL.rotation.x + pz.legR.rotation.x) / 2 / 0.9)) : 0;
+    VRMP.root.position.y = avatarObj.group.position.y - sit * Math.max(0, (VRMP.hipY || 1.7) - 1.69);
+    VRMP.root.rotation.z = avatarObj.group.rotation.z;
+    VRMP.root.scale.copy(avatarObj.group.scale);
+  }
+  // piscar de verdade e um sorrisinho
+  const bsp = VRMP.vrm.blendShapeProxy;
+  if (bsp) {
+    VRMP.blinkT -= dt;
+    if (VRMP.blinkT <= 0) { VRMP.blink = 0.18; VRMP.blinkT = 2 + Math.random() * 3; }
+    if (VRMP.blink > 0) VRMP.blink -= dt;
+    const bv = VRMP.blink > 0 ? Math.sin((1 - VRMP.blink / 0.18) * Math.PI) : 0;
+    bsp.setValue(THREE_VRM.VRMSchema.BlendShapePresetName.Blink, bv);
+    bsp.setValue(THREE_VRM.VRMSchema.BlendShapePresetName.Fun, (typeof FRONT !== 'undefined' && FRONT.on) || (typeof famBusy !== 'undefined' && famBusy) ? 0.8 : 0.25);
+  }
+  VRMP.vrm.update(dt);
+}
+onFrame((dt, t) => { if (VRMP.active || VRMP.inStage) vrmDrive(dt, t); });
+// ---------- palco do guarda-roupa com o modelo do VRoid ----------
+(function () {
+  const oldBuild = stageBuild;
+  stageBuild = function () {
+    oldBuild();
+    const bar = stageEl.querySelector('.st-hint');
+    if (VRMP.root && vrmFor(P.name) && VRMP.name === P.name) {
+      // botão para escolher entre o modelo do VRoid e o boneco clássico
+      let tg = stageEl.querySelector('.st-vrm');
+      if (!tg) { tg = h('<button class="st-b st-vrm" style="position:absolute;top:12px;left:50%;transform:translateX(-50%);flex-direction:row;gap:6px;white-space:nowrap"></button>'); stageEl.appendChild(tg); }
+      tg.innerHTML = P.useVRM === false ? '<span>✨</span><small>Usar a ' + esc(P.name) + ' do VRoid</small>' : '<span>👗</span><small>Usar o boneco clássico</small>';
+      tg.onclick = () => { P.useVRM = P.useVRM === false; saveSoon(); vrmAttach(); stageBuild(); sfx('click'); };
+      if (P.useVRM !== false) {
+        if (stageAv) stageAv.group.visible = false;
+        if (VRMP.root.parent) VRMP.root.parent.remove(VRMP.root);
+        VRMP.root.position.set(0, 0.08, 0); VRMP.root.rotation.set(0, 0, 0); VRMP.root.scale.setScalar(1);
+        stageScene.add(VRMP.root); VRMP.inStage = true;
+        // o material do VRoid só aceita uma luz direcional por cena
+        stRim.visible = false;
+        bar.textContent = '💜 As roupas desta princesa vêm do VRoid';
+        bar.style.top = '62px'; bar.classList.remove('off');
+      }
+    } else { const tg = stageEl.querySelector('.st-vrm'); if (tg) tg.remove(); }
+  };
+  const oldClose = stageClose;
+  stageClose = function () {
+    oldClose();
+    if (VRMP.inStage) { VRMP.inStage = false; if (VRMP.root.parent) VRMP.root.parent.remove(VRMP.root); vrmAttach(); }
+    stRim.visible = true;
+    const tg = stageEl.querySelector('.st-vrm'); if (tg) tg.remove();
+    const ht = stageEl.querySelector('.st-hint'); ht.textContent = '👆 Arraste para girar'; ht.style.top = '';
+  };
+})();
+// no palco, o modelo gira com a princesa do palco
+onFrame(() => { if (VRMP.inStage && VRMP.root) VRMP.root.rotation.y = STAGE.yaw; });
+
+// ---------- DESEMPENHO: só o mundo atual fica na cena ----------
+// Os objetos fixos de cada mundo e de cada interior ficam guardados em "gavetas".
+// Ao trocar de lugar, a gaveta antiga sai da cena e a nova entra.
+const AREA_BUCKETS = {};
+(function () {
+  const fixos = new Set([avatarRoot, starField, moon, rainDrops, puddles, skyBow, houseGroup, roomFrames, decorGroup, cartGroup, duck]);
+  if (typeof snow !== 'undefined') fixos.add(snow);
+  scene.children.slice().forEach(o => {
+    if (fixos.has(o) || o.isLight || o.isPoints || o.isLineSegments || o.isCamera || o.isInstancedMesh || o.isSprite && Math.abs(o.position.x) < 1) return;
+    if (o === camera) return;
+    // grupos que nasceram na origem mas têm o conteúdo em outro lugar: usa o centro do conteúdo
+    let px = o.position.x, pz = o.position.z;
+    if (Math.abs(px) < 0.01 && Math.abs(pz) < 0.01 && o.children && o.children.length) {
+      const bb = new THREE.Box3().setFromObject(o); if (!bb.isEmpty()) { const c = bb.getCenter(new THREE.Vector3()); px = c.x; pz = c.z; }
+      if (Math.abs(px) < 1 && Math.abs(pz) < 1) return;
+    }
+    const a = areaOf(px, pz);
+    (AREA_BUCKETS[a] = AREA_BUCKETS[a] || []).push(o);
+  });
+})();
+let areaOnScene = null;
+function areaCull(a) {
+  if (a === areaOnScene) return;
+  Object.entries(AREA_BUCKETS).forEach(([k, lista]) => {
+    const dentro = k === a;
+    lista.forEach(o => { if (dentro) { if (!o.parent) scene.add(o); } else if (o.parent === scene) scene.remove(o); });
+  });
+  areaOnScene = a;
+}
+(function () { const old = setArea; setArea = function (a) { old(a); areaCull(a); }; })();
+areaCull(curArea || 'main');
 
 })();
 </script>
