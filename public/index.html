@@ -8247,7 +8247,7 @@ frame();
 // ---------- TRAVA POR CÓDIGO E CONFIGURAÇÕES DOS PAIS ----------
 const CODE_DEFAULT = '021100', CODE_KEY = 'mundo-destrava', UNLOCK_H = 4;
 // carimbo do build: o valor é trocado pelo build.py na hora de gerar o index.html
-const BUILD_VER = '3.4', BUILD_AT = '2026-10-23T16:03:23';
+const BUILD_VER = '3.4', BUILD_AT = '2026-10-23T17:45:21';
 function buildLabel() {
   const iso = /^\d{4}-\d{2}-\d{2}T/.test(BUILD_AT) ? BUILD_AT : null;
   if (!iso) return 'versão ' + BUILD_VER;
@@ -9961,9 +9961,18 @@ function vrmAvailable() {
   return !/claude\.ai|claudeusercontent|anthropic/.test(location.hostname);
 }
 function vrmFor(name) { return VRM_MODELS[(name || '').trim().toLowerCase()] || null; }
+// proteção: se o aparelho travar enquanto carrega o modelo, na próxima vez o jogo abre com o boneco clássico
+const VRM_TRY = 'mundo-vrm-tentativa', VRM_OFF = 'mundo-vrm-desligado';
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+function vrmDeviceOk() {
+  if (lsGet(VRM_TRY)) { lsSet(VRM_TRY, null); lsSet(VRM_OFF, '1'); setTimeout(() => toast('💜 O modelo do VRoid ficou pesado neste aparelho. Voltamos ao boneco clássico.', 4500), 2500); return false; }
+  return !lsGet(VRM_OFF);
+}
 function vrmLoad(url) {
   if (VRMP.loading) return;
   VRMP.loading = true;
+  lsSet(VRM_TRY, String(Date.now()));
   toast('✨ Carregando a ' + P.name + ' do VRoid...', 2500);
   new THREE.GLTFLoader().load(url, gltf => {
     THREE_VRM.VRMUtils.removeUnnecessaryJoints(gltf.scene);
@@ -9994,9 +10003,11 @@ function vrmLoad(url) {
       vrm.update(0); root.updateMatrixWorld(true);
       const hp = new THREE.Vector3(); if (VRMP.bones.hips) { VRMP.bones.hips.getWorldPosition(hp); VRMP.hipY = hp.y; }
       vrmAttach();
+      // passou alguns segundos desenhando sem travar: o aparelho aguenta
+      setTimeout(() => lsSet(VRM_TRY, null), 8000);
       banner('✨ A ' + P.name + ' chegou do VRoid!', 'Agora ela está no estilo anime');
-    }).catch(() => { VRMP.loading = false; });
-  }, undefined, () => { VRMP.loading = false; });
+    }).catch(() => { VRMP.loading = false; lsSet(VRM_TRY, null); });
+  }, undefined, () => { VRMP.loading = false; lsSet(VRM_TRY, null); });
 }
 // mostra o modelo no lugar do boneco clássico (ou volta o clássico)
 function vrmAttach() {
@@ -10014,7 +10025,7 @@ function vrmAttach() {
     oldStart(p, create);
     if (VRMP.root && VRMP.name !== P.name) { if (VRMP.root.parent) VRMP.root.parent.remove(VRMP.root); VRMP.vrm = null; VRMP.root = null; VRMP.active = false; }
     const url = vrmFor(P.name);
-    if (url && vrmAvailable() && P.useVRM !== false) { if (VRMP.root) vrmAttach(); else vrmLoad(url); }
+    if (url && vrmAvailable() && P.useVRM !== false && vrmDeviceOk()) { if (VRMP.root) vrmAttach(); else vrmLoad(url); }
   };
 })();
 // ---------- os movimentos da marionete viram movimentos do modelo ----------
@@ -10070,7 +10081,13 @@ onFrame((dt, t) => { if (VRMP.active || VRMP.inStage) vrmDrive(dt, t); });
   stageBuild = function () {
     oldBuild();
     const bar = stageEl.querySelector('.st-hint');
-    if (VRMP.root && vrmFor(P.name) && VRMP.name === P.name) {
+    if (!VRMP.root && vrmFor(P.name) && vrmAvailable() && lsGet(VRM_OFF)) {
+      let tg = stageEl.querySelector('.st-vrm');
+      if (!tg) { tg = h('<button class="st-b st-vrm" style="position:absolute;top:12px;left:50%;transform:translateX(-50%);flex-direction:row;gap:6px;white-space:nowrap"></button>'); stageEl.appendChild(tg); }
+      tg.innerHTML = '<span>✨</span><small>Tentar a ' + esc(P.name) + ' do VRoid de novo</small>';
+      tg.onclick = () => { lsSet(VRM_OFF, null); P.useVRM = true; saveSoon(); tg.remove(); vrmLoad(vrmFor(P.name)); sfx('click'); };
+    }
+    else if (VRMP.root && vrmFor(P.name) && VRMP.name === P.name) {
       // botão para escolher entre o modelo do VRoid e o boneco clássico
       let tg = stageEl.querySelector('.st-vrm');
       if (!tg) { tg = h('<button class="st-b st-vrm" style="position:absolute;top:12px;left:50%;transform:translateX(-50%);flex-direction:row;gap:6px;white-space:nowrap"></button>'); stageEl.appendChild(tg); }
