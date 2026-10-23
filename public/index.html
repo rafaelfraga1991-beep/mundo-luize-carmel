@@ -2002,7 +2002,7 @@ function colorMat(c, c2) {
 let ANIME_HEAD = null;
 function animeHeadGeo() {
   if (ANIME_HEAD) return ANIME_HEAD;
-  const g = new THREE.SphereGeometry(0.62, 40, 30), p = g.attributes.position;
+  const g = new THREE.SphereGeometry(0.62, 28, 20), p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {
     let x = p.getX(i), y = p.getY(i), z = p.getZ(i);
     if (y < 0) {
@@ -2151,7 +2151,10 @@ function hairMat(look) {
   const hc = HAIR_COLORS[look.hairColor] || HAIR_COLORS[0];
   return hc.c === 'rainbow' ? new THREE.MeshLambertMaterial({map: patternTex('rainbow', '#fff'), side: THREE.DoubleSide}) : hairStrandMat(hc.c);
 }
-const sph = (r, m, ws = 20, hs = 16) => mesh(new THREE.SphereGeometry(r, ws, hs), m);
+// esferas compartilham a mesma geometria (economiza memória) e têm menos facetas no celular
+const SPH_GEO = {};
+const sphGeo = (r, ws, hs) => { const k = r + '|' + ws + '|' + hs; return SPH_GEO[k] || (SPH_GEO[k] = new THREE.SphereGeometry(r, ws, hs)); };
+const sph = (r, m, ws = 16, hs = 12) => mesh(sphGeo(r, ws, hs), m);
 const dmat = c => mat(c, {side: THREE.DoubleSide});
 function bell(rTop, yTop, rBot, yBot, curve = 1.7, lip = 0.05, phiS = 0, phiL = TAU) {
   const pts = [new THREE.Vector2(0.001, yBot), new THREE.Vector2(rBot * 0.97, yBot), new THREE.Vector2(rBot + lip, yBot + 0.06)];
@@ -2192,6 +2195,7 @@ function realProportions(g, parts, skinM) {
   g.children.slice().forEach(o => { g.remove(o); inner.add(o); });
   g.add(inner); parts.inner = inner;
 }
+const AVATARS = new Set();
 function buildAvatar(look) {
   const g = new THREE.Group();
   const parts = {};
@@ -2284,7 +2288,7 @@ function buildAvatar(look) {
   [-1, 1].forEach(k => put(hg, sph(0.1, skinM, 10, 8), k * 0.54, -0.02, 0).scale.set(0.6, 1, 0.9));
   const hm = hairMat(look), hm2 = hairMat2(look);
   const style = (HAIR_STYLES[look.hairStyle] || HAIR_STYLES[0]).id;
-  const hs = (r, x, y, z, sx = 1, sy = 1, sz = 1) => { const o = put(hg, mesh(new THREE.SphereGeometry(r, 20, 16), hm), x, y, z); o.scale.set(sx, sy, sz); return o; };
+  const hs = (r, x, y, z, sx = 1, sy = 1, sz = 1) => { const o = put(hg, mesh(sphGeo(r, 14, 10), hm), x, y, z); o.scale.set(sx, sy, sz); return o; };
   if (style === 'afro') { hs(0.8, 0, 0.18, -0.2, 1.08, 1, 0.95); for (let i = 0; i < 14; i++) { const a = i / 14 * TAU; hs(0.24, Math.cos(a) * 0.72, 0.2 + Math.sin(a) * 0.62, -0.18 - Math.abs(Math.sin(a)) * 0.08); } }
   else hs(0.665, 0, 0.05, -0.08, 1, 1, 0.95);
   if (style === 'franja_reta') { const fr = put(hg, box(1.0, 0.24, 0.4, hm), 0, 0.42, 0.36); fr.rotation.x = -0.3; }
@@ -2336,6 +2340,9 @@ function buildAvatar(look) {
   if (look.back && ITEMS[look.back]) backAcc(g, ITEMS[look.back], parts);
   if (look.hand && ITEMS[look.hand]) handAcc(parts.armR, ITEMS[look.hand]);
   realProportions(g, parts, skinM);
+  // cada parte que se mexe (cabeça, braços, pernas, tronco) vira poucas peças, sem mudar o visual
+  if (typeof mergeStatic === 'function') [parts.head, parts.armL, parts.armR, parts.legL, parts.legR, parts.torso].forEach(p => { if (p) mergeStatic(p); });
+  g.userData.isAvatar = true; AVATARS.add(g);
   parts.outlines = addOutlines(g);
   return {group: g, parts};
 }
@@ -2626,6 +2633,36 @@ function buildPet(id) {
   return {group: g, parts};
 }
 
+// ---------- FUNDIR PECINHAS ----------
+// Um prédio detalhado tem centenas de pecinhas; desenhar cada uma separada pesa no celular.
+// Aqui as pecinhas paradas que usam o mesmo material viram um único objeto.
+function mergeStatic(group) {
+  group.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(group.matrixWorld).invert();
+  const byMat = new Map(), remove = [];
+  group.traverse(o => {
+    if (!o.isMesh || o.isSkinnedMesh || o.userData.anim || o.userData.ol) return;
+    let p = o.parent, anim = false; while (p && p !== group) { if (p.userData.anim) anim = true; p = p.parent; }
+    if (anim || Array.isArray(o.material)) return;
+    const g = o.geometry; if (!g.attributes.position || !g.attributes.normal) return;
+    const m = new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld);
+    if (!byMat.has(o.material)) byMat.set(o.material, []);
+    byMat.get(o.material).push({g, m, shadow: o.castShadow}); remove.push(o);
+  });
+  remove.forEach(o => o.parent.remove(o));
+  byMat.forEach((list, material) => {
+    let n = 0; const parts = list.map(({g, m}) => { const ng = g.index ? g.toNonIndexed() : g.clone(); ng.applyMatrix4(m); n += ng.attributes.position.count; return ng; });
+    const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), uv = new Float32Array(n * 2);
+    let k = 0;
+    parts.forEach(pg => { const c = pg.attributes.position.count; pos.set(pg.attributes.position.array, k * 3); nor.set(pg.attributes.normal.array, k * 3); if (pg.attributes.uv) uv.set(pg.attributes.uv.array, k * 2); k += c; pg.dispose(); });
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    geo.computeBoundingSphere();
+    const mm = new THREE.Mesh(geo, material); mm.castShadow = list.some(x => x.shadow); mm.receiveShadow = true;
+    group.add(mm);
+  });
+  return group;
+}
 // ---------- KIT DE FACHADAS DETALHADAS ----------
 // Prédios com telhado de beiral, janelas com moldura e floreira, porta com degraus,
 // toldo recortado, placa pendurada, chaminé, calha e plantinhas. A frente fica em +z.
@@ -2762,6 +2799,7 @@ function fancyShop(g, o) {
   put(g, cyl(0.1, 0.1, H, 6, '#adb5bd'), -W / 2 + 0.3, H / 2, D / 2 + 0.25);
   // plantinhas na entrada
   [-1, 1].forEach(k => BK.pot(g, k * 2.2, D / 2 + 1.2, o.potColor));
+  mergeStatic(g);
 }
 // ---------- castelo detalhado ----------
 BK.stone = (c1, c2) => {
@@ -2785,6 +2823,7 @@ BK.tower = (g, x, z, r, h, wall, roof, trim) => {
   put(g, mesh(new THREE.SphereGeometry(0.32, 10, 8), shiny('#ffd43b', .6)), x, h + 1.1 + r * 2.4, z);
   put(g, cyl(0.06, 0.06, 2, 6, '#8a5a3a'), x, h + 2.2 + r * 2.4, z);
   const fl = put(g, mesh(new THREE.PlaneGeometry(1.4, 0.8), new THREE.MeshLambertMaterial({color: '#ff5fa8', side: THREE.DoubleSide})), x + 0.7, h + 2.8 + r * 2.4, z);
+  fl.userData.anim = true;
   onFrame((dt, t) => { fl.rotation.y = Math.sin(t * 2 + x) * 0.3; });
   // janelinhas em arco na torre
   [0.35, 0.65].forEach(f => { const a = Math.PI / 2; BK.window(g, x, h * f, z + r * 1.02, 0.8, 1.2, {frame: trim, arch: true}); });
@@ -2823,6 +2862,7 @@ function fancyCastle(g, o) {
   [-3.6, 3.6].forEach(x => { put(g, box(1.2, 3.4, 0.08, '#ff5fa8'), x, 7.6, 6.15); put(g, mesh(new THREE.ConeGeometry(0.6, 0.6, 3), mat('#ff5fa8')), x, 5.7, 6.15).rotation.z = Math.PI; put(g, mesh(starGeo(0.35, 0.15, 0.04), shiny('#ffd43b', .6)), x, 8, 6.22); });
   // jardineiras ao longo da base
   [-8, -5, 5, 8].forEach(x => BK.pot(g, x, 7.2, '#ffffff'));
+  mergeStatic(g);
 }
 // ---------- KIT DE INTERIORES DETALHADOS ----------
 BK.wallpaper = (kind, c1, c2) => {
@@ -2942,6 +2982,7 @@ function fancyHouse(g, o) {
   [-1, 1].forEach(k => { const sg = new THREE.Group(); sg.position.set(k * (w / 2 + 0.02), 0, 0); sg.rotation.y = k * Math.PI / 2; g.add(sg); BK.window(sg, 0, h * 0.56, 0, ww, wh, {frame: trim}); });
   [-1, 1].forEach(k => BK.pot(g, k * (w * 0.42), d / 2 + 0.9, o.potColor));
   put(g, cyl(0.08, 0.08, h, 6, '#adb5bd'), -w / 2 + 0.25, h / 2, d / 2 + 0.2);
+  mergeStatic(g);
 }
 
 // ---------- MÓVEIS DA CASINHA (carregados cedo para todos os interiores usarem) ----------
@@ -8247,7 +8288,7 @@ frame();
 // ---------- TRAVA POR CÓDIGO E CONFIGURAÇÕES DOS PAIS ----------
 const CODE_DEFAULT = '021100', CODE_KEY = 'mundo-destrava', UNLOCK_H = 4;
 // carimbo do build: o valor é trocado pelo build.py na hora de gerar o index.html
-const BUILD_VER = '3.4', BUILD_AT = '2026-10-23T18:59:15';
+const BUILD_VER = '3.4', BUILD_AT = '2026-10-23T19:13:51';
 function buildLabel() {
   const iso = /^\d{4}-\d{2}-\d{2}T/.test(BUILD_AT) ? BUILD_AT : null;
   if (!iso) return 'versão ' + BUILD_VER;
@@ -10165,6 +10206,48 @@ function areaCull(a) {
 }
 (function () { const old = setArea; setArea = function (a) { old(a); areaCull(a); }; })();
 areaCull(curArea || 'main');
+// ---------- DISTÂNCIA: coisas pequenas e longe não são desenhadas ----------
+// Cada objeto ganha um "tamanho". Os pequenos somem a partir de uma certa distância
+// (onde mal dariam para ver, já dentro da névoa) e voltam quando a princesa se aproxima.
+const CULL = {list: {}, t: 0};
+(function () {
+  const bb = new THREE.Box3(), sp = new THREE.Sphere();
+  Object.entries(AREA_BUCKETS).forEach(([a, lista]) => {
+    CULL.list[a] = lista.map(o => {
+      bb.setFromObject(o); if (bb.isEmpty()) return null;
+      bb.getBoundingSphere(sp);
+      return {o, r: sp.radius, rx: sp.center.x - o.position.x, rz: sp.center.z - o.position.z};
+    }).filter(Boolean).filter(c => c.r < 26);
+  });
+})();
+const cullLimit = r => Math.min(scene.fog ? scene.fog.far + 10 : 200, (isTouch ? 26 : 32) + r * (isTouch ? 12 : 15));
+function distCull() {
+  const L = CULL.list[areaOnScene]; if (!L) return;
+  const px = player.pos.x, pz = player.pos.z;
+  for (const c of L) {
+    const o = c.o, dx = o.position.x + c.rx - px, dz = o.position.z + c.rz - pz;
+    const near = dx * dx + dz * dz < cullLimit(c.r) ** 2;
+    if (near) { if (!o.parent) scene.add(o); }
+    else if (o.parent === scene) scene.remove(o);
+  }
+}
+onFrame(dt => { CULL.t -= dt; if (CULL.t <= 0) { CULL.t = 0.25; distCull(); } });
+(function () { const old = areaCull; areaCull = function (a) { old(a); distCull(); }; })();
+
+// personagens um pouco mais longe perdem o contorno preto (metade dos desenhos de cada um)
+const olTmp = new THREE.Vector3();
+onFrame(() => {
+  if (CULL.t !== 0.25) return;
+  const px = player.pos.x, pz = player.pos.z, lim = isTouch ? 22 : 30;
+  AVATARS.forEach(g => {
+    if (!g.parent) return;
+    const ol = g.userData.outl || (g.userData.outl = []);
+    if (!ol.length) g.traverse(m => { if (m.isMesh && m.userData.ol) ol.push(m); });
+    g.getWorldPosition(olTmp);
+    const show = (olTmp.x - px) ** 2 + (olTmp.z - pz) ** 2 < lim * lim;
+    if (g.userData.olOn !== show) { g.userData.olOn = show; ol.forEach(m => m.visible = show); }
+  });
+});
 
 })();
 </script>
