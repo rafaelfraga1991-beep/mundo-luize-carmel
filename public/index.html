@@ -8247,7 +8247,7 @@ frame();
 // ---------- TRAVA POR CÓDIGO E CONFIGURAÇÕES DOS PAIS ----------
 const CODE_DEFAULT = '021100', CODE_KEY = 'mundo-destrava', UNLOCK_H = 4;
 // carimbo do build: o valor é trocado pelo build.py na hora de gerar o index.html
-const BUILD_VER = '3.4', BUILD_AT = '2026-10-23T17:45:21';
+const BUILD_VER = '3.4', BUILD_AT = '2026-10-23T18:59:15';
 function buildLabel() {
   const iso = /^\d{4}-\d{2}-\d{2}T/.test(BUILD_AT) ? BUILD_AT : null;
   if (!iso) return 'versão ' + BUILD_VER;
@@ -9952,7 +9952,8 @@ function openFamily() {
 // Quando existe um modelo .vrm para a princesa, ele aparece no lugar do boneco clássico.
 // O boneco clássico continua existindo, invisível, como "marionete": todas as animações
 // do jogo mexem nele, e o modelo do VRoid copia os movimentos a cada quadro.
-const VRM_MODELS = {luize: 'modelos/luize.vrm', luiza: 'modelos/luize.vrm'};
+// a Luize voltou para o boneco do jogo; para usar um modelo do VRoid de novo, é só listar aqui
+const VRM_MODELS = {};
 const VRMP = {vrm: null, root: null, active: false, loading: false, name: null, blinkT: 2, blink: 0, inStage: false};
 const VRM_HEIGHT = 4.1; // altura igual à do boneco clássico
 function vrmAvailable() {
@@ -10116,6 +10117,22 @@ onFrame((dt, t) => { if (VRMP.active || VRMP.inStage) vrmDrive(dt, t); });
 })();
 // no palco, o modelo gira com a princesa do palco
 onFrame(() => { if (VRMP.inStage && VRMP.root) VRMP.root.rotation.y = STAGE.yaw; });
+
+// ---------- TUDO LIBERADO ----------
+// Todos os mundos abertos para viajar e todos os bichinhos já adotados, para todas as princesas.
+(function () {
+  const oldLock = uLock;
+  uLock = function (u) { return {open: true}; };
+  const old = startGame;
+  startGame = function (p, create) {
+    old(p, create);
+    if (!P) return;
+    P.worldsOpen = UNIVERSE.map(u => u.id);
+    let novos = 0;
+    Object.values(ITEMS).filter(it => it.slot === 'pet').forEach(it => { if (!P.pets.includes(it.id)) { give(it.id); novos++; } });
+    if (novos) { saveSoon(); setTimeout(() => toast('🐾 Todos os bichinhos e todos os mundos estão liberados!', 3500), 1500); }
+  };
+})();
 
 // ---------- DESEMPENHO: só o mundo atual fica na cena ----------
 // Os objetos fixos de cada mundo e de cada interior ficam guardados em "gavetas".
